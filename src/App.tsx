@@ -29,6 +29,7 @@ import { buildPrompt, copyText, labels } from "./research/prompt";
 import { Empty, Modal, NewsCard, Section, dateTime } from "./components/UI";
 import { CoveragePanel, BriefingPanel } from "./components/Intelligence";
 import { resolveSecurity } from "./data/feedV2";
+import { DiscoveryPanel, WebNewsSearch } from "./components/Discovery";
 import type { Feed, Holding, News, Research, Security } from "./types";
 
 const tabs = [
@@ -81,9 +82,9 @@ export default function App() {
       })),
   ];
   for (const company of [...(feed?.research || []), ...(feed?.news || [])]) {
-    if (!allSecurities.some((s) => s.ticker === company.ticker)) {
+    if (!allSecurities.some((s) => company.ticker ? s.ticker === company.ticker : s.name === company.company)) {
       allSecurities.push({
-        id: `public-${company.ticker}`,
+        id: `public-${company.ticker || company.company}`,
         ticker: company.ticker,
         name: company.company,
         category: "מקורות ציבוריים",
@@ -170,7 +171,7 @@ export default function App() {
   };
   const openResearch = (ticker: string) => {
     if (dirty && !persistResearch()) return;
-    const target = allSecurities.find((s) => s.ticker === ticker);
+    const target = allSecurities.find((s) => s.ticker === ticker || s.name === ticker);
     if (target) setSelected(target.id);
     navigate("research");
   };
@@ -206,7 +207,7 @@ export default function App() {
   const related = [
     ...new Map(
       [...(feed?.news || []), ...state.savedNews]
-        .filter((n) => security && n.ticker === security.ticker)
+        .filter((n) => security && (n.ticker ? n.ticker === security.ticker : n.company === security.name))
         .map((n) => [n.id, n]),
     ).values(),
   ];
@@ -355,7 +356,7 @@ export default function App() {
             <span className="status-warning">
               {stale
                 ? "המידע אינו עדכני"
-                : feed?.version === 2 && feed.status !== "complete"
+                : feed?.version === 2 && (feed.discovery ? feed.discovery.status !== "complete" : feed.status !== "complete")
                   ? "כיסוי חלקי — פירוט המקורות להלן"
                   : "הנתונים עודכנו ב־18 השעות האחרונות"}
             </span>
@@ -375,7 +376,7 @@ export default function App() {
           )}
           {feed?.version === 2 &&
             ["home", "news", "watchlist"].includes(tab) && (
-              <CoveragePanel feed={feed} />
+              <><DiscoveryPanel feed={feed} /><CoveragePanel feed={feed} /></>
             )}
           {tab === "home" && (
             <>
@@ -503,7 +504,7 @@ export default function App() {
                     item={n}
                     saved={state.savedNews.some((s) => s.id === n.id)}
                     onSave={() => saveNews(n)}
-                    onResearch={() => openResearch(n.ticker)}
+                    onResearch={() => openResearch(n.ticker || n.company)}
                   />
                 ))}
               </div>
@@ -732,7 +733,7 @@ export default function App() {
                     item={n}
                     saved={state.savedNews.some((s) => s.id === n.id)}
                     onSave={() => saveNews(n)}
-                    onResearch={() => openResearch(n.ticker)}
+                    onResearch={() => openResearch(n.ticker || n.company)}
                   />
                 ))}
               </div>
@@ -774,7 +775,7 @@ export default function App() {
               </div>
               <div className="alert">
                 רשימת המעקב פרטית ואינה נשלחת לאיסוף. התאמה לרישום ציבורי דורשת
-                סימול ושם תואמים. חברות ללא זהות ומקור מאומתים נשארות ללא כיסוי;
+                שם חברה תואם לצורך חדשות. אימות בורסה ו־CIK נפרד מאימות זהות לחיפוש;
                 רישום כפול אינו מאוחד אוטומטית.
               </div>
               <div className="watch-grid">
@@ -796,6 +797,7 @@ export default function App() {
                       </div>
                       <h3 dir="ltr">{s.ticker || s.name}</h3>
                       <p>{s.name}</p>
+                      <WebNewsSearch name={s.name}/>
                       <small className="verification">
                         {feed?.version === 2
                           ? (() => {
@@ -803,7 +805,8 @@ export default function App() {
                               const source = feed.sources.find(
                                 (x) => x.securityId === matched?.id,
                               );
-                              return source?.status === "ok"
+                              const discovery=feed.discovery?.sources.find(x=>x.securityId===matched?.id);
+                              return discovery ? (discovery.status==='results' ? `חדשות ברשת • ${discovery.count} כותרות` : discovery.status==='zero-results' ? 'חיפוש הצליח — אין תוצאות' : 'חיפוש נכשל — נשמר מידע קודם') : source?.status === "ok"
                                 ? `כיסוי SEC • ${matched?.exchange}`
                                 : source?.url
                                   ? "מקור אינו זמין — בדקו פירוט"
@@ -894,6 +897,7 @@ export default function App() {
                       <Check size={17} />
                       שמירת מחקר
                     </button>
+                    <WebNewsSearch name={security.name}/>
                   </div>
                   <div className="research-layout">
                     <div>

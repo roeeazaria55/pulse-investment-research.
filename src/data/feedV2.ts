@@ -1,5 +1,7 @@
 import Ajv from "ajv";
 import schema from "../../schemas/feed-v2.schema.json";
+import discoverySchema from "../../schemas/discovery.schema.json";
+import { validateDiscovery } from "./discoveryValidation.mjs";
 import type { LiveFeed, Security } from "../types";
 const ajv = new Ajv({ strict: false });
 ajv.addFormat(
@@ -19,10 +21,12 @@ ajv.addFormat("uri", (v) => {
     return false;
   }
 });
+ajv.addSchema(discoverySchema);
 const validate = ajv.compile(schema);
 export function parseV2(x: unknown): LiveFeed {
   if (!validate(x)) throw Error("פיד ציבורי פגום");
   const f = x as unknown as LiveFeed;
+  validateDiscovery(f);
   const ids = new Set<string>();
   if (
     new Set(f.registry.securities.map((s) => s.id)).size !==
@@ -86,7 +90,7 @@ export function parseV2(x: unknown): LiveFeed {
     f.coverage.working !== f.sources.filter((s) => s.status === "ok").length
   )
     throw Error("ספירת כיסוי לא תקינה");
-  return f;
+  return f.articles ? { ...f, news: [...f.news, ...f.articles].sort((a,b) => (b.publishedAt || b.collectedAt).localeCompare(a.publishedAt || a.collectedAt)) } : f;
 }
 const norm = (x: string) =>
   x.toLowerCase().replace(/[^a-z0-9\u0590-\u05ff]/g, "");
@@ -98,9 +102,8 @@ export function resolveSecurity(
 ) {
   return feed.registry.securities.find(
     (s) =>
-      s.verification.status === "verified" &&
-      s.ticker === personal.ticker &&
-      [s.name, ...s.aliases, ...s.acceptedLegalNames].some(
+      ((s.verification.status === "verified" && s.ticker === personal.ticker) || feed.discovery?.registry.companies.some(c => c.id === s.id && [c.name,...c.aliases].some(n => norm(n) === norm(personal.name)))) &&
+      [s.name, ...s.aliases, ...s.acceptedLegalNames, ...(feed.discovery?.registry.companies.find(c => c.id === s.id)?.aliases || [])].some(
         (n) => norm(n) === norm(personal.name),
       ),
   );

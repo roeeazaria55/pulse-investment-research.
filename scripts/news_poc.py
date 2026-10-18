@@ -74,7 +74,7 @@ def safe_link(value):
     p = urllib.parse.urlsplit(value or "")
     return value if p.scheme in ("http", "https") and p.hostname and not p.username and not p.password else None
 
-def parse_google(body):
+def parse_google(body, required_term="nebius"):
     if b"<!DOCTYPE" in body.upper() or b"<!ENTITY" in body.upper():
         raise ValueError("DTD/entity declarations not accepted")
     root = ET.fromstring(body)
@@ -84,7 +84,7 @@ def parse_google(body):
     for item in root.findall("./channel/item")[:100]:
         title = item.findtext("title", "").strip()
         link = safe_link(item.findtext("link"))
-        if "nebius" not in title.lower() or not link:
+        if (required_term and required_term not in title.lower()) or not link:
             continue
         raw_date = item.findtext("pubDate")
         publication = None
@@ -100,7 +100,7 @@ def parse_google(body):
                        "rawPublicationDate": raw_date, "discoveredAt": None})
     return result
 
-def parse_gdelt(body):
+def parse_gdelt(body, required_term="nebius"):
     data = json.loads(body)
     if not isinstance(data, dict) or not isinstance(data.get("articles"), list):
         raise ValueError("Expected GDELT articles array")
@@ -108,7 +108,7 @@ def parse_gdelt(body):
              "linkKind": "publisher", "publishedAt": None, "discoveredAt": a.get("seendate")}
             for a in data["articles"][:50]
             if isinstance(a, dict) and isinstance(a.get("title"), str)
-            and "nebius" in a["title"].lower() and safe_link(a.get("url"))]
+            and (not required_term or required_term in a["title"].lower()) and safe_link(a.get("url"))]
 
 def main():
     now = dt.datetime.now(dt.timezone.utc).isoformat()

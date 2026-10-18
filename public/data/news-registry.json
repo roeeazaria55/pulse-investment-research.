@@ -1,0 +1,378 @@
+{
+  "version": 1,
+  "reviewedAt": "2026-10-18",
+  "scope": "Company identity for public headline search only. This does not verify exchange, share class, CIK or personal holdings.",
+  "providers": [
+    {
+      "id": "google-news",
+      "enabled": true,
+      "policyUrl": "https://policies.google.com/terms",
+      "reviewedAt": "2026-10-18",
+      "notice": "Public RSS metadata only. No article bodies or Google redirect decoding. Availability has no SLA; stop on blocks.",
+      "proofRun": "https://github.com/roeeazaria55/pulse-investment-research./actions/runs/39128517271",
+      "proofStatus": "results"
+    },
+    {
+      "id": "gdelt",
+      "enabled": false,
+      "policyUrl": "https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/",
+      "reviewedAt": "2026-10-18",
+      "notice": "Disabled after actual runner returned HTTP 429. No bypass; manual feasibility retest required before enabling.",
+      "proofRun": "https://github.com/roeeazaria55/pulse-investment-research./actions/runs/39128517271",
+      "proofStatus": "failed-429"
+    }
+  ],
+  "companies": [
+    {
+      "id": "candidate-nebius",
+      "name": "Nebius Group",
+      "displayTicker": "NBIS",
+      "aliases": [
+        "Nebius",
+        "נביוס"
+      ],
+      "context": [
+        "AI",
+        "cloud",
+        "stock",
+        "ענן"
+      ],
+      "distinctiveAliases": [
+        "Nebius",
+        "נביוס"
+      ],
+      "exclude": [],
+      "query": "(\"Nebius\" OR \"נביוס\") (AI OR cloud OR stock OR ענן)",
+      "gdeltQuery": "\"Nebius Group\"",
+      "identityVerification": {
+        "status": "reviewed",
+        "date": "2026-10-18",
+        "source": "https://nebius.com/blog/posts/nvidia-run-ai-open-source-nebius-applications",
+        "method": "Reviewed company official website name and business context for headline search; listing verification remains separate."
+      }
+    },
+    {
+      "id": "us-meta-nasdaq-a",
+      "name": "Meta Platforms",
+      "displayTicker": "META",
+      "aliases": [
+        "Meta",
+        "מטא",
+        "Facebook",
+        "פייסבוק"
+      ],
+      "context": [
+        "Platforms",
+        "Zuckerberg",
+        "Facebook",
+        "Instagram",
+        "WhatsApp",
+        "מניה",
+        "מניות",
+        "צוקרברג"
+      ],
+      "distinctiveAliases": [
+        "Meta Platforms",
+        "פייסבוק"
+      ],
+      "exclude": [
+        "Meta Materials"
+      ],
+      "query": "(\"Meta Platforms\" OR \"Facebook\" OR \"מטא\") (Zuckerberg OR Instagram OR stock OR מניה OR צוקרברג)",
+      "gdeltQuery": "\"Meta Platforms\"",
+      "identityVerification": {
+        "status": "reviewed",
+        "date": "2026-10-18",
+        "source": "https://about.fb.com/",
+        "method": "Reviewed company official website name and business context for headline search; listing verification remains separate."
+      }
+    },
+    {
+      "id": "us-dlo-nasdaq-a",
+      "name": "dLocal",
+      "displayTicker": "DLO",
+      "aliases": [
+        "dLocal",
+        "דילוקל",
+        "די לוקאל"
+      ],
+      "context": [
+        "payment",
+        "payments",
+        "stock",
+        "תשלומים"
+      ],
+      "distinctiveAliases": [
+        "dLocal",
+        "דילוקל",
+        "די לוקאל"
+      ],
+      "exclude": [],
+      "query": "(\"dLocal\" OR \"דילוקל\" OR \"די לוקאל\") (payments OR stock OR תשלומים)",
+      "gdeltQuery": "\"dLocal\"",
+      "identityVerification": {
+        "status": "reviewed",
+        "date": "2026-10-18",
+        "source": "https://www.dlocal.com/our-solution/",
+        "method": "Reviewed company official website name and business context for headline search; listing verification remains separate."
+      }
+    },
+    {
+      "id": "candidate-ftai",
+      "name": "FTAI Aviation",
+      "displayTicker": "FTAI",
+      "aliases": [
+        "FTAI Aviation",
+        "FTAI",
+        "אפטיאיי"
+      ],
+      "context": [
+        "Aviation",
+        "aircraft",
+        "engine",
+        "stock",
+        "תעופה"
+      ],
+      "distinctiveAliases": [
+        "FTAI Aviation"
+      ],
+      "exclude": [
+        "FTAI Infrastructure"
+      ],
+      "query": "(\"FTAI Aviation\" OR \"אפטיאיי\") (aviation OR engines OR stock OR תעופה)",
+      "gdeltQuery": "\"FTAI Aviation\"",
+      "identityVerification": {
+        "status": "reviewed",
+        "date": "2026-10-18",
+        "source": "https://ir.ftaiaviation.com/",
+        "method": "Reviewed company official website name and business context for headline search; listing verification remains separate."
+      }
+    },
+    {
+      "id": "us-lmnd-nyse-common",
+      "name": "Lemonade",
+      "displayTicker": "LMND",
+      "aliases": [
+        "Lemonade",
+        "למונייד"
+      ],
+      "context": [
+        "insurance",
+        "insurer",
+        "LMND",
+        "ביטוח",
+        "מניה"
+      ],
+      "distinctiveAliases": [
+        "Lemonade Inc",
+        "למונייד"
+      ],
+      "exclude": [
+        "recipe",
+        "Beyoncé",
+        "Beyonce",
+        "מתכון"
+      ],
+      "query": "(\"Lemonade\" OR \"למונייד\") (insurance OR insurer OR LMND OR ביטוח)",
+      "gdeltQuery": "\"Lemonade\"",
+      "identityVerification": {
+        "status": "reviewed",
+        "date": "2026-10-18",
+        "source": "https://www.lemonade.com/investor",
+        "method": "Reviewed company official website name and business context for headline search; listing verification remains separate."
+      }
+    },
+    {
+      "id": "candidate-sandisk",
+      "name": "SanDisk",
+      "displayTicker": "SNDK",
+      "aliases": [
+        "SanDisk",
+        "סנדיסק"
+      ],
+      "context": [
+        "flash",
+        "memory",
+        "storage",
+        "stock",
+        "זיכרון"
+      ],
+      "distinctiveAliases": [
+        "SanDisk",
+        "סנדיסק"
+      ],
+      "exclude": [],
+      "query": "(\"SanDisk\" OR \"סנדיסק\") (flash OR memory OR stock OR זיכרון)",
+      "gdeltQuery": "\"SanDisk\"",
+      "identityVerification": {
+        "status": "reviewed",
+        "date": "2026-10-18",
+        "source": "https://www.sandisk.com/company/about-us",
+        "method": "Reviewed company official website name and business context for headline search; listing verification remains separate."
+      }
+    },
+    {
+      "id": "candidate-iren",
+      "name": "IREN",
+      "displayTicker": "IREN",
+      "aliases": [
+        "IREN",
+        "Iris Energy",
+        "איירן"
+      ],
+      "context": [
+        "AI",
+        "cloud",
+        "data center",
+        "bitcoin",
+        "mining",
+        "stock",
+        "Iris Energy",
+        "דאטה",
+        "כרייה"
+      ],
+      "distinctiveAliases": [
+        "Iris Energy"
+      ],
+      "exclude": [
+        "Iren SpA",
+        "Iren S.p.A",
+        "Iren Energia",
+        "IREN luce",
+        "IREN gas"
+      ],
+      "query": "(\"IREN\" OR \"Iris Energy\" OR \"איירן\") (AI OR cloud OR bitcoin OR mining OR דאטה) -\"Iren SpA\" -\"Iren Energia\"",
+      "gdeltQuery": "\"IREN\"",
+      "identityVerification": {
+        "status": "reviewed",
+        "date": "2026-10-18",
+        "source": "https://www.iren.com/",
+        "method": "Reviewed company official website name and business context for headline search; listing verification remains separate."
+      }
+    },
+    {
+      "id": "candidate-next-vision",
+      "name": "Next Vision",
+      "displayTicker": "",
+      "aliases": [
+        "NextVision",
+        "Next Vision",
+        "נקסט ויזן",
+        "נקסט ויז׳ן"
+      ],
+      "context": [
+        "stabilized",
+        "camera",
+        "defense",
+        "drone",
+        "מצלמות",
+        "ביטחון",
+        "מניה"
+      ],
+      "distinctiveAliases": [
+        "NextVision Stabilized",
+        "נקסט ויזן",
+        "נקסט ויז׳ן"
+      ],
+      "exclude": [],
+      "query": "(\"NextVision\" OR \"Next Vision\" OR \"נקסט ויזן\") (camera OR stabilized OR defense OR מצלמות OR מניה)",
+      "gdeltQuery": "\"Next Vision\"",
+      "identityVerification": {
+        "status": "reviewed",
+        "date": "2026-10-18",
+        "source": "https://nextvision-sys.com/about-us/",
+        "method": "Reviewed company official website name and business context for headline search; listing verification remains separate."
+      }
+    },
+    {
+      "id": "candidate-enlight",
+      "name": "Enlight Renewable Energy",
+      "displayTicker": "",
+      "aliases": [
+        "Enlight",
+        "אנלייט"
+      ],
+      "context": [
+        "renewable",
+        "energy",
+        "solar",
+        "אנרגיה",
+        "מניה"
+      ],
+      "distinctiveAliases": [
+        "Enlight Renewable Energy",
+        "אנלייט"
+      ],
+      "exclude": [],
+      "query": "(\"Enlight Renewable Energy\" OR \"אנלייט\") (energy OR solar OR אנרגיה OR מניה)",
+      "gdeltQuery": "\"Enlight Renewable Energy\"",
+      "identityVerification": {
+        "status": "reviewed",
+        "date": "2026-10-18",
+        "source": "https://enlightenergy.com/info/about/",
+        "method": "Reviewed company official website name and business context for headline search; listing verification remains separate."
+      }
+    },
+    {
+      "id": "candidate-brainsway",
+      "name": "BrainsWay",
+      "displayTicker": "",
+      "aliases": [
+        "BrainsWay",
+        "בריינסוויי",
+        "בריינסווי"
+      ],
+      "context": [
+        "TMS",
+        "brain",
+        "medical",
+        "מוח"
+      ],
+      "distinctiveAliases": [
+        "BrainsWay",
+        "בריינסוויי",
+        "בריינסווי"
+      ],
+      "exclude": [],
+      "query": "(\"BrainsWay\" OR \"בריינסוויי\" OR \"בריינסווי\") (TMS OR medical OR stock OR מוח)",
+      "gdeltQuery": "\"BrainsWay\"",
+      "identityVerification": {
+        "status": "reviewed",
+        "date": "2026-10-18",
+        "source": "https://www.brainsway.com/company/",
+        "method": "Reviewed company official website name and business context for headline search; listing verification remains separate."
+      }
+    },
+    {
+      "id": "candidate-gilat-telecom",
+      "name": "Gilat Telecom",
+      "displayTicker": "",
+      "aliases": [
+        "Gilat Telecom",
+        "גילת טלקום"
+      ],
+      "context": [
+        "connectivity",
+        "broadband",
+        "תקשורת"
+      ],
+      "distinctiveAliases": [
+        "Gilat Telecom",
+        "גילת טלקום"
+      ],
+      "exclude": [
+        "Gilat Satellite Networks",
+        "גילת רשתות לוויין",
+        "גילת רשתות לווין"
+      ],
+      "query": "(\"Gilat Telecom\" OR \"גילת טלקום\") -\"Gilat Satellite Networks\" -\"גילת רשתות\"",
+      "gdeltQuery": "\"Gilat Telecom\"",
+      "identityVerification": {
+        "status": "reviewed",
+        "date": "2026-10-18",
+        "source": "https://gilat.net/gilat-israel/",
+        "method": "Reviewed company official website name and business context for headline search; listing verification remains separate."
+      }
+    }
+  ]
+}

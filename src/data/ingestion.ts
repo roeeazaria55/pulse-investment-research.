@@ -87,6 +87,7 @@ export async function fetchFeed(): Promise<Feed> {
 }
 export function isStale(feed: Feed | null, now = Date.now()) {
   if (feed?.version === 2) {
+    if (feed.discovery) return feed.discovery.sources.some(s => !s.lastSuccessfulAt || s.status === 'failed' || now - Date.parse(s.lastSuccessfulAt) > 18 * 60 * 60 * 1000);
     const active = feed.sources.filter((s) => s.url);
     return (
       active.length === 0 ||

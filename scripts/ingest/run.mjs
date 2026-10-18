@@ -69,10 +69,21 @@ const result = await collect({
     : null,
 });
 const eligible = result.feed.sources.filter((s) => s.url);
+// Optional news discovery runs independently of SEC. Preserve the complete prior
+// extension if the collector itself could not produce a valid replacement.
+try {
+  const discovery = await load('work/discovery.json');
+  if (discovery.discovery.lastAttemptAt < previous.discovery?.lastAttemptAt) throw Error('Old discovery result');
+  result.feed.articles = discovery.articles;
+  result.feed.discovery = discovery.discovery;
+} catch (e) {
+  if (e.code !== 'ENOENT') throw e;
+  if (previous.discovery) throw Error('Expected fresh discovery output; refusing a misleading publication');
+}
 result.state.completedSlots = [
   ...new Set([
     ...(state.completedSlots || []),
-    ...(eligible.length && eligible.every((s) => s.status === "ok")
+    ...((result.feed.discovery ? result.feed.discovery.status === 'complete' : eligible.length && eligible.every((s) => s.status === "ok"))
       ? [slotId]
       : []),
   ]),

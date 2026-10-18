@@ -1,0 +1,541 @@
+{
+  "$id": "discovery.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "article": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "securityId",
+        "ticker",
+        "company",
+        "headline",
+        "originalTitle",
+        "sourceUrl",
+        "publisher",
+        "sourceName",
+        "sourceId",
+        "discoveryProvider",
+        "linkKind",
+        "publishedAt",
+        "discoveredAt",
+        "collectedAt",
+        "importance",
+        "classification",
+        "summary",
+        "summaryKind",
+        "demo",
+        "documentId"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^article:[a-f0-9]{32}$"
+        },
+        "securityId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "ticker": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "company": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "headline": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "originalTitle": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "sourceUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "publisher": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "sourceName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "sourceId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "discoveryProvider": {
+          "enum": [
+            "google-news",
+            "gdelt"
+          ]
+        },
+        "linkKind": {
+          "enum": [
+            "google-news-redirect",
+            "publisher"
+          ]
+        },
+        "publishedAt": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "discoveredAt": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 80
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "collectedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "importance": {
+          "enum": [
+            "low",
+            "medium"
+          ]
+        },
+        "classification": {
+          "type": "object",
+          "required": [
+            "rule",
+            "reason"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "rule": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000
+            }
+          }
+        },
+        "summary": {
+          "const": ""
+        },
+        "summaryKind": {
+          "const": "metadata-only"
+        },
+        "demo": {
+          "const": false
+        },
+        "documentId": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$"
+        }
+      }
+    },
+    "discovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "registry",
+        "lastAttemptAt",
+        "lastSuccessfulAt",
+        "status",
+        "sources",
+        "newCount",
+        "noNewItems",
+        "seenIds",
+        "briefings"
+      ],
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "registry": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "version",
+            "reviewedAt",
+            "scope",
+            "providers",
+            "companies"
+          ],
+          "properties": {
+            "version": {
+              "const": 1
+            },
+            "reviewedAt": {
+              "type": "string",
+              "format": "date"
+            },
+            "scope": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000
+            },
+            "companies": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 100,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "id",
+                  "name",
+                  "displayTicker",
+                  "aliases",
+                  "context",
+                  "distinctiveAliases",
+                  "exclude",
+                  "query",
+                  "gdeltQuery",
+                  "identityVerification"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4000
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4000
+                  },
+                  "displayTicker": {
+                    "type": "string"
+                  },
+                  "aliases": {
+                    "type": "array",
+                    "maxItems": 30,
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 4000
+                    }
+                  },
+                  "context": {
+                    "type": "array",
+                    "maxItems": 30,
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 4000
+                    }
+                  },
+                  "distinctiveAliases": {
+                    "type": "array",
+                    "maxItems": 30,
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 4000
+                    }
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "maxItems": 30,
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 4000
+                    }
+                  },
+                  "query": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4000
+                  },
+                  "gdeltQuery": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4000
+                  },
+                  "identityVerification": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "status",
+                      "date",
+                      "source",
+                      "method"
+                    ],
+                    "properties": {
+                      "status": {
+                        "const": "reviewed"
+                      },
+                      "date": {
+                        "type": "string",
+                        "format": "date"
+                      },
+                      "source": {
+                        "type": "string",
+                        "format": "uri"
+                      },
+                      "method": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 4000
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "providers": {
+              "type": "array",
+              "maxItems": 5,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "id",
+                  "enabled",
+                  "policyUrl",
+                  "reviewedAt",
+                  "notice",
+                  "proofRun",
+                  "proofStatus"
+                ],
+                "properties": {
+                  "id": {
+                    "enum": [
+                      "google-news",
+                      "gdelt"
+                    ]
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "policyUrl": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "reviewedAt": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "notice": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4000
+                  },
+                  "proofRun": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "proofStatus": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "lastAttemptAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lastSuccessfulAt": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "enum": [
+            "complete",
+            "partial",
+            "failed"
+          ]
+        },
+        "sources": {
+          "type": "array",
+          "maxItems": 200,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "provider",
+              "securityId",
+              "name",
+              "queryUrl",
+              "lastAttemptAt",
+              "lastSuccessfulAt",
+              "status",
+              "error",
+              "count",
+              "newCount",
+              "rejectedCount"
+            ],
+            "properties": {
+              "provider": {
+                "enum": [
+                  "google-news",
+                  "gdelt"
+                ]
+              },
+              "securityId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "queryUrl": {
+                "type": "string",
+                "format": "uri"
+              },
+              "lastAttemptAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "lastSuccessfulAt": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "status": {
+                "enum": [
+                  "results",
+                  "zero-results",
+                  "failed"
+                ]
+              },
+              "error": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "newCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "rejectedCount": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "newCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "noNewItems": {
+          "type": "boolean"
+        },
+        "seenIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "maxItems": 100000,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          }
+        },
+        "briefings": {
+          "type": "array",
+          "maxItems": 28,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "generatedAt",
+              "timezone",
+              "itemIds",
+              "questions"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "generatedAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "timezone": {
+                "const": "Asia/Jerusalem"
+              },
+              "itemIds": {
+                "type": "array",
+                "maxItems": 220,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4000
+                }
+              },
+              "questions": {
+                "type": "array",
+                "maxItems": 30,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4000
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

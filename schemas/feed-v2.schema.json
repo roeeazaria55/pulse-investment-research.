@@ -55,7 +55,12 @@
       ]
     },
     "status": {
-      "enum": ["complete", "partial", "failed", "no-coverage"]
+      "enum": [
+        "complete",
+        "partial",
+        "failed",
+        "no-coverage"
+      ]
     },
     "newCount": {
       "type": "integer",
@@ -67,7 +72,12 @@
     "coverage": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["total", "verified", "working", "uncovered"],
+      "required": [
+        "total",
+        "verified",
+        "working",
+        "uncovered"
+      ],
       "properties": {
         "total": {
           "type": "integer",
@@ -127,7 +137,13 @@
             ]
           },
           "status": {
-            "enum": ["ok", "blocked", "error", "identity-mismatch", "no-source"]
+            "enum": [
+              "ok",
+              "blocked",
+              "error",
+              "identity-mismatch",
+              "no-source"
+            ]
           },
           "lastAttemptAt": {
             "anyOf": [
@@ -175,7 +191,12 @@
     "registry": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["version", "reviewedAt", "scope", "securities"],
+      "required": [
+        "version",
+        "reviewedAt",
+        "scope",
+        "securities"
+      ],
       "properties": {
         "version": {
           "const": 1
@@ -269,10 +290,18 @@
               "verification": {
                 "type": "object",
                 "additionalProperties": false,
-                "required": ["status", "date", "source", "method"],
+                "required": [
+                  "status",
+                  "date",
+                  "source",
+                  "method"
+                ],
                 "properties": {
                   "status": {
-                    "enum": ["verified", "unverified"]
+                    "enum": [
+                      "verified",
+                      "unverified"
+                    ]
                   },
                   "date": {
                     "anyOf": [
@@ -406,7 +435,10 @@
             "type": "string"
           },
           "titleOrigin": {
-            "enum": ["primaryDocDescription", "form"]
+            "enum": [
+              "primaryDocDescription",
+              "form"
+            ]
           },
           "sourceUrl": {
             "type": "string",
@@ -425,7 +457,10 @@
             ]
           },
           "publicationTimeBasis": {
-            "enum": ["SEC acceptanceDateTime", "unknown"]
+            "enum": [
+              "SEC acceptanceDateTime",
+              "unknown"
+            ]
           },
           "filingDate": {
             "anyOf": [
@@ -443,12 +478,19 @@
             "format": "date-time"
           },
           "importance": {
-            "enum": ["high", "medium", "low"]
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
           },
           "classification": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["rule", "reason"],
+            "required": [
+              "rule",
+              "reason"
+            ],
             "properties": {
               "rule": {
                 "type": "string"
@@ -507,7 +549,10 @@
             "format": "date"
           },
           "period": {
-            "enum": ["morning", "evening"]
+            "enum": [
+              "morning",
+              "evening"
+            ]
           },
           "timezone": {
             "const": "Asia/Jerusalem"
@@ -520,7 +565,12 @@
             "const": "rule-template"
           },
           "status": {
-            "enum": ["complete", "partial", "failed", "no-coverage"]
+            "enum": [
+              "complete",
+              "partial",
+              "failed",
+              "no-coverage"
+            ]
           },
           "itemIds": {
             "type": "array",
@@ -554,7 +604,10 @@
     "run": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["url", "trigger"],
+      "required": [
+        "url",
+        "trigger"
+      ],
       "properties": {
         "url": {
           "anyOf": [
@@ -578,6 +631,16 @@
       "items": {
         "type": "string"
       }
+    },
+    "articles": {
+      "type": "array",
+      "maxItems": 600,
+      "items": {
+        "$ref": "discovery.schema.json#/definitions/article"
+      }
+    },
+    "discovery": {
+      "$ref": "discovery.schema.json#/definitions/discovery"
     }
   }
 }

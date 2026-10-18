@@ -2,6 +2,7 @@ import Ajv from "ajv";
 import { readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { approvedTarget } from "./network.mjs";
+import { validateDiscovery } from "../../src/data/discoveryValidation.mjs";
 const schema = JSON.parse(
   readFileSync(
     new URL("../../schemas/feed-v2.schema.json", import.meta.url),
@@ -26,6 +27,7 @@ ajv.addFormat("uri", (v) => {
     return false;
   }
 });
+ajv.addSchema(JSON.parse(readFileSync(new URL('../../schemas/discovery.schema.json', import.meta.url),'utf8')));
 const validate = ajv.compile(schema);
 export function validateRegistry(registry) {
   if (
@@ -87,6 +89,7 @@ export function validateFeed(feed) {
   if (!validate(feed))
     throw Error(`Invalid feed: ${ajv.errorsText(validate.errors)}`);
   validateRegistry(feed.registry);
+  validateDiscovery(feed);
   const securities = new Map(feed.registry.securities.map((s) => [s.id, s]));
   const ids = new Set();
   if (

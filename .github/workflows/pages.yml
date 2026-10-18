@@ -32,7 +32,11 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Collect approved public SEC metadata
+      - name: Test discovery parsers and failure preservation
+        run: python3 -m unittest discover -s scripts -p 'test_articles.py'
+      - name: Discover public company headlines independently of SEC
+        run: python3 scripts/collect_articles.py
+      - name: Collect supplemental SEC metadata and combine snapshots
         id: collect
         run: node scripts/ingest/run.mjs
         env:
@@ -90,7 +94,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -- public/data/feed.json public/data/ingestion-state.json
           if ! git diff --cached --quiet; then
-            git commit -m "Update public SEC collection state [skip ci]"
+            git commit -m "Update public news and SEC collection state [skip ci]"
             git push origin HEAD:main
           fi
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"

@@ -9,7 +9,8 @@ const statusLabel = {
 };
 export function CoveragePanel({ feed }: { feed: LiveFeed }) {
   return (
-    <section className="coverage panel" aria-label="מצב איסוף וכיסוי">
+    <details className="coverage panel" aria-label="מצב איסוף וכיסוי">
+      <summary>SEC — מקור משלים לדיווחים רשמיים</summary>
       <h2>
         {feed.status === "complete"
           ? "כיסוי מלא"
@@ -110,10 +111,9 @@ export function CoveragePanel({ feed }: { feed: LiveFeed }) {
         </a>
       )}
       <small>
-        SEC בלבד בשלב זה. לא בוצע ניתוח AI; אין שירות חדשות מסחריות או RSS לא
-        מאומת.
+        נתוני SEC משלימים את כותרות החדשות. כשל במקור זה אינו חוסם חיפוש כתבות.
       </small>
-    </section>
+    </details>
   );
 }
 export function BriefingPanel({ feed }: { feed: LiveFeed }) {

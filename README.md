@@ -2,7 +2,9 @@
 
 A Hebrew, RTL, mobile-first investment research PWA. Built with React, Vite, TypeScript and Tailwind CSS. Runs entirely in the browser. No backend, credentials, paid services, tracking, or market-data API.
 
-**Phase 2:** public SEC metadata is collected in GitHub Actions, separately from the browser application. See [the Phase 2 operating guide](docs/phase-2.md) and [v2 JSON Schema](schemas/feed-v2.schema.json). Source status in the deployed feed, not this README, determines actual coverage. The registry begins with three reviewed identities and eight explicitly uncovered companies. No IR/RSS feed or AI summarization is enabled.
+**Phase 2 news discovery:** public company headlines are collected through Google News RSS in GitHub Actions, with SEC metadata as a separate supplemental source. The Nebius feasibility run returned real titles; GDELT returned HTTP 429 and remains disabled. See [news discovery, source limitations and data contract](docs/NEWS-DISCOVERY.md), [supplemental SEC guide](docs/phase-2.md), [feed schema](schemas/feed-v2.schema.json) and [headline extension schema](schemas/discovery.schema.json). Deployed per-company/provider status determines current coverage. Company identity for search is independent of stock-listing/CIK verification. No AI summaries or full article text are collected.
+
+The standard Ubuntu Actions runner supplies Python 3 and Jerusalem timezone data. Local parser checks: `python3 -m unittest discover -s scripts -p 'test_articles.py'`. Headline collection: `python3 scripts/collect_articles.py` followed by `npm run collect`; only public metadata is accessed. Do not substitute private watchlists for the public search registry.
 
 ## Run locally
 

@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ArrowUpLeft, Bookmark, ExternalLink, X } from "lucide-react";
 import type { News } from "../types";
 export const dateTime = (date: string) =>
@@ -115,10 +115,12 @@ export function NewsCard({
   onSave: () => void;
   onResearch: () => void;
 }) {
+  const [unrelated,setUnrelated]=useState(()=>{try{return JSON.parse(localStorage.getItem('pulse-unrelated-news')||'[]').includes(item.id);}catch{return false;}});
+  const [reportError,setReportError]=useState(false);
   return (
     <article className="news-card">
       <div className="news-top">
-        <div className="company-avatar">{item.ticker.slice(0, 2)}</div>
+        <div className="company-avatar">{(item.ticker || item.company).slice(0, 2)}</div>
         <div>
           <b dir="ltr">{item.ticker}</b>
           <small>{item.company}</small>
@@ -134,8 +136,9 @@ export function NewsCard({
       <span className="demo-label">
         {item.demo ? "תוכן הדגמה • אינו דיווח אמיתי" : "מקור חיצוני • יש לאמת"}
       </span>
-      <h3>{item.headline}</h3>
-      <p>{item.summary}</p>
+      <h3 dir="auto">{item.headline}</h3>
+      {item.summary && <p>{item.summary}</p>}
+      {item.discoveryProvider && <p>מפרסם: <b>{item.publisher}</b> • גילוי: {item.discoveryProvider}<br/>כותרת ומטא־נתונים בלבד; הכתבה המלאה לא נקראה.</p>}
       {item.classification && (
         <p className="classification-reason">
           <b>מדוע סווג: </b>
@@ -153,11 +156,12 @@ export function NewsCard({
           <span>תאריך הגשה (ללא הנחת שעה): {item.filingDate}</span>
         )}
         <span>נאסף: {dateTime(item.collectedAt)}</span>
+        {item.discoveredAt && <span>זמן גילוי אצל הספק: {item.discoveredAt} (אינו זמן פרסום)</span>}
         {item.sourceName && <span>מקור: {item.sourceName} • שעון ישראל</span>}
       </div>
       <div className="news-actions">
         <a href={item.sourceUrl} target="_blank" rel="noopener noreferrer">
-          {item.demo ? "קישור הדגמה" : "מקור"}
+          {item.demo ? "קישור הדגמה" : item.linkKind==='google-news-redirect' ? "פתיחה דרך Google News" : "מקור"}
           <ExternalLink size={14} />
         </a>
         <button onClick={onResearch}>
@@ -173,6 +177,7 @@ export function NewsCard({
           {saved ? "נשמר" : "שמירה"}
         </button>
       </div>
+      {item.discoveryProvider && <><button className="text-button" aria-pressed={unrelated} onClick={()=>{try{const ids: string[]=JSON.parse(localStorage.getItem('pulse-unrelated-news')||'[]');localStorage.setItem('pulse-unrelated-news',JSON.stringify(unrelated?ids.filter(id=>id!==item.id):[...new Set([...ids,item.id])]));setUnrelated(!unrelated);setReportError(false);}catch{setReportError(true);}}}>{unrelated?'סומן במכשיר כלא קשור — ביטול':'דיווח: לא קשור לחברה'}</button>{unrelated&&<small>הסימון נשמר במכשיר בלבד, אינו נשלח לשרת ואינו משנה את הפיד הציבורי.</small>}{reportError&&<small role="alert">לא ניתן לשמור סימון במכשיר.</small>}</>}
     </article>
   );
 }

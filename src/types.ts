@@ -55,6 +55,10 @@ export interface News {
   filingDate?: string | null;
   classification?: { rule: string; reason: string };
   summaryKind?: "metadata-only";
+  publisher?: string;
+  discoveryProvider?: "google-news" | "gdelt";
+  linkKind?: "google-news-redirect" | "publisher";
+  discoveredAt?: string | null;
 }
 export interface PublicResearch {
   ticker: string;
@@ -144,6 +148,22 @@ export interface LiveFeed extends Omit<LegacyFeed, "version"> {
   noNewItems: boolean;
   run: { url: string | null; trigger: string };
   limitations: string[];
+  articles?: News[];
+  discovery?: {
+    version: 1;
+    lastAttemptAt: string;
+    lastSuccessfulAt: string | null;
+    status: "complete" | "partial" | "failed";
+    newCount: number;
+    noNewItems: boolean;
+    seenIds: string[];
+    registry: {
+      companies: {id:string;name:string;displayTicker:string;aliases:string[];query:string;identityVerification:{status:string;date:string;source:string;method:string}}[];
+      providers: {id:string;enabled:boolean;notice:string;proofRun:string;proofStatus:string}[];
+    };
+    sources: {provider:string;securityId:string;name:string;queryUrl:string;status:"results"|"zero-results"|"failed";error:string|null;count:number;newCount:number;rejectedCount:number;lastAttemptAt:string;lastSuccessfulAt:string|null}[];
+    briefings: {id:string;generatedAt:string;timezone:string;itemIds:string[];questions:string[]}[];
+  };
 }
 export type Feed = LegacyFeed | LiveFeed;
 export interface PersonalState {
