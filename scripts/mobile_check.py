@@ -47,6 +47,30 @@ with sync_playwright() as pw:
         pack.get_by_role('button',name='סגירה',exact=True).click()
         assert page.evaluate('document.documentElement.scrollWidth')<=width+1,f'Official panel overflow at {width}'
         page.screenshot(path=f'work/mobile-{width}-official.png',full_page=False)
+        exchange=page.get_by_role('region',name='ניתוח מסמכים וייבוא מחקר')
+        exchange.locator('summary').filter(has_text='1. קריאת PDF').click()
+        # Small in-memory PDF fixture tests the actual bundled PDF.js worker.
+        content=b'BT /F1 12 Tf 40 150 Td (PULSE SOURCE TEST 2026) Tj ET'
+        objects=[b'<< /Type /Catalog /Pages 2 0 R >>',b'<< /Type /Pages /Kids [3 0 R] /Count 1 >>',b'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 300 200] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>',b'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',b'<< /Length '+str(len(content)).encode()+b' >>\nstream\n'+content+b'\nendstream']
+        pdf=b'%PDF-1.4\n';offsets=[0]
+        for idx,obj in enumerate(objects,1):
+            offsets.append(len(pdf));pdf+=str(idx).encode()+b' 0 obj\n'+obj+b'\nendobj\n'
+        xref=len(pdf);pdf+=b'xref\n0 6\n0000000000 65535 f \n'+b''.join(f'{offset:010d} 00000 n \n'.encode() for offset in offsets[1:])
+        pdf+=b'trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n'+str(xref).encode()+b'\n%%EOF'
+        exchange.get_by_label('קובץ מסמך',exact=True).set_input_files({'name':'source-test.pdf','mimeType':'application/pdf','buffer':pdf})
+        exchange.get_by_role('button',name='חילוץ טקסט מהקובץ',exact=True).click()
+        page.wait_for_function("document.querySelector('.research-exchange textarea').value.includes('PULSE SOURCE TEST 2026')")
+        exchange.locator('summary').filter(has_text='2. החזרת ניתוח').click()
+        fields={k:'' for k in ('thesis','revenue','profitability','cashFlow','valuation','advantages','catalysts','risks','bear','base','bull')}
+        fields['thesis']='MOBILE TEST IMPORT ONLY'
+        payload={'version':1,'companyId':'candidate-nebius','asOf':'2026-10-18','fields':fields,'sourceUrls':['https://nebius.com/financials'],'missing':['SIMULATED mobile test']}
+        exchange.get_by_role('textbox',name='ניתוח להחזרה',exact=True).fill(json.dumps(payload))
+        exchange.get_by_role('button',name='בדיקה ותצוגה מקדימה',exact=True).click()
+        exchange.get_by_role('button',name='החלת השדות שבחרתי בטיוטה',exact=True).click()
+        page.get_by_role('button',name='שמירת מחקר',exact=True).click()
+        assert page.evaluate("JSON.parse(localStorage.getItem('pulse.personal.v1')).research.NBIS.thesis")=='MOBILE TEST IMPORT ONLY'
+        assert page.evaluate('document.documentElement.scrollWidth')<=width+1,f'Research exchange overflow at {width}'
+        page.screenshot(path=f'work/mobile-{width}-research.png',full_page=False)
         nav.get_by_role('button',name='תיק השקעות',exact=True).click()
         page.get_by_role('button',name='הוספת אחזקה',exact=True).click()
         dialog=page.get_by_role('dialog')

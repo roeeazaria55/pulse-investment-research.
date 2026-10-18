@@ -21,3 +21,22 @@ jobs:
       - run: npm run build
         env:
           VITE_BASE_PATH: /${{ github.event.repository.name }}/
+      - name: Install browser test runtime
+        run: |
+          python3 -m pip install --disable-pip-version-check playwright==1.55.0
+          python3 -m playwright install --with-deps chromium
+      - name: Test mobile research, PDF worker and import persistence
+        env:
+          VITE_BASE_PATH: /${{ github.event.repository.name }}/
+        run: |
+          mkdir -p work
+          npm run preview > work/preview.log 2>&1 &
+          python3 scripts/mobile_check.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pr-mobile-evidence
+          path: |
+            work/mobile-*.png
+            work/mobile-check.json
+          retention-days: 7

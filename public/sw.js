@@ -1,5 +1,5 @@
 /* Bump this identifier when publishing a new application shell. */
-const VERSION = "pulse-v3.1-official";
+const VERSION = "pulse-v4-research";
 const SCOPE = new URL(self.registration.scope);
 const CACHE = `${VERSION}-${SCOPE.pathname}`;
 const local = (path) => new URL(path, SCOPE).href;
@@ -95,7 +95,13 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(
     (async () => {
       const cached = await caches.match(event.request);
-      return cached || fetch(event.request);
+      if(cached)return cached;
+      const response=await fetch(event.request);
+      if(response.ok && /\.(?:js|mjs|css)$/.test(url.pathname)){
+        const cache=await caches.open(CACHE);
+        await cache.put(event.request,response.clone());
+      }
+      return response;
     })(),
   );
 });

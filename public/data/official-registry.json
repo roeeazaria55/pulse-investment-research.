@@ -3,34 +3,339 @@
   "reviewedAt": "2026-10-18",
   "companies": [
     {
-      "id": "candidate-nebius", "ticker": "NBIS", "name": "Nebius Group",
-      "allowedHosts": ["nebius.com", "assets.nebius.com"],
-      "documentPaths": ["/newsroom/", "/assets/"],
-      "sources": [
-        {"id": "nbis-news", "label": "חדר החדשות הרשמי", "url": "https://nebius.com/newsroom"},
-        {"id": "nbis-financials", "label": "דוחות ומצגות", "url": "https://nebius.com/financials"}
+      "id": "candidate-nebius",
+      "ticker": "NBIS",
+      "name": "Nebius Group",
+      "allowedHosts": [
+        "nebius.com",
+        "assets.nebius.com"
       ],
-      "questions": ["מה השתנה בהכנסות בפועל לעומת ARR ותחזיות?", "כיצד ימומנו השקעות ההון ומה הסיכון לדילול?", "מה מצב ההקמה, ניצול הקיבולת וריכוז הלקוחות?"]
+      "documentPaths": [
+        "/newsroom/",
+        "/assets/"
+      ],
+      "sources": [
+        {
+          "id": "nbis-news",
+          "label": "חדר החדשות הרשמי",
+          "url": "https://nebius.com/newsroom"
+        },
+        {
+          "id": "nbis-financials",
+          "label": "דוחות ומצגות",
+          "url": "https://nebius.com/financials"
+        }
+      ],
+      "questions": [
+        "מה השתנה בהכנסות בפועל לעומת ARR ותחזיות?",
+        "כיצד ימומנו השקעות ההון ומה הסיכון לדילול?",
+        "מה מצב ההקמה, ניצול הקיבולת וריכוז הלקוחות?"
+      ],
+      "label": "NBIS",
+      "aliases": [
+        "Nebius",
+        "נביוס"
+      ]
     },
     {
-      "id": "candidate-iren", "ticker": "IREN", "name": "IREN",
-      "allowedHosts": ["iren.gcs-web.com", "iren.com"],
-      "documentPaths": ["/news-releases/news-release-details/", "/static-files/"],
-      "sources": [
-        {"id": "iren-news", "label": "פורטל הודעות המשקיעים", "url": "https://iren.gcs-web.com/news-releases"},
-        {"id": "iren-presentations", "label": "אירועים ומצגות", "url": "https://iren.com/investor/events-and-presentations"}
+      "id": "us-meta-nasdaq-a",
+      "ticker": "META",
+      "name": "Meta Platforms",
+      "allowedHosts": [
+        "investor.atmeta.com"
       ],
-      "questions": ["מהן הכנסות AI בפועל לעומת ARR חוזי וקיבולת מתוכננת?", "מהם לוחות הזמנים למסירה ולחיבור לחשמל?", "כיצד ממומנות ההשקעות ומה החשיפה לחוב, דילול ולקוחות גדולים?"]
+      "documentPaths": [
+        "/investor-news/press-release-details/"
+      ],
+      "sources": [
+        {
+          "id": "us-meta-nasdaq-a-official",
+          "label": "מקור משקיעים רשמי",
+          "url": "https://investor.atmeta.com/investor-news/default.aspx"
+        }
+      ],
+      "questions": [
+        "מה השתנה בהכנסות מפרסום, בהיקף השימוש ובמחיר למודעה?",
+        "כיצד הוצאות AI והשקעות ההון משפיעות על תזרים ורווחיות?"
+      ],
+      "label": "META",
+      "aliases": [
+        "Meta",
+        "מטא",
+        "Facebook",
+        "פייסבוק"
+      ]
     },
     {
-      "id": "us-dlo-nasdaq-a", "ticker": "DLO", "name": "dLocal",
-      "allowedHosts": ["dlocal.gcs-web.com"],
-      "documentPaths": ["/news-releases/news-release-details/", "/static-files/"],
-      "sources": [
-        {"id": "dlo-news", "label": "פורטל הודעות המשקיעים", "url": "https://dlocal.gcs-web.com/news-events/news-releases"},
-        {"id": "dlo-financials", "label": "תוצאות רבעוניות", "url": "https://dlocal.gcs-web.com/financial-information/quarterly-results"}
+      "id": "us-dlo-nasdaq-a",
+      "ticker": "DLO",
+      "name": "dLocal",
+      "allowedHosts": [
+        "dlocal.gcs-web.com"
       ],
-      "questions": ["כיצד השתנו TPV, הכנסות ורווח גולמי ומה היחס ביניהם?", "מה השתנה ב־take rate, בריכוז הלקוחות ובתמהיל המדינות?", "האם הצמיחה מתורגמת לתזרים ומהם סיכוני המטבע והרגולציה?"]
+      "documentPaths": [
+        "/news-releases/news-release-details/",
+        "/static-files/"
+      ],
+      "sources": [
+        {
+          "id": "dlo-news",
+          "label": "פורטל הודעות המשקיעים",
+          "url": "https://dlocal.gcs-web.com/news-events/news-releases"
+        },
+        {
+          "id": "dlo-financials",
+          "label": "תוצאות רבעוניות",
+          "url": "https://dlocal.gcs-web.com/financial-information/quarterly-results"
+        }
+      ],
+      "questions": [
+        "כיצד השתנו TPV, הכנסות ורווח גולמי ומה היחס ביניהם?",
+        "מה השתנה ב־take rate, בריכוז הלקוחות ובתמהיל המדינות?",
+        "האם הצמיחה מתורגמת לתזרים ומהם סיכוני המטבע והרגולציה?"
+      ],
+      "label": "DLO",
+      "aliases": [
+        "dLocal",
+        "דילוקל",
+        "די לוקאל"
+      ]
+    },
+    {
+      "id": "candidate-ftai",
+      "ticker": "FTAI",
+      "name": "FTAI Aviation",
+      "allowedHosts": [
+        "ir.ftaiaviation.com"
+      ],
+      "documentPaths": [
+        "/news-releases/news-release-details/",
+        "/static-files/"
+      ],
+      "sources": [
+        {
+          "id": "candidate-ftai-official",
+          "label": "מקור משקיעים רשמי",
+          "url": "https://ir.ftaiaviation.com/news-events/press-releases"
+        }
+      ],
+      "questions": [
+        "מה מצב פעילות המנועים, הרווחיות והזמנות הלקוחות?",
+        "מהם צורכי המימון, החוב והחשיפות בעסקאות ובשותפויות?"
+      ],
+      "label": "FTAI",
+      "aliases": [
+        "FTAI Aviation",
+        "FTAI",
+        "אפטיאיי"
+      ]
+    },
+    {
+      "id": "us-lmnd-nyse-common",
+      "ticker": "LMND",
+      "name": "Lemonade",
+      "allowedHosts": [
+        "www.lemonade.com"
+      ],
+      "documentPaths": [
+        "/investor/news-and-events/",
+        "/investor/news/",
+        "/investor/financials/"
+      ],
+      "sources": [
+        {
+          "id": "us-lmnd-nyse-common-official",
+          "label": "מקור משקיעים רשמי",
+          "url": "https://www.lemonade.com/investor/news"
+        }
+      ],
+      "questions": [
+        "מה השתנה בפרמיות בתוקף, במספר הלקוחות וביחס ההפסדים?",
+        "מה קצב שריפת המזומנים וההתקדמות לרווחיות?"
+      ],
+      "label": "LMND",
+      "aliases": [
+        "Lemonade",
+        "למונייד"
+      ]
+    },
+    {
+      "id": "candidate-sandisk",
+      "ticker": "SNDK",
+      "name": "SanDisk",
+      "allowedHosts": [
+        "investor.sandisk.com"
+      ],
+      "documentPaths": [
+        "/news-releases/news-release-details/",
+        "/static-files/"
+      ],
+      "sources": [
+        {
+          "id": "candidate-sandisk-official",
+          "label": "מקור משקיעים רשמי",
+          "url": "https://investor.sandisk.com/news-events/news-releases"
+        }
+      ],
+      "questions": [
+        "כיצד מחירי הזיכרון, תמהיל המוצרים והמלאי משפיעים על הרווחיות?",
+        "מה השתנה בתחזיות, בתזרים ובהשקעות ההון?"
+      ],
+      "label": "SNDK",
+      "aliases": [
+        "SanDisk",
+        "סנדיסק"
+      ]
+    },
+    {
+      "id": "candidate-iren",
+      "ticker": "IREN",
+      "name": "IREN",
+      "allowedHosts": [
+        "iren.gcs-web.com",
+        "iren.com"
+      ],
+      "documentPaths": [
+        "/news-releases/news-release-details/",
+        "/static-files/"
+      ],
+      "sources": [
+        {
+          "id": "iren-news",
+          "label": "פורטל הודעות המשקיעים",
+          "url": "https://iren.gcs-web.com/news-releases"
+        },
+        {
+          "id": "iren-presentations",
+          "label": "אירועים ומצגות",
+          "url": "https://iren.com/investor/events-and-presentations"
+        }
+      ],
+      "questions": [
+        "מהן הכנסות AI בפועל לעומת ARR חוזי וקיבולת מתוכננת?",
+        "מהם לוחות הזמנים למסירה ולחיבור לחשמל?",
+        "כיצד ממומנות ההשקעות ומה החשיפה לחוב, דילול ולקוחות גדולים?"
+      ],
+      "label": "IREN",
+      "aliases": [
+        "IREN",
+        "Iris Energy",
+        "איירן"
+      ]
+    },
+    {
+      "id": "candidate-next-vision",
+      "ticker": "",
+      "name": "Next Vision",
+      "allowedHosts": [
+        "investor-relations.nextvision-sys.com",
+        "nextvision-sys.com"
+      ],
+      "documentPaths": [
+        "/wp-content/uploads/"
+      ],
+      "sources": [
+        {
+          "id": "candidate-next-vision-official",
+          "label": "מקור משקיעים רשמי",
+          "url": "https://investor-relations.nextvision-sys.com/"
+        }
+      ],
+      "questions": [
+        "מה השתנה בהכנסות, בצבר ובהזמנות החדשות?",
+        "מה מצב כושר הייצור, ריכוז הלקוחות ושולי הרווח?"
+      ],
+      "label": "נקסט ויזן",
+      "aliases": [
+        "NextVision",
+        "Next Vision",
+        "נקסט ויזן",
+        "נקסט ויז׳ן"
+      ]
+    },
+    {
+      "id": "candidate-enlight",
+      "ticker": "",
+      "name": "Enlight Renewable Energy",
+      "allowedHosts": [
+        "enlightenergy.com"
+      ],
+      "documentPaths": [
+        "/wp-content/uploads/"
+      ],
+      "sources": [
+        {
+          "id": "candidate-enlight-official",
+          "label": "מקור משקיעים רשמי",
+          "url": "https://enlightenergy.com/data/events-presentations/"
+        }
+      ],
+      "questions": [
+        "מה השתנה בקיבולת התפעולית ובפרויקטים בהקמה?",
+        "מהם צורכי המימון, החוב, סיכוני החיבור לרשת והתזרים?"
+      ],
+      "label": "אנלייט",
+      "aliases": [
+        "Enlight",
+        "אנלייט"
+      ]
+    },
+    {
+      "id": "candidate-brainsway",
+      "ticker": "",
+      "name": "BrainsWay",
+      "allowedHosts": [
+        "investors.brainsway.com"
+      ],
+      "documentPaths": [
+        "/news-releases/news-release-details/",
+        "/static-files/"
+      ],
+      "sources": [
+        {
+          "id": "candidate-brainsway-official",
+          "label": "מקור משקיעים רשמי",
+          "url": "https://investors.brainsway.com/"
+        }
+      ],
+      "questions": [
+        "מה השתנה במכירות, בבסיס המערכות ובהכנסות החוזרות?",
+        "כיצד כיסוי ביטוחי ואישורים רגולטוריים מתורגמים להכנסות בפועל?"
+      ],
+      "label": "בריינסוויי",
+      "aliases": [
+        "BrainsWay",
+        "בריינסוויי",
+        "בריינסווי"
+      ]
+    },
+    {
+      "id": "candidate-gilat-telecom",
+      "ticker": "",
+      "name": "Gilat Telecom",
+      "allowedHosts": [
+        "gilat.net"
+      ],
+      "documentPaths": [
+        "/wp-content/uploads/"
+      ],
+      "sources": [
+        {
+          "id": "candidate-gilat-telecom-official",
+          "label": "מקור החברה — טעון בדיקת כיסוי",
+          "url": "https://gilat.net/gilat-israel/"
+        }
+      ],
+      "questions": [
+        "מה השתנה בהכנסות, ברווחיות ובחוב של גילת טלקום?",
+        "האם עסקה או רכישה מגובה בדיווח רשמי ומה משמעותה למימון?",
+        "ודא שמדובר בגילת טלקום ולא בגילת רשתות לוויין."
+      ],
+      "label": "גילת טלקום",
+      "aliases": [
+        "Gilat Telecom",
+        "גילת טלקום"
+      ]
     }
   ]
 }
