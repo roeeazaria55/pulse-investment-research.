@@ -30,6 +30,7 @@ import { Empty, Modal, NewsCard, Section, dateTime } from "./components/UI";
 import { CoveragePanel, BriefingPanel } from "./components/Intelligence";
 import { resolveSecurity } from "./data/feedV2";
 import { DiscoveryPanel, WebNewsSearch } from "./components/Discovery";
+import {DailyPanel,CalendarPanel,NotificationsPanel} from './components/PhaseThree';
 import type { Feed, Holding, News, Research, Security } from "./types";
 
 const tabs = [
@@ -57,6 +58,12 @@ export default function App() {
   const [toast, setToast] = useState("");
   const [query, setQuery] = useState("");
   const [importance, setImportance] = useState("all");
+  const [companyFilter,setCompanyFilter]=useState('all');
+  const [industryFilter,setIndustryFilter]=useState('all');
+  const [periodFilter,setPeriodFilter]=useState('all');
+  const [readFilter,setReadFilter]=useState('all');
+  const [readIds,setReadIds]=useState<string[]>(()=>{try{const x=JSON.parse(localStorage.getItem('pulse-read-news-v1')||'[]');return Array.isArray(x)?x.filter(v=>typeof v==='string'):[];}catch{return [];}});
+  const [deepLink,setDeepLink]=useState(()=>location.hash);
   const [newsScope, setNewsScope] = useState("all");
   const [category, setCategory] = useState("all");
   const [holdingEdit, setHoldingEdit] = useState<Holding | null | undefined>();
@@ -187,6 +194,21 @@ export default function App() {
     )
       notify(exists ? "הפריט הוסר מהמחקר" : "הפריט נשמר למחקר");
   };
+  const toggleRead=(id:string)=>{
+    const next=readIds.includes(id)?readIds.filter(x=>x!==id):[...readIds,id];
+    try{localStorage.setItem('pulse-read-news-v1',JSON.stringify(next));setReadIds(next);}catch{notify('לא ניתן לשמור מצב קריאה במכשיר');}
+  };
+  useEffect(()=>{
+    const apply=()=>{const hash=location.hash;setDeepLink(hash);const p=new URLSearchParams(hash.slice(1));
+      if(p.has('news')){setTab('news');setNewsScope('all');setImportance('all');setCompanyFilter('all');setIndustryFilter('all');setReadFilter('all');setPeriodFilter('all');setQuery('');}
+      else if(p.has('earnings')||p.has('results')||p.has('briefing')||p.has('notifications'))setTab('home');
+    };apply();window.addEventListener('hashchange',apply);return()=>window.removeEventListener('hashchange',apply);
+  },[]);
+  useEffect(()=>{
+    const p=new URLSearchParams(deepLink.slice(1));const key=['news','earnings','results','briefing'].find(k=>p.has(k));
+    if(!key)return;const id=key==='news'?`news-${p.get(key)}`:key==='briefing'?`briefing-${p.get(key)}`:`${key}-${p.get(key)}`;
+    requestAnimationFrame(()=>document.getElementById(id)?.scrollIntoView({block:'center'}));
+  },[deepLink,feed]);
   const news = (
     newsScope === "saved" ? state.savedNews : feed?.news || []
   ).filter(
@@ -198,6 +220,10 @@ export default function App() {
           (s) => resolveSecurity(feed, s)?.id === n.securityId,
         )) &&
       (importance === "all" || n.importance === importance) &&
+      (companyFilter==='all'||n.securityId===companyFilter) &&
+      (industryFilter==='all'||(feed?.version===2&&!!n.securityId&&feed.intelligence?.industries.config.companyIndustries[n.securityId]?.includes(industryFilter))) &&
+      (periodFilter==='all'||(!!n.publishedAt&&now-Date.parse(n.publishedAt)>=0&&now-Date.parse(n.publishedAt)<=86400000)) &&
+      (readFilter==='all'||(readFilter==='read'?readIds.includes(n.id):!readIds.includes(n.id))) &&
       `${n.headline} ${n.company} ${n.ticker} ${n.summary}`
         .toLowerCase()
         .includes(query.toLowerCase()),
@@ -300,14 +326,14 @@ export default function App() {
             <span className="profile">P</span>
           </div>
         </header>
-        <main id="main">
+        <main id="main" className={feed?.version===2&&feed.intelligence?'phase3':undefined}>
           <div className="page-heading">
             <div>
               <div className="eyebrow">היתרון שלך מתחיל במחקר טוב</div>
               <h1 ref={heading} tabIndex={-1}>
                 {
                   {
-                    home: "התמונה הגדולה.",
+                    home: feed?.version===2&&feed.intelligence?"התדריך היומי.":"התמונה הגדולה.",
                     portfolio: "תיק ההשקעות שלי.",
                     news: "מה חשוב לדעת.",
                     research: "מעבר לכותרת.",
@@ -374,9 +400,10 @@ export default function App() {
               <button onClick={exportData}>ייצוא המידע המקורי</button>
             </div>
           )}
+          {feed?.version===2&&feed.intelligence&&tab==='home'&&<><DailyPanel intel={feed.intelligence} news={feed.news} date={new URLSearchParams(deepLink.slice(1)).get('briefing')||undefined}/><CalendarPanel intel={feed.intelligence}/><NotificationsPanel open={deepLink.includes('notifications=')}/></>}
           {feed?.version === 2 &&
             ["home", "news", "watchlist"].includes(tab) && (
-              <><DiscoveryPanel feed={feed} /><CoveragePanel feed={feed} /></>
+              <>{feed.intelligence?<details className="panel"><summary>מצב איסוף חדשות ומקורות</summary><DiscoveryPanel feed={feed}/><CoveragePanel feed={feed}/></details>:<><DiscoveryPanel feed={feed}/><CoveragePanel feed={feed}/></>}</>
             )}
           {tab === "home" && (
             <>
@@ -498,13 +525,14 @@ export default function App() {
                 </button>
               </div>
               <div className="news-grid">
-                {(feed?.news || []).slice(0, 3).map((n) => (
+                {[...(feed?.news || [])].sort((a,b)=>(b.rating?.eventScore||0)-(a.rating?.eventScore||0)).slice(0, 3).map((n) => (
                   <NewsCard
                     key={n.id}
                     item={n}
                     saved={state.savedNews.some((s) => s.id === n.id)}
                     onSave={() => saveNews(n)}
                     onResearch={() => openResearch(n.ticker || n.company)}
+                    read={readIds.includes(n.id)} onRead={()=>toggleRead(n.id)}
                   />
                 ))}
               </div>
@@ -719,6 +747,10 @@ export default function App() {
                   <option value="watchlist">המעקב שלי — סינון מקומי</option>
                   <option value="portfolio">התיק שלי — סינון מקומי</option>
                 </select>
+                {feed?.version===2&&<select aria-label="סינון לפי חברה" value={companyFilter} onChange={e=>setCompanyFilter(e.target.value)}><option value="all">כל החברות</option>{feed.discovery?.registry.companies.map(c=><option value={c.id} key={c.id}>{c.name}</option>)}</select>}
+                {feed?.version===2&&feed.intelligence&&<select aria-label="סינון לפי תעשייה" value={industryFilter} onChange={e=>setIndustryFilter(e.target.value)}><option value="all">כל התעשיות</option>{feed.intelligence.industries.config.industries.map(i=><option value={i.id} key={i.id}>{i.name}</option>)}</select>}
+                <select aria-label="חלון זמן לחדשות" value={periodFilter} onChange={e=>setPeriodFilter(e.target.value)}><option value="all">כל הזמנים</option><option value="24h">24 שעות — לפי פרסום</option></select>
+                <select aria-label="מצב קריאה" value={readFilter} onChange={e=>setReadFilter(e.target.value)}><option value="all">נקרא ולא נקרא</option><option value="unread">לא נקרא</option><option value="read">נקרא</option></select>
               </div>
               <p className="muted small-note">
                 {news.length} פריטים •{" "}
@@ -734,6 +766,7 @@ export default function App() {
                     saved={state.savedNews.some((s) => s.id === n.id)}
                     onSave={() => saveNews(n)}
                     onResearch={() => openResearch(n.ticker || n.company)}
+                    read={readIds.includes(n.id)} onRead={()=>toggleRead(n.id)}
                   />
                 ))}
               </div>

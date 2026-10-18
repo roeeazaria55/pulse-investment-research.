@@ -470,6 +470,39 @@
               "rejectedCount": {
                 "type": "integer",
                 "minimum": 0
+              },
+              "rejectedExamples": {
+                "type": "array",
+                "maxItems": 2,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "title",
+                    "publisher",
+                    "reason"
+                  ],
+                  "properties": {
+                    "title": {
+                      "type": "string",
+                      "maxLength": 4000
+                    },
+                    "publisher": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "reason": {
+                      "type": "string",
+                      "maxLength": 1000
+                    }
+                  }
+                }
               }
             }
           }

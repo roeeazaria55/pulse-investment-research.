@@ -1,0 +1,961 @@
+{
+  "$id": "intelligence.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "intelligence": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "generatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ratingVersion": {
+          "const": "evidence-3.1"
+        },
+        "ratings": {
+          "type": "object",
+          "maxProperties": 2000,
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "version": {
+                "const": "evidence-3.1"
+              },
+              "eventKind": {
+                "type": "string",
+                "maxLength": 6000
+              },
+              "eventLabel": {
+                "type": "string",
+                "maxLength": 6000
+              },
+              "eventScore": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100
+              },
+              "potentialMateriality": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100
+              },
+              "level": {
+                "enum": [
+                  "high",
+                  "medium",
+                  "low"
+                ]
+              },
+              "sourceAuthority": {
+                "type": "string",
+                "maxLength": 6000
+              },
+              "sourceReliability": {
+                "type": "string",
+                "maxLength": 6000
+              },
+              "companyRelevance": {
+                "enum": [
+                  "direct",
+                  "context",
+                  "rejected"
+                ]
+              },
+              "confidence": {
+                "enum": [
+                  "high",
+                  "medium",
+                  "low"
+                ]
+              },
+              "basis": {
+                "enum": [
+                  "headline-only",
+                  "official-metadata"
+                ]
+              },
+              "verifiedOfficial": {
+                "type": "boolean"
+              },
+              "independentConfirmations": {
+                "const": 0
+              },
+              "why": {
+                "type": "string",
+                "maxLength": 6000
+              },
+              "evidenceUrls": {
+                "type": "array",
+                "maxItems": 10,
+                "items": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            },
+            "required": [
+              "version",
+              "eventKind",
+              "eventLabel",
+              "eventScore",
+              "potentialMateriality",
+              "level",
+              "sourceAuthority",
+              "sourceReliability",
+              "companyRelevance",
+              "confidence",
+              "basis",
+              "verifiedOfficial",
+              "independentConfirmations",
+              "why",
+              "evidenceUrls"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "eventGroups": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "maxLength": 6000
+              },
+              "securityId": {
+                "type": "string",
+                "maxLength": 6000
+              },
+              "eventKind": {
+                "type": "string",
+                "maxLength": 6000
+              },
+              "publicationDay": {
+                "type": "string",
+                "maxLength": 6000
+              },
+              "itemIds": {
+                "type": "array",
+                "maxItems": 1000,
+                "items": {
+                  "type": "string",
+                  "maxLength": 6000
+                }
+              },
+              "independentConfirmations": {
+                "const": 0
+              },
+              "groupingBasis": {
+                "type": "string",
+                "maxLength": 6000
+              }
+            },
+            "required": [
+              "id",
+              "securityId",
+              "eventKind",
+              "publicationDay",
+              "itemIds",
+              "independentConfirmations",
+              "groupingBasis"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "industries": {
+          "type": "object",
+          "properties": {
+            "items": {
+              "type": "array",
+              "maxItems": 200,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "maxLength": 6000
+                  },
+                  "industryId": {
+                    "type": "string",
+                    "maxLength": 6000
+                  },
+                  "headline": {
+                    "type": "string",
+                    "maxLength": 6000
+                  },
+                  "publisher": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 6000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "sourceUrl": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "linkKind": {
+                    "const": "google-news-redirect"
+                  },
+                  "publishedAt": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "collectedAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                },
+                "required": [
+                  "id",
+                  "industryId",
+                  "headline",
+                  "publisher",
+                  "sourceUrl",
+                  "linkKind",
+                  "publishedAt",
+                  "collectedAt"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "sources": {
+              "type": "array",
+              "maxItems": 100,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "securityId": {
+                    "type": "string",
+                    "maxLength": 6000
+                  },
+                  "industryId": {
+                    "type": "string",
+                    "maxLength": 6000
+                  },
+                  "provider": {
+                    "type": "string",
+                    "maxLength": 6000
+                  },
+                  "queryUrl": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "url": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "uri"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "lastAttemptAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "lastSuccessfulAt": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "status": {
+                    "enum": [
+                      "results",
+                      "zero-results",
+                      "failed",
+                      "ok",
+                      "partial",
+                      "no-source"
+                    ]
+                  },
+                  "count": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "error": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 6000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "lastAttemptAt",
+                  "lastSuccessfulAt",
+                  "status",
+                  "error"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "config": {
+              "type": "object",
+              "properties": {
+                "version": {
+                  "const": 1
+                },
+                "industries": {
+                  "type": "array",
+                  "maxItems": 100,
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "maxLength": 6000
+                      },
+                      "name": {
+                        "type": "string",
+                        "maxLength": 6000
+                      },
+                      "query": {
+                        "type": "string",
+                        "maxLength": 6000
+                      },
+                      "terms": {
+                        "type": "array",
+                        "maxItems": 1000,
+                        "items": {
+                          "type": "string",
+                          "maxLength": 6000
+                        }
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "name",
+                      "query",
+                      "terms"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "companyIndustries": {
+                  "type": "object",
+                  "maxProperties": 2000,
+                  "additionalProperties": {
+                    "type": "array",
+                    "maxItems": 1000,
+                    "items": {
+                      "type": "string",
+                      "maxLength": 6000
+                    }
+                  }
+                }
+              },
+              "required": [
+                "version",
+                "industries",
+                "companyIndustries"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "items",
+            "sources",
+            "config"
+          ],
+          "additionalProperties": false
+        },
+        "calendar": {
+          "type": "object",
+          "properties": {
+            "events": {
+              "type": "array",
+              "maxItems": 100,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "maxLength": 6000
+                  },
+                  "revision": {
+                    "type": "string",
+                    "maxLength": 6000
+                  },
+                  "securityId": {
+                    "type": "string",
+                    "maxLength": 6000
+                  },
+                  "name": {
+                    "type": "string",
+                    "maxLength": 6000
+                  },
+                  "period": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 6000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "date": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "time": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 6000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "timeZone": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 6000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "timing": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 6000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "sourceUrl": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "uri"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "status": {
+                    "enum": [
+                      "confirmed",
+                      "estimated",
+                      "unannounced"
+                    ]
+                  },
+                  "eventKind": {
+                    "enum": [
+                      "results-date",
+                      "earnings-call",
+                      "unknown"
+                    ]
+                  },
+                  "verifiedAt": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "verificationMethod": {
+                    "type": "string",
+                    "maxLength": 6000
+                  },
+                  "changedAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "call": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "time": {
+                            "type": "string",
+                            "maxLength": 6000
+                          },
+                          "timeZone": {
+                            "type": "string",
+                            "maxLength": 6000
+                          }
+                        },
+                        "required": [
+                          "time",
+                          "timeZone"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "revision",
+                  "securityId",
+                  "name",
+                  "period",
+                  "date",
+                  "time",
+                  "timeZone",
+                  "timing",
+                  "sourceUrl",
+                  "status",
+                  "eventKind",
+                  "verifiedAt",
+                  "verificationMethod"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "sources": {
+              "type": "array",
+              "maxItems": 100,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "securityId": {
+                    "type": "string",
+                    "maxLength": 6000
+                  },
+                  "industryId": {
+                    "type": "string",
+                    "maxLength": 6000
+                  },
+                  "provider": {
+                    "type": "string",
+                    "maxLength": 6000
+                  },
+                  "queryUrl": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "url": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "uri"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "lastAttemptAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "lastSuccessfulAt": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "status": {
+                    "enum": [
+                      "results",
+                      "zero-results",
+                      "failed",
+                      "ok",
+                      "partial",
+                      "no-source"
+                    ]
+                  },
+                  "count": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "error": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 6000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "lastAttemptAt",
+                  "lastSuccessfulAt",
+                  "status",
+                  "error"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "releases": {
+              "type": "array",
+              "maxItems": 100,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "maxLength": 6000
+                  },
+                  "kind": {
+                    "const": "results-published"
+                  },
+                  "securityId": {
+                    "type": "string",
+                    "maxLength": 6000
+                  },
+                  "name": {
+                    "type": "string",
+                    "maxLength": 6000
+                  },
+                  "period": {
+                    "type": "string",
+                    "maxLength": 6000
+                  },
+                  "sourceUrl": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "headline": {
+                    "type": "string",
+                    "maxLength": 6000
+                  },
+                  "publishedAt": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "firstDetectedAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "verifiedOfficial": {
+                    "const": true
+                  }
+                },
+                "required": [
+                  "id",
+                  "kind",
+                  "securityId",
+                  "name",
+                  "period",
+                  "sourceUrl",
+                  "headline",
+                  "publishedAt",
+                  "firstDetectedAt",
+                  "verifiedOfficial"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "lastAttemptAt": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "required": [
+            "events",
+            "sources",
+            "releases",
+            "lastAttemptAt"
+          ],
+          "additionalProperties": false
+        },
+        "summary": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "maxLength": 6000
+            },
+            "model": {
+              "type": "string",
+              "maxLength": 6000
+            },
+            "reason": {
+              "type": "string",
+              "maxLength": 6000
+            },
+            "proofRun": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "required": [
+            "status",
+            "model",
+            "reason",
+            "proofRun"
+          ],
+          "additionalProperties": false
+        },
+        "dailyBriefings": {
+          "type": "array",
+          "maxItems": 30,
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "maxLength": 6000
+              },
+              "date": {
+                "type": "string",
+                "format": "date"
+              },
+              "startAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "endAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "timezone": {
+                "const": "Asia/Jerusalem"
+              },
+              "scheduledLocalTime": {
+                "const": "13:00"
+              },
+              "generatedAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "kind": {
+                "const": "metadata-template-not-ai"
+              },
+              "ratingVersion": {
+                "const": "evidence-3.1"
+              },
+              "companies": {
+                "type": "array",
+                "maxItems": 100,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "securityId": {
+                      "type": "string",
+                      "maxLength": 6000
+                    },
+                    "name": {
+                      "type": "string",
+                      "maxLength": 6000
+                    },
+                    "searchStatus": {
+                      "type": "string",
+                      "maxLength": 6000
+                    },
+                    "facts": {
+                      "type": "array",
+                      "maxItems": 8,
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "eventId": {
+                            "type": "string",
+                            "maxLength": 6000
+                          },
+                          "itemId": {
+                            "type": "string",
+                            "maxLength": 6000
+                          },
+                          "textHe": {
+                            "type": "string",
+                            "maxLength": 6000
+                          },
+                          "originalTitle": {
+                            "type": "string",
+                            "maxLength": 6000
+                          },
+                          "sourceUrl": {
+                            "type": "string",
+                            "format": "uri"
+                          },
+                          "publishedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "basis": {
+                            "type": "string",
+                            "maxLength": 6000
+                          },
+                          "publisher": {
+                            "type": "string",
+                            "maxLength": 6000
+                          }
+                        },
+                        "required": [
+                          "eventId",
+                          "itemId",
+                          "textHe",
+                          "originalTitle",
+                          "sourceUrl",
+                          "publishedAt",
+                          "basis",
+                          "publisher"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "undatedItemIds": {
+                      "type": "array",
+                      "maxItems": 15,
+                      "items": {
+                        "type": "string",
+                        "maxLength": 6000
+                      }
+                    },
+                    "industryItemIds": {
+                      "type": "array",
+                      "maxItems": 3,
+                      "items": {
+                        "type": "string",
+                        "maxLength": 6000
+                      }
+                    },
+                    "industryConnection": {
+                      "type": "string",
+                      "maxLength": 6000
+                    },
+                    "researchInterpretation": {
+                      "type": "string",
+                      "maxLength": 6000
+                    },
+                    "missing": {
+                      "type": "array",
+                      "maxItems": 1000,
+                      "items": {
+                        "type": "string",
+                        "maxLength": 6000
+                      }
+                    }
+                  },
+                  "required": [
+                    "securityId",
+                    "name",
+                    "searchStatus",
+                    "facts",
+                    "undatedItemIds",
+                    "industryItemIds",
+                    "industryConnection",
+                    "researchInterpretation",
+                    "missing"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "companySearchesSuccessful": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "industrySearchesSuccessful": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "summaryStatus": {
+                "type": "string",
+                "maxLength": 6000
+              },
+              "notice": {
+                "type": "string",
+                "maxLength": 6000
+              }
+            },
+            "required": [
+              "id",
+              "date",
+              "startAt",
+              "endAt",
+              "timezone",
+              "scheduledLocalTime",
+              "generatedAt",
+              "kind",
+              "ratingVersion",
+              "companies",
+              "companySearchesSuccessful",
+              "industrySearchesSuccessful",
+              "summaryStatus",
+              "notice"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "notificationNotice": {
+          "type": "string",
+          "maxLength": 6000
+        }
+      },
+      "required": [
+        "version",
+        "generatedAt",
+        "ratingVersion",
+        "ratings",
+        "eventGroups",
+        "industries",
+        "calendar",
+        "summary",
+        "dailyBriefings",
+        "notificationNotice"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

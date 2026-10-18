@@ -1596,3 +1596,51 @@ main {
   font-size: 11px !important;
   color: #adc8c0 !important;
 }
+/* Phase 3: readable evidence, daily context, and mobile interaction. */
+.phase3 .overview-grid { display: none; }
+.phase3 > .panel { margin-block: 1rem; }
+.daily-company, .why-important { border-block-start: 1px solid #2c4054; padding-block: .65rem; }
+summary { cursor: pointer; min-height: 44px; padding-block: .55rem; line-height: 1.65; }
+.daily-company p, .briefing-item p { margin-block: .5rem; }
+.why-important dl { display: grid; grid-template-columns: minmax(100px,1fr) minmax(120px,2fr); gap: .6rem; margin-block: .75rem; }
+.why-important dt { color: #9bb1c5; }
+.why-important dd { margin: 0; }
+.earnings-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,240px),1fr)); gap: 1rem; }
+.earnings-card { padding: 1rem; border: 1px solid #304459; border-radius: 12px; margin-block: .5rem; overflow-wrap: anywhere; }
+.earnings-card small { display: block; }
+.notifications-panel li { margin-block: .75rem; }
+.anchor-target, [id^='news-'], [id^='earnings-'], [id^='results-'] { scroll-margin-block: 24px; }
+.news-card.is-read { border-color: #4c5c6d; }
+.news-actions { flex-wrap: wrap; }
+.filters { flex-wrap: wrap; }
+.filters > *, .panel, .news-card, .watch-card, .daily-company, .field { min-width: 0; }
+.briefing-item a, .news-card h3, .daily-company a { overflow-wrap: anywhere; }
+@media(max-width:760px) {
+  :root { font-size: 16px; }
+  h1 { font-size: 1.65rem; }
+  h2, .section-head h2 { font-size: 1.2rem; }
+  h3, .news-card h3 { font-size: 1.1rem; }
+  p, .news-card p, .page-heading p, .briefing p, .modal p, label { font-size: 1rem; }
+  small, .news-top small, .demo-label, .news-dates, .muted.small-note, .source-status small { font-size: .875rem; line-height: 1.7; }
+  .news-top b, .news-top .badge, .data-status, .status-warning { font-size: .875rem; }
+  .classification-reason { font-size: .875rem !important; }
+  button, .text-button, .news-actions a, .news-actions button { min-height: 44px; font-size: 1rem; }
+  .bottom-nav button { min-width: 0; min-height: 60px; font-size: .75rem; line-height: 1.2; padding-inline: 2px; overflow-wrap: anywhere; }
+  .news-top { flex-wrap: wrap; }
+  .news-top .badge { margin-inline: 0; }
+  .filters { display: grid; grid-template-columns: 1fr; gap: .75rem; }
+  .filters select { width: 100%; }
+  .filters .search-field { width: 100%; }
+  main { padding: 18px 12px calc(180px + env(safe-area-inset-bottom)); }
+  .panel { padding: 16px; }
+  .page-heading { flex-wrap: wrap; }
+  .page-heading p { max-width: none; }
+  .page-heading .refresh { margin-top: 0; }
+  .why-important dl { grid-template-columns: 1fr; gap: .25rem; }
+  .why-important dd { margin-block-end: .65rem; }
+  .modal { max-height: calc(var(--visual-height,100dvh) - 24px); padding: 16px; }
+  .modal-backdrop { height: var(--visual-height,100dvh); bottom: auto; align-items: flex-start; padding-block: 12px; }
+  .keyboard-open .bottom-nav { display: none; }
+  input, textarea, select { font-size: 1rem; }
+  .form-grid { grid-template-columns: 1fr; }
+}

@@ -130,6 +130,7 @@ const schema = {
 };
 schema.properties.articles = {type:'array',maxItems:600,items:{$ref:'discovery.schema.json#/definitions/article'}};
 schema.properties.discovery = {$ref:'discovery.schema.json#/definitions/discovery'};
+schema.properties.intelligence = {$ref:'intelligence.schema.json#/definitions/intelligence'};
 writeFileSync(
   "schemas/feed-v2.schema.json",
   JSON.stringify(schema, null, 2) + "\n",

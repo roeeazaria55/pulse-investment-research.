@@ -1,0 +1,14 @@
+name: PULSE notification test
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    uses: ./.github/workflows/notify.yml
+    with:
+      send_test: true
+    secrets:
+      NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+      NTFY_TOKEN: ${{ secrets.NTFY_TOKEN }}
+      PULSE_NOTIFY_CONFIG: ${{ secrets.PULSE_NOTIFY_CONFIG }}

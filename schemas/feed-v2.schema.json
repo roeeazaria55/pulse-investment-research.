@@ -641,6 +641,9 @@
     },
     "discovery": {
       "$ref": "discovery.schema.json#/definitions/discovery"
+    },
+    "intelligence": {
+      "$ref": "intelligence.schema.json#/definitions/intelligence"
     }
   }
 }

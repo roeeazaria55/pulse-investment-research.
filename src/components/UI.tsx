@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ArrowUpLeft, Bookmark, ExternalLink, X } from "lucide-react";
 import type { News } from "../types";
+import {WhyImportant} from './PhaseThree';
 export const dateTime = (date: string) =>
   new Intl.DateTimeFormat("he-IL", {
     dateStyle: "medium",
@@ -109,16 +110,20 @@ export function NewsCard({
   saved,
   onSave,
   onResearch,
+  read=false,
+  onRead,
 }: {
   item: News;
   saved: boolean;
   onSave: () => void;
   onResearch: () => void;
+  read?:boolean;
+  onRead?:()=>void;
 }) {
   const [unrelated,setUnrelated]=useState(()=>{try{return JSON.parse(localStorage.getItem('pulse-unrelated-news')||'[]').includes(item.id);}catch{return false;}});
   const [reportError,setReportError]=useState(false);
   return (
-    <article className="news-card">
+    <article className={`news-card ${read?'is-read':''}`} id={`news-${item.id}`}>
       <div className="news-top">
         <div className="company-avatar">{(item.ticker || item.company).slice(0, 2)}</div>
         <div>
@@ -139,7 +144,8 @@ export function NewsCard({
       <h3 dir="auto">{item.headline}</h3>
       {item.summary && <p>{item.summary}</p>}
       {item.discoveryProvider && <p>מפרסם: <b>{item.publisher}</b> • גילוי: {item.discoveryProvider}<br/>כותרת ומטא־נתונים בלבד; הכתבה המלאה לא נקראה.</p>}
-      {item.classification && (
+      {item.rating && <WhyImportant rating={item.rating}/>}
+      {!item.rating && item.classification && (
         <p className="classification-reason">
           <b>מדוע סווג: </b>
           {item.classification.reason}
@@ -160,6 +166,7 @@ export function NewsCard({
         {item.sourceName && <span>מקור: {item.sourceName} • שעון ישראל</span>}
       </div>
       <div className="news-actions">
+        {onRead&&<button onClick={onRead} aria-pressed={read}>{read?'נקרא — ביטול סימון':'סימון כנקרא'}</button>}
         <a href={item.sourceUrl} target="_blank" rel="noopener noreferrer">
           {item.demo ? "קישור הדגמה" : item.linkKind==='google-news-redirect' ? "פתיחה דרך Google News" : "מקור"}
           <ExternalLink size={14} />

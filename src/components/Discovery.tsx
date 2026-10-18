@@ -25,6 +25,7 @@ export function DiscoveryPanel({feed}:{feed:LiveFeed}) {
         <h3>{s.name}</h3><p>{s.provider} • {s.status==='results'?`${s.count} כותרות רלוונטיות`:s.status==='zero-results'?'החיפוש הצליח — אפס תוצאות':'החיפוש נכשל'}</p>
         <p>ניסיון: {dateTime(s.lastAttemptAt)} • הצלחה: {s.lastSuccessfulAt?dateTime(s.lastSuccessfulAt):'אין'} • נפסלו: {s.rejectedCount}</p>
         {s.error&&<p>{s.error}</p>}
+        {!!s.rejectedExamples?.length&&<details><summary>דוגמאות התאמות שנפסלו מהחיפוש</summary>{s.rejectedExamples.map(e=><p key={e.title}><span dir="auto">{e.title}</span><br/>{e.reason}</p>)}</details>}
         <p>אימות זהות לחיפוש בלבד: {d.registry.companies.find(c=>c.id===s.securityId)?.identityVerification.date}</p>
         <WebNewsSearch name={s.name}/>
       </article>)}

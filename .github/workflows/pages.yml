@@ -5,8 +5,9 @@ on:
     paths-ignore: ["public/data/feed.json", "public/data/ingestion-state.json"]
   workflow_dispatch:
   schedule:
-    # UTC alternatives for 07:23 / 19:23 Asia/Jerusalem across DST.
-    - cron: "23 4,5,16,17 * * *"
+    # About every 30 minutes; 13:00 Jerusalem daily window is generated on
+    # the first actual run after its boundary, including weekends and DST.
+    - cron: "17,47 * * * *"
 permissions: {}
 concurrency:
   group: pulse-production
@@ -32,8 +33,12 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Test discovery parsers and failure preservation
-        run: python3 -m unittest discover -s scripts -p 'test_articles.py'
+      - name: Test public intelligence and private notification planning
+        run: python3 -m unittest discover -s scripts -p 'test_*.py'
+      - name: Preserve prior public snapshot for independent enrichment
+        run: |
+          mkdir -p work
+          cp public/data/feed.json work/previous-feed.json
       - name: Discover public company headlines independently of SEC
         run: python3 scripts/collect_articles.py
       - name: Collect supplemental SEC metadata and combine snapshots
@@ -42,6 +47,12 @@ jobs:
         env:
           SEC_USER_AGENT: ${{ vars.SEC_USER_AGENT }}
       - name: Validate public feed
+        if: steps.collect.outputs.skipped != 'true'
+        run: node scripts/ingest/validate.mjs
+      - name: Rank evidence, collect industry context and check official earnings metadata
+        if: steps.collect.outputs.skipped != 'true'
+        run: python3 scripts/build_intelligence.py
+      - name: Validate enriched public snapshot
         if: steps.collect.outputs.skipped != 'true'
         run: node scripts/ingest/validate.mjs
       - name: Test
@@ -60,6 +71,26 @@ jobs:
             public/data/feed.json
             public/data/ingestion-state.json
           retention-days: 7
+      - name: Install browser test runtime for code/manual releases only
+        if: github.event_name != 'schedule'
+        run: |
+          python3 -m pip install --disable-pip-version-check playwright==1.55.0
+          python3 -m playwright install --with-deps chromium
+      - name: Test 320/390/430 RTL, text scaling and simulated keyboard
+        if: github.event_name != 'schedule'
+        env:
+          VITE_BASE_PATH: /${{ github.event.repository.name }}/
+        run: |
+          npm run preview > work/preview.log 2>&1 &
+          python3 scripts/mobile_check.py
+      - uses: actions/upload-artifact@v4
+        if: always() && github.event_name != 'schedule'
+        with:
+          name: mobile-emulation-evidence
+          path: |
+            work/mobile-*.png
+            work/mobile-check.json
+          retention-days: 14
       - uses: actions/upload-pages-artifact@v3
         if: steps.collect.outputs.skipped != 'true'
         with:
@@ -122,3 +153,13 @@ jobs:
       - uses: actions/configure-pages@v5
       - id: deployment
         uses: actions/deploy-pages@v4
+  notify:
+    needs: deploy
+    if: success()
+    permissions:
+      contents: read
+    uses: ./.github/workflows/notify.yml
+    secrets:
+      NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+      NTFY_TOKEN: ${{ secrets.NTFY_TOKEN }}
+      PULSE_NOTIFY_CONFIG: ${{ secrets.PULSE_NOTIFY_CONFIG }}

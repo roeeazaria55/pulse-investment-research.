@@ -1,0 +1,64 @@
+name: Private public-information notifications
+on:
+  workflow_call:
+    inputs:
+      send_test:
+        type: boolean
+        default: false
+    secrets:
+      NTFY_TOPIC:
+        required: false
+      NTFY_TOKEN:
+        required: false
+      PULSE_NOTIFY_CONFIG:
+        required: false
+permissions:
+  contents: read
+jobs:
+  notify:
+    if: github.ref == 'refs/heads/main' && github.repository == 'roeeazaria55/pulse-investment-research.'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    concurrency:
+      group: pulse-notifications
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        if: inputs.send_test != true
+        with:
+          name: public-ingestion-state
+          path: work/published-snapshot
+      - name: Use the exact published public snapshot
+        if: inputs.send_test != true
+        run: cp work/published-snapshot/feed.json public/data/feed.json
+      - uses: actions/cache/restore@v4
+        with:
+          path: work/notify-ledger.json
+          key: pulse-notify-v3-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: pulse-notify-v3-
+      - name: Plan without logging private settings or channel
+        id: plan
+        run: python3 scripts/notifications.py plan
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          PULSE_NOTIFY_CONFIG: ${{ secrets.PULSE_NOTIFY_CONFIG }}
+          PULSE_TEST_NOTIFICATION: ${{ inputs.send_test }}
+      - name: Persist opaque send intents before attempting delivery
+        if: steps.plan.outputs.ready == 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: work/notify-ledger.json
+          key: pulse-notify-v3-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: One transport attempt per persisted intent
+        if: steps.plan.outputs.ready == 'true'
+        run: python3 scripts/notifications.py send
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          NTFY_TOKEN: ${{ secrets.NTFY_TOKEN }}
+      - name: Explain missing one-time configuration
+        if: steps.plan.outputs.ready != 'true'
+        run: echo 'Notifications are not configured or configuration is invalid. Add GitHub Secrets following docs/NOTIFICATIONS.md. Android receipt has not been verified.' >> "$GITHUB_STEP_SUMMARY"

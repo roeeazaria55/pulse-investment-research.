@@ -73,7 +73,7 @@ def collect(registry, previous, now, getter=fetch, pause=time.sleep):
             url = endpoint(provider["id"], company)
             status = {"provider": provider["id"], "securityId": company["id"], "name": company["name"],
                       "queryUrl": url, "lastAttemptAt": now, "lastSuccessfulAt": old_status.get("lastSuccessfulAt"),
-                      "status": "failed", "error": None, "count": 0, "newCount": 0, "rejectedCount": 0}
+                      "status": "failed", "error": None, "count": 0, "newCount": 0, "rejectedCount": 0, "rejectedExamples": []}
             try:
                 body = getter(url)
                 candidates = parse_google(body, required_term=None) if provider["id"] == "google-news" else parse_gdelt(body, required_term=None)
@@ -81,6 +81,8 @@ def collect(registry, previous, now, getter=fetch, pause=time.sleep):
                 for candidate in candidates:
                     if not relevant(candidate["title"], company):
                         status["rejectedCount"] += 1
+                        if len(status['rejectedExamples'])<2:
+                            status['rejectedExamples'].append({'title':candidate['title'],'publisher':candidate.get('publisher'),'reason':'לא עמד בכללי שם והקשר של החברה; לא צורף לפיד. זו פסילה שמרנית, לא קביעה שנקראה הכתבה.'})
                         continue
                     pub = candidate.get("publishedAt")
                     if pub:

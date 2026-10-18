@@ -1,0 +1,161 @@
+{
+  "version": 1,
+  "industries": [
+    {
+      "id": "ai-cloud",
+      "name": "תשתיות ענן ו־AI",
+      "query": "(AI cloud GPU data center capacity OR תשתיות ענן בינה מלאכותית)",
+      "terms": [
+        "ai",
+        "cloud",
+        "gpu",
+        "data center",
+        "ענן",
+        "בינה מלאכותית"
+      ]
+    },
+    {
+      "id": "digital-advertising",
+      "name": "פרסום דיגיטלי ורשתות חברתיות",
+      "query": "(digital advertising social media regulation OR פרסום דיגיטלי רשתות חברתיות)",
+      "terms": [
+        "advertising",
+        "social media",
+        "פרסום",
+        "רשתות חברתיות"
+      ]
+    },
+    {
+      "id": "payments",
+      "name": "תשלומים בשווקים מתעוררים",
+      "query": "(emerging markets cross border payments OR תשלומים שווקים מתעוררים)",
+      "terms": [
+        "payments",
+        "cross border",
+        "תשלומים",
+        "שווקים"
+      ]
+    },
+    {
+      "id": "aviation",
+      "name": "מנועי תעופה ותחזוקה",
+      "query": "(aircraft engine maintenance leasing OR מנועי תעופה תחזוקה)",
+      "terms": [
+        "aircraft",
+        "engine",
+        "aviation",
+        "מנועי",
+        "תעופה"
+      ]
+    },
+    {
+      "id": "insurance",
+      "name": "ביטוח דיגיטלי",
+      "query": "(digital insurance insurtech regulation OR ביטוח דיגיטלי רגולציה)",
+      "terms": [
+        "insurance",
+        "insurtech",
+        "ביטוח"
+      ]
+    },
+    {
+      "id": "flash-memory",
+      "name": "זיכרון ואחסון",
+      "query": "(NAND flash memory storage demand OR זיכרון אחסון שבבים)",
+      "terms": [
+        "nand",
+        "flash",
+        "memory",
+        "storage",
+        "זיכרון",
+        "אחסון"
+      ]
+    },
+    {
+      "id": "defense-imaging",
+      "name": "מצלמות ורחפנים ביטחוניים",
+      "query": "(stabilized cameras military drones OR מצלמות רחפנים ביטחון)",
+      "terms": [
+        "camera",
+        "cameras",
+        "drones",
+        "מצלמות",
+        "רחפנים"
+      ]
+    },
+    {
+      "id": "renewable-energy",
+      "name": "אנרגיה מתחדשת ואגירה",
+      "query": "(renewable energy battery storage solar OR אנרגיה מתחדשת אגירה סולארית)",
+      "terms": [
+        "renewable",
+        "solar",
+        "battery",
+        "מתחדשת",
+        "אגירה",
+        "סולארית"
+      ]
+    },
+    {
+      "id": "neuromodulation",
+      "name": "גירוי מוחי וטכנולוגיה רפואית",
+      "query": "(transcranial magnetic stimulation TMS depression OR גירוי מגנטי מוח דיכאון)",
+      "terms": [
+        "transcranial",
+        "tms",
+        "stimulation",
+        "מוח",
+        "דיכאון"
+      ]
+    },
+    {
+      "id": "connectivity",
+      "name": "תקשורת לוויינית וסיבים באפריקה",
+      "query": "(Africa satellite fiber broadband connectivity OR אפריקה תקשורת לוויין סיבים)",
+      "terms": [
+        "africa",
+        "satellite",
+        "broadband",
+        "אפריקה",
+        "לוויין",
+        "סיבים"
+      ]
+    }
+  ],
+  "companyIndustries": {
+    "candidate-nebius": [
+      "ai-cloud"
+    ],
+    "us-meta-nasdaq-a": [
+      "digital-advertising",
+      "ai-cloud"
+    ],
+    "us-dlo-nasdaq-a": [
+      "payments"
+    ],
+    "candidate-ftai": [
+      "aviation"
+    ],
+    "us-lmnd-nyse-common": [
+      "insurance"
+    ],
+    "candidate-sandisk": [
+      "flash-memory"
+    ],
+    "candidate-iren": [
+      "ai-cloud"
+    ],
+    "candidate-next-vision": [
+      "defense-imaging"
+    ],
+    "candidate-enlight": [
+      "renewable-energy"
+    ],
+    "candidate-brainsway": [
+      "neuromodulation"
+    ],
+    "candidate-gilat-telecom": [
+      "connectivity"
+    ]
+  }
+}

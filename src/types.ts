@@ -1,3 +1,4 @@
+import type { Intelligence, Rating } from './intelligenceTypes';
 export type Importance = "high" | "medium" | "low";
 export interface Security {
   id: string;
@@ -59,6 +60,7 @@ export interface News {
   discoveryProvider?: "google-news" | "gdelt";
   linkKind?: "google-news-redirect" | "publisher";
   discoveredAt?: string | null;
+  rating?: Rating;
 }
 export interface PublicResearch {
   ticker: string;
@@ -149,6 +151,7 @@ export interface LiveFeed extends Omit<LegacyFeed, "version"> {
   run: { url: string | null; trigger: string };
   limitations: string[];
   articles?: News[];
+  intelligence?: Intelligence;
   discovery?: {
     version: 1;
     lastAttemptAt: string;
@@ -161,7 +164,7 @@ export interface LiveFeed extends Omit<LegacyFeed, "version"> {
       companies: {id:string;name:string;displayTicker:string;aliases:string[];query:string;identityVerification:{status:string;date:string;source:string;method:string}}[];
       providers: {id:string;enabled:boolean;notice:string;proofRun:string;proofStatus:string;proofCheckedAt?:string}[];
     };
-    sources: {provider:string;securityId:string;name:string;queryUrl:string;status:"results"|"zero-results"|"failed";error:string|null;count:number;newCount:number;rejectedCount:number;lastAttemptAt:string;lastSuccessfulAt:string|null}[];
+    sources: {provider:string;securityId:string;name:string;queryUrl:string;status:"results"|"zero-results"|"failed";error:string|null;count:number;newCount:number;rejectedCount:number;lastAttemptAt:string;lastSuccessfulAt:string|null;rejectedExamples?:{title:string;publisher:string|null;reason:string}[]}[];
     briefings: {id:string;generatedAt:string;timezone:string;itemIds:string[];questions:string[]}[];
   };
 }

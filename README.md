@@ -2,6 +2,14 @@
 
 A Hebrew, RTL, mobile-first investment research PWA. Built with React, Vite, TypeScript and Tailwind CSS. Runs entirely in the browser. No backend, credentials, paid services, tracking, or market-data API.
 
+**Phase 3:** evidence-capped importance with separate source/relevance/confidence,
+fixed 24-hour daily windows ending at 13:00 Jerusalem, industry context, official
+earnings metadata, local read flags and optional free ntfy notifications. See
+[the Phase 3 contract and limitations](docs/PHASE-3.md) and [Android/Secrets setup](docs/NOTIFICATIONS.md).
+Schedules request scans around every 30 minutes; delays and missed schedules are
+possible. Hebrew AI summaries and physical Android receipt are not assumed to
+work: actual feasibility/device evidence is required and the UI labels limitations.
+
 **Phase 2 news discovery:** public company headlines are collected through Google News RSS in GitHub Actions, with SEC metadata as a separate supplemental source. The Nebius feasibility run returned real titles; GDELT returned HTTP 429 and remains disabled. See [news discovery, source limitations and data contract](docs/NEWS-DISCOVERY.md), [supplemental SEC guide](docs/phase-2.md), [feed schema](schemas/feed-v2.schema.json) and [headline extension schema](schemas/discovery.schema.json). Deployed per-company/provider status determines current coverage. Company identity for search is independent of stock-listing/CIK verification. No AI summaries or full article text are collected.
 
 The standard Ubuntu Actions runner supplies Python 3 and Jerusalem timezone data. Local parser checks: `python3 -m unittest discover -s scripts -p 'test_articles.py'`. Headline collection: `python3 scripts/collect_articles.py` followed by `npm run collect`; only public metadata is accessed. Do not substitute private watchlists for the public search registry.

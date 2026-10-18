@@ -38,25 +38,8 @@ const now = new Date().toISOString();
 const trigger = process.env.GITHUB_EVENT_NAME || "local";
 const slot = briefingSlot(now);
 const slotId = `${slot.date}:${slot.period}`;
-const hour = Number(
-  new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Asia/Jerusalem",
-    hour: "2-digit",
-    hourCycle: "h23",
-  }).format(new Date(now)),
-);
-// Both winter/summer UTC schedules run. Only a local morning/evening window
-// may publish; a persisted successful slot prevents the extra DST invocation.
-const scheduled = trigger === "schedule";
-const inWindow = (hour >= 7 && hour <= 10) || (hour >= 19 && hour <= 22);
-if (scheduled && (!inWindow || (state.completedSlots || []).includes(slotId))) {
-  if (process.env.GITHUB_OUTPUT)
-    await appendFile(process.env.GITHUB_OUTPUT, "skipped=true\n");
-  console.log(
-    "Skipped schedule outside local window or already processed slot",
-  );
-  process.exit(0);
-}
+// Phase 3 polls throughout the day. Daily publication deduplication is handled
+// independently by the fixed Jerusalem 13:00 window in build_intelligence.py.
 const result = await collect({
   registry,
   previous,

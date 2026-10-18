@@ -2,6 +2,8 @@ import Ajv from "ajv";
 import schema from "../../schemas/feed-v2.schema.json";
 import discoverySchema from "../../schemas/discovery.schema.json";
 import { validateDiscovery } from "./discoveryValidation.mjs";
+import intelligenceSchema from '../../schemas/intelligence.schema.json';
+import { validateIntelligence } from './intelligenceValidation.mjs';
 import type { LiveFeed, Security } from "../types";
 const ajv = new Ajv({ strict: false });
 ajv.addFormat(
@@ -22,11 +24,13 @@ ajv.addFormat("uri", (v) => {
   }
 });
 ajv.addSchema(discoverySchema);
+ajv.addSchema(intelligenceSchema);
 const validate = ajv.compile(schema);
 export function parseV2(x: unknown): LiveFeed {
   if (!validate(x)) throw Error("פיד ציבורי פגום");
   const f = x as unknown as LiveFeed;
   validateDiscovery(f);
+  validateIntelligence(f);
   const ids = new Set<string>();
   if (
     new Set(f.registry.securities.map((s) => s.id)).size !==
@@ -90,7 +94,7 @@ export function parseV2(x: unknown): LiveFeed {
     f.coverage.working !== f.sources.filter((s) => s.status === "ok").length
   )
     throw Error("ספירת כיסוי לא תקינה");
-  return f.articles ? { ...f, news: [...f.news, ...f.articles].sort((a,b) => (b.publishedAt || b.collectedAt).localeCompare(a.publishedAt || a.collectedAt)) } : f;
+  return f.articles ? { ...f, news: [...f.news, ...f.articles].map(n=>({...n,rating:f.intelligence?.ratings[n.id]})).sort((a,b) => (b.publishedAt || b.collectedAt).localeCompare(a.publishedAt || a.collectedAt)) } : f;
 }
 const norm = (x: string) =>
   x.toLowerCase().replace(/[^a-z0-9\u0590-\u05ff]/g, "");
