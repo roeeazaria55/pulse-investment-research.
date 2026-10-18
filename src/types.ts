@@ -159,7 +159,7 @@ export interface LiveFeed extends Omit<LegacyFeed, "version"> {
     seenIds: string[];
     registry: {
       companies: {id:string;name:string;displayTicker:string;aliases:string[];query:string;identityVerification:{status:string;date:string;source:string;method:string}}[];
-      providers: {id:string;enabled:boolean;notice:string;proofRun:string;proofStatus:string}[];
+      providers: {id:string;enabled:boolean;notice:string;proofRun:string;proofStatus:string;proofCheckedAt?:string}[];
     };
     sources: {provider:string;securityId:string;name:string;queryUrl:string;status:"results"|"zero-results"|"failed";error:string|null;count:number;newCount:number;rejectedCount:number;lastAttemptAt:string;lastSuccessfulAt:string|null}[];
     briefings: {id:string;generatedAt:string;timezone:string;itemIds:string[];questions:string[]}[];

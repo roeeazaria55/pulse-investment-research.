@@ -20,7 +20,7 @@ export function DiscoveryPanel({feed}:{feed:LiveFeed}) {
     {d.noNewItems && <p className="alert">אין פריטים חדשים בחיפושים שהצליחו. פריטים קודמים נשמרים.</p>}
     {d.status!=='complete' && <p className="alert">כיסוי {d.status==='failed'?'נכשל':'חלקי'}: מידע קודם נשמר עם התאריכים המקוריים.</p>}
     <details><summary>סטטוס ספקים וחיפושים לכל חברה</summary>
-      {d.registry.providers.map(p=><p key={p.id}><b dir="ltr">{p.id}</b> • {p.enabled?'פעיל לחיפוש':'מושבת'} • {p.enabled?`${ok.length}/${d.sources.length} חיפושים הצליחו`:'בדיקת Actions נכשלה: HTTP 429'} <a href={p.proofRun} target="_blank" rel="noopener noreferrer">הוכחת בדיקה</a></p>)}
+      {d.registry.providers.map(p=><p key={p.id}><b dir="ltr">{p.id}</b> • {p.enabled?'פעיל לחיפוש':'מושבת'} • {p.enabled?`${d.sources.filter(s=>s.provider===p.id&&s.status!=='failed').length}/${d.sources.filter(s=>s.provider===p.id).length} חיפושים הצליחו`:'בדיקת Actions נכשלה: HTTP 429'} • נבדק: {p.enabled?dateTime(d.lastAttemptAt):p.proofCheckedAt?dateTime(p.proofCheckedAt):'ראו ריצת בדיקה'} <a href={p.proofRun} target="_blank" rel="noopener noreferrer">הוכחת בדיקה</a></p>)}
       {d.sources.map(s=><article className="source-status" key={s.provider+s.securityId}>
         <h3>{s.name}</h3><p>{s.provider} • {s.status==='results'?`${s.count} כותרות רלוונטיות`:s.status==='zero-results'?'החיפוש הצליח — אפס תוצאות':'החיפוש נכשל'}</p>
         <p>ניסיון: {dateTime(s.lastAttemptAt)} • הצלחה: {s.lastSuccessfulAt?dateTime(s.lastSuccessfulAt):'אין'} • נפסלו: {s.rejectedCount}</p>
