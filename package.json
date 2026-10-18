@@ -8,7 +8,9 @@
     "build": "tsc -b && vite build --configLoader runner",
     "typecheck": "tsc -b",
     "test": "vitest run --configLoader runner",
-    "preview": "vite preview --configLoader runner --host 127.0.0.1 --port 4173"
+    "preview": "vite preview --configLoader runner --host 127.0.0.1 --port 4173",
+    "collect": "node scripts/ingest/run.mjs",
+    "validate:data": "node scripts/ingest/validate.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",

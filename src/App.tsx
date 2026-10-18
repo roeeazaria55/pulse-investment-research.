@@ -27,6 +27,8 @@ import { blankResearch } from "./data/initial";
 import { fetchFeed, isStale } from "./data/ingestion";
 import { buildPrompt, copyText, labels } from "./research/prompt";
 import { Empty, Modal, NewsCard, Section, dateTime } from "./components/UI";
+import { CoveragePanel, BriefingPanel } from "./components/Intelligence";
+import { resolveSecurity } from "./data/feedV2";
 import type { Feed, Holding, News, Research, Security } from "./types";
 
 const tabs = [
@@ -188,6 +190,12 @@ export default function App() {
     newsScope === "saved" ? state.savedNews : feed?.news || []
   ).filter(
     (n) =>
+      (!(
+        feed?.version === 2 && ["watchlist", "portfolio"].includes(newsScope)
+      ) ||
+        (newsScope === "watchlist" ? state.watchlist : state.holdings).some(
+          (s) => resolveSecurity(feed, s)?.id === n.securityId,
+        )) &&
       (importance === "all" || n.importance === importance) &&
       `${n.headline} ${n.company} ${n.ticker} ${n.summary}`
         .toLowerCase()
@@ -258,7 +266,7 @@ export default function App() {
             ייצוא גיבוי אישי
           </button>
         </div>
-        <small className="version">PULSE / VERSION 1.0</small>
+        <small className="version">PULSE / VERSION 2.0</small>
       </aside>
       <div className="workspace">
         <header className="topbar">
@@ -338,14 +346,18 @@ export default function App() {
             </span>
             <span className="status-divider" />
             <span>
-              {feed?.updatedAt
-                ? `עדכון נתונים מוצלח: ${dateTime(feed.updatedAt)}`
-                : "טרם התקבל עדכון נתונים אמיתי"}
+              {feed?.version === 2
+                ? `ניסיון איסוף: ${dateTime(feed.lastAttemptAt)}`
+                : feed?.updatedAt
+                  ? `עדכון נתונים מוצלח: ${dateTime(feed.updatedAt)}`
+                  : "טרם התקבל עדכון נתונים אמיתי"}
             </span>
             <span className="status-warning">
               {stale
                 ? "המידע אינו עדכני"
-                : "הנתונים עודכנו ב־18 השעות האחרונות"}
+                : feed?.version === 2 && feed.status !== "complete"
+                  ? "כיסוי חלקי — פירוט המקורות להלן"
+                  : "הנתונים עודכנו ב־18 השעות האחרונות"}
             </span>
           </div>
           {!online && (
@@ -361,6 +373,10 @@ export default function App() {
               <button onClick={exportData}>ייצוא המידע המקורי</button>
             </div>
           )}
+          {feed?.version === 2 &&
+            ["home", "news", "watchlist"].includes(tab) && (
+              <CoveragePanel feed={feed} />
+            )}
           {tab === "home" && (
             <>
               <div className="overview-grid">
@@ -370,7 +386,11 @@ export default function App() {
                       <Activity size={22} />
                     </span>
                     <span>THE DAILY PULSE</span>
-                    <span className="badge">תדריך הדגמה</span>
+                    <span className="badge">
+                      {feed?.version === 2
+                        ? "דיווחי SEC • תבנית"
+                        : "תדריך הדגמה"}
+                    </span>
                   </div>
                   <h2>
                     פחות רעש.
@@ -388,7 +408,11 @@ export default function App() {
                     >
                       לפתיחת התדריך <ArrowUpLeft size={18} />
                     </button>
-                    <small>תדריך בוקר / ערב יחובר בשלב הבא</small>
+                    <small>
+                      {feed?.version === 2
+                        ? "תדריכי בוקר וערב • שעון ישראל"
+                        : "תדריך בוקר / ערב יחובר בשלב הבא"}
+                    </small>
                   </div>
                   <div className="briefing-art" aria-hidden="true">
                     <div />
@@ -454,6 +478,11 @@ export default function App() {
                   </div>
                 </Section>
               </div>
+              {feed?.version === 2 && (
+                <div className="live-briefing">
+                  <BriefingPanel feed={feed} />
+                </div>
+              )}
               <div className="section-title">
                 <div>
                   <span className="eyebrow">על סדר היום</span>
@@ -490,7 +519,13 @@ export default function App() {
                     <div>
                       <h3>אימות רשימת המעקב</h3>
                       <p>
-                        {state.watchlist.filter((w) => !w.verified).length}{" "}
+                        {
+                          state.watchlist.filter((w) =>
+                            feed?.version === 2
+                              ? !resolveSecurity(feed, w)
+                              : !w.verified,
+                          ).length
+                        }{" "}
                         ניירות ממתינים לבדיקת סימול ובורסה
                       </p>
                     </div>
@@ -680,10 +715,15 @@ export default function App() {
                 >
                   <option value="all">כל הפריטים</option>
                   <option value="saved">שמורים למחקר</option>
+                  <option value="watchlist">המעקב שלי — סינון מקומי</option>
+                  <option value="portfolio">התיק שלי — סינון מקומי</option>
                 </select>
               </div>
               <p className="muted small-note">
-                {news.length} פריטים • פריטי הדגמה מסומנים ואינם חדשות אמיתיות.
+                {news.length} פריטים •{" "}
+                {feed?.version === 2
+                  ? "דיווחי SEC עם סיווג לפי כללים; לא המלצת השקעה ולא ניתוח AI."
+                  : "פריטי הדגמה מסומנים ואינם חדשות אמיתיות."}
               </p>
               <div className="news-grid">
                 {news.map((n) => (
@@ -733,8 +773,9 @@ export default function App() {
                 </button>
               </div>
               <div className="alert">
-                הרשימה הראשונית אינה תיק אחזקות. כל סימול דורש אימות מול הבורסה
-                לפני חיבור נתוני שוק; לחברות ישראליות לא נבחר סימול.
+                רשימת המעקב פרטית ואינה נשלחת לאיסוף. התאמה לרישום ציבורי דורשת
+                סימול ושם תואמים. חברות ללא זהות ומקור מאומתים נשארות ללא כיסוי;
+                רישום כפול אינו מאוחד אוטומטית.
               </div>
               <div className="watch-grid">
                 {state.watchlist
@@ -756,7 +797,19 @@ export default function App() {
                       <h3 dir="ltr">{s.ticker || s.name}</h3>
                       <p>{s.name}</p>
                       <small className="verification">
-                        סימול ובורסה טרם אומתו
+                        {feed?.version === 2
+                          ? (() => {
+                              const matched = resolveSecurity(feed, s);
+                              const source = feed.sources.find(
+                                (x) => x.securityId === matched?.id,
+                              );
+                              return source?.status === "ok"
+                                ? `כיסוי SEC • ${matched?.exchange}`
+                                : source?.url
+                                  ? "מקור אינו זמין — בדקו פירוט"
+                                  : "ללא כיסוי מאומת";
+                            })()
+                          : "סימול ובורסה טרם אומתו"}
                       </small>
                       <div className="news-actions">
                         <button

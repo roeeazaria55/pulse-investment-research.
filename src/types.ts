@@ -42,11 +42,19 @@ export interface News {
   company: string;
   headline: string;
   sourceUrl: string;
-  publishedAt: string;
+  publishedAt: string | null;
   collectedAt: string;
   importance: Importance;
   summary: string;
   demo: boolean;
+  securityId?: string;
+  sourceId?: string;
+  documentId?: string;
+  sourceName?: string;
+  originalTitle?: string;
+  filingDate?: string | null;
+  classification?: { rule: string; reason: string };
+  summaryKind?: "metadata-only";
 }
 export interface PublicResearch {
   ticker: string;
@@ -56,13 +64,88 @@ export interface PublicResearch {
   content: Research;
   demo: boolean;
 }
-export interface Feed {
+export interface LegacyFeed {
   version: 1;
   updatedAt: string | null;
   demo: boolean;
   news: News[];
   research: PublicResearch[];
 }
+export interface RegistrySecurity {
+  id: string;
+  name: string;
+  ticker: string | null;
+  exchange: string | null;
+  cik: string | null;
+  shareClass: string | null;
+  aliases: string[];
+  acceptedLegalNames: string[];
+  verification: {
+    status: "verified" | "unverified";
+    date: string | null;
+    source: string | null;
+    method: string;
+  };
+  source: {
+    id: string;
+    kind: "sec-submissions";
+    url: string;
+    policyUrl: string;
+    policyReviewedAt: string;
+  } | null;
+}
+export interface SourceStatus {
+  id: string;
+  securityId: string;
+  name: string;
+  url: string | null;
+  status: "ok" | "blocked" | "error" | "identity-mismatch" | "no-source";
+  lastAttemptAt: string | null;
+  lastSuccessfulAt: string | null;
+  errorCode: string | null;
+  newCount: number;
+  availableCount: number;
+}
+export interface Briefing {
+  id: string;
+  date: string;
+  period: "morning" | "evening";
+  timezone: "Asia/Jerusalem";
+  generatedAt: string;
+  kind: "rule-template";
+  status: LiveFeed["status"];
+  itemIds: string[];
+  bootstrap: boolean;
+  noNewItems: boolean;
+  failedSourceCount: number;
+  questions: string[];
+  notice: string;
+}
+export interface LiveFeed extends Omit<LegacyFeed, "version"> {
+  version: 2;
+  lastAttemptAt: string;
+  lastSuccessfulAt: string | null;
+  status: "complete" | "partial" | "failed" | "no-coverage";
+  coverage: {
+    total: number;
+    verified: number;
+    working: number;
+    uncovered: number;
+  };
+  sources: SourceStatus[];
+  registry: {
+    version: 1;
+    reviewedAt: string;
+    scope: string;
+    securities: RegistrySecurity[];
+  };
+  briefings: Briefing[];
+  newCount: number;
+  noNewItems: boolean;
+  run: { url: string | null; trigger: string };
+  limitations: string[];
+}
+export type Feed = LegacyFeed | LiveFeed;
 export interface PersonalState {
   version: 1;
   holdings: Holding[];

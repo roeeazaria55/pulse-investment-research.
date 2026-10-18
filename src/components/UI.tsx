@@ -5,6 +5,7 @@ export const dateTime = (date: string) =>
   new Intl.DateTimeFormat("he-IL", {
     dateStyle: "medium",
     timeStyle: "short",
+    timeZone: "Asia/Jerusalem",
   }).format(new Date(date));
 export function Empty({
   title,
@@ -135,9 +136,24 @@ export function NewsCard({
       </span>
       <h3>{item.headline}</h3>
       <p>{item.summary}</p>
+      {item.classification && (
+        <p className="classification-reason">
+          <b>מדוע סווג: </b>
+          {item.classification.reason}
+          <br />
+          חשיבות למעקב בלבד — אינה המלצת קנייה.
+        </p>
+      )}
       <div className="news-dates">
-        <span>פורסם: {dateTime(item.publishedAt)}</span>
+        <span>
+          זמן פרסום / קבלה:{" "}
+          {item.publishedAt ? dateTime(item.publishedAt) : "לא נמסר במקור"}
+        </span>
+        {item.filingDate && (
+          <span>תאריך הגשה (ללא הנחת שעה): {item.filingDate}</span>
+        )}
         <span>נאסף: {dateTime(item.collectedAt)}</span>
+        {item.sourceName && <span>מקור: {item.sourceName} • שעון ישראל</span>}
       </div>
       <div className="news-actions">
         <a href={item.sourceUrl} target="_blank" rel="noopener noreferrer">

@@ -10,7 +10,7 @@ import {
   within,
 } from "@testing-library/react";
 import App from "../src/App";
-import fixture from "../public/data/feed.json";
+import fixture from "./fixtures/demo-feed.json";
 beforeEach(() => {
   localStorage.clear();
   vi.stubGlobal(

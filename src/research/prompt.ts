@@ -28,7 +28,7 @@ export function buildPrompt(
     )
     .join(
       "\n",
-    )}\n\nהערות היסטוריות:\n${research.notes.map((n) => `${n.createdAt}: ${n.text}`).join("\n") || "אין"}\n\nפריטים רלוונטיים (הדגמות אינן חדשות אמיתיות):\n${news.map((n) => `[${n.demo ? "הדגמה בלבד" : "מקור לבדיקה"}] ${n.headline}\nפורסם: ${n.publishedAt}; נאסף: ${n.collectedAt}\n${n.summary}\n${n.sourceUrl}`).join("\n\n") || "אין פריטים"}\n\nמקורות נוספים:\n${sources.join("\n") || "אין"}\n\nהתחל במידע החסר, נתח השפעה על התזה, סיכונים ושאלות לבדיקה. אם אין לך גישה למקור, ציין זאת במפורש.`;
+    )}\n\nהערות היסטוריות:\n${research.notes.map((n) => `${n.createdAt}: ${n.text}`).join("\n") || "אין"}\n\nפריטים רלוונטיים (הדגמות אינן חדשות אמיתיות):\n${news.map((n) => `[${n.demo ? "הדגמה בלבד" : "מקור לבדיקה"}] ${n.headline}\nפורסם: ${n.publishedAt || "זמן לא נמסר"}; נאסף: ${n.collectedAt}\n${n.summary}\n${n.sourceUrl}`).join("\n\n") || "אין פריטים"}\n\nמקורות נוספים:\n${sources.join("\n") || "אין"}\n\nהתחל במידע החסר, נתח השפעה על התזה, סיכונים ושאלות לבדיקה. אם אין לך גישה למקור, ציין זאת במפורש.`;
 }
 export async function copyText(text: string) {
   if (navigator.clipboard && window.isSecureContext) {

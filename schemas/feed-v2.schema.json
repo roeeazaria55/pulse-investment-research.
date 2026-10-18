@@ -1,0 +1,583 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PULSE public feed v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "demo",
+    "updatedAt",
+    "lastAttemptAt",
+    "lastSuccessfulAt",
+    "status",
+    "newCount",
+    "noNewItems",
+    "coverage",
+    "sources",
+    "registry",
+    "news",
+    "research",
+    "briefings",
+    "run",
+    "limitations"
+  ],
+  "properties": {
+    "version": {
+      "const": 2
+    },
+    "demo": {
+      "const": false
+    },
+    "updatedAt": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "lastAttemptAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "lastSuccessfulAt": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "status": {
+      "enum": ["complete", "partial", "failed", "no-coverage"]
+    },
+    "newCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "noNewItems": {
+      "type": "boolean"
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total", "verified", "working", "uncovered"],
+      "properties": {
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "verified": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "working": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "uncovered": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "securityId",
+          "name",
+          "url",
+          "status",
+          "lastAttemptAt",
+          "lastSuccessfulAt",
+          "errorCode",
+          "newCount",
+          "availableCount"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "securityId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uri",
+                "pattern": "^https://"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "enum": ["ok", "blocked", "error", "identity-mismatch", "no-source"]
+          },
+          "lastAttemptAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lastSuccessfulAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "errorCode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "newCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "availableCount": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "registry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "reviewedAt", "scope", "securities"],
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "reviewedAt": {
+          "type": "string",
+          "format": "date"
+        },
+        "scope": {
+          "type": "string"
+        },
+        "securities": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "name",
+              "ticker",
+              "exchange",
+              "cik",
+              "shareClass",
+              "aliases",
+              "acceptedLegalNames",
+              "verification",
+              "source"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]{3,80}$"
+              },
+              "name": {
+                "type": "string"
+              },
+              "ticker": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "exchange": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "cik": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^\\d{10}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "shareClass": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "aliases": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "acceptedLegalNames": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "verification": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["status", "date", "source", "method"],
+                "properties": {
+                  "status": {
+                    "enum": ["verified", "unverified"]
+                  },
+                  "date": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "source": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "uri",
+                        "pattern": "^https://"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "method": {
+                    "type": "string"
+                  }
+                }
+              },
+              "source": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "id",
+                      "kind",
+                      "url",
+                      "policyUrl",
+                      "policyReviewedAt"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "kind": {
+                        "const": "sec-submissions"
+                      },
+                      "url": {
+                        "type": "string",
+                        "format": "uri",
+                        "pattern": "^https://"
+                      },
+                      "policyUrl": {
+                        "type": "string",
+                        "format": "uri",
+                        "pattern": "^https://"
+                      },
+                      "policyReviewedAt": {
+                        "type": "string",
+                        "format": "date"
+                      }
+                    }
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "news": {
+      "type": "array",
+      "maxItems": 600,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "securityId",
+          "sourceId",
+          "documentId",
+          "sourceName",
+          "ticker",
+          "company",
+          "headline",
+          "originalTitle",
+          "titleOrigin",
+          "sourceUrl",
+          "publishedAt",
+          "publicationTimeBasis",
+          "filingDate",
+          "collectedAt",
+          "importance",
+          "classification",
+          "form",
+          "summary",
+          "summaryKind",
+          "demo"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "securityId": {
+            "type": "string"
+          },
+          "sourceId": {
+            "type": "string"
+          },
+          "documentId": {
+            "type": "string",
+            "pattern": "^\\d{10}-\\d{2}-\\d{6}$"
+          },
+          "sourceName": {
+            "const": "SEC EDGAR submissions"
+          },
+          "ticker": {
+            "type": "string"
+          },
+          "company": {
+            "type": "string"
+          },
+          "headline": {
+            "type": "string"
+          },
+          "originalTitle": {
+            "type": "string"
+          },
+          "titleOrigin": {
+            "enum": ["primaryDocDescription", "form"]
+          },
+          "sourceUrl": {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^https://"
+          },
+          "publishedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "publicationTimeBasis": {
+            "enum": ["SEC acceptanceDateTime", "unknown"]
+          },
+          "filingDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "collectedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "importance": {
+            "enum": ["high", "medium", "low"]
+          },
+          "classification": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["rule", "reason"],
+            "properties": {
+              "rule": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              }
+            }
+          },
+          "form": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "summaryKind": {
+            "const": "metadata-only"
+          },
+          "demo": {
+            "const": false
+          }
+        }
+      }
+    },
+    "research": {
+      "type": "array",
+      "maxItems": 0
+    },
+    "briefings": {
+      "type": "array",
+      "maxItems": 28,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "date",
+          "period",
+          "timezone",
+          "generatedAt",
+          "kind",
+          "status",
+          "itemIds",
+          "bootstrap",
+          "noNewItems",
+          "failedSourceCount",
+          "questions",
+          "notice"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "period": {
+            "enum": ["morning", "evening"]
+          },
+          "timezone": {
+            "const": "Asia/Jerusalem"
+          },
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "kind": {
+            "const": "rule-template"
+          },
+          "status": {
+            "enum": ["complete", "partial", "failed", "no-coverage"]
+          },
+          "itemIds": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string"
+            }
+          },
+          "bootstrap": {
+            "type": "boolean"
+          },
+          "noNewItems": {
+            "type": "boolean"
+          },
+          "failedSourceCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "notice": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "run": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["url", "trigger"],
+      "properties": {
+        "url": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https://"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "trigger": {
+          "type": "string"
+        }
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

@@ -1,0 +1,212 @@
+{
+  "version": 1,
+  "reviewedAt": "2026-10-18",
+  "scope": "Public research universe; never a personal portfolio. Identity verification is independent of source availability.",
+  "securities": [
+    {
+      "id": "us-meta-nasdaq-a",
+      "name": "Meta Platforms, Inc.",
+      "ticker": "META",
+      "exchange": "Nasdaq",
+      "shareClass": "Class A common stock",
+      "cik": "0001326801",
+      "aliases": ["Meta", "Facebook", "Meta Platforms"],
+      "verification": {
+        "status": "verified",
+        "date": "2026-10-18",
+        "source": "https://www.sec.gov/Archives/edgar/data/1326801/000162828026050705/meta-20260630.htm",
+        "method": "Reviewed issuer filing cover: issuer, CIK, listed Class A security, META and Nasdaq. Revalidated against submissions on every collection."
+      },
+      "acceptedLegalNames": ["Meta Platforms, Inc."],
+      "source": {
+        "id": "sec-1326801",
+        "kind": "sec-submissions",
+        "url": "https://data.sec.gov/submissions/CIK0001326801.json",
+        "policyUrl": "https://www.sec.gov/search-filings/edgar-application-programming-interfaces",
+        "policyReviewedAt": "2026-10-18"
+      }
+    },
+    {
+      "id": "us-dlo-nasdaq-a",
+      "name": "DLocal Limited",
+      "ticker": "DLO",
+      "exchange": "Nasdaq",
+      "shareClass": "Class A common shares",
+      "cik": "0001846832",
+      "aliases": ["dLocal"],
+      "verification": {
+        "status": "verified",
+        "date": "2026-10-18",
+        "source": "https://www.sec.gov/Archives/edgar/data/1846832/000207097926000113/R1.htm",
+        "method": "Reviewed issuer cover and security description: CIK, issuer, Class A, DLO, NASDAQ. No other listing is inferred."
+      },
+      "acceptedLegalNames": ["DLocal Limited"],
+      "source": {
+        "id": "sec-1846832",
+        "kind": "sec-submissions",
+        "url": "https://data.sec.gov/submissions/CIK0001846832.json",
+        "policyUrl": "https://www.sec.gov/search-filings/edgar-application-programming-interfaces",
+        "policyReviewedAt": "2026-10-18"
+      }
+    },
+    {
+      "id": "us-lmnd-nyse-common",
+      "name": "Lemonade, Inc.",
+      "ticker": "LMND",
+      "exchange": "NYSE",
+      "shareClass": "Common stock",
+      "cik": "0001691421",
+      "aliases": ["Lemonade"],
+      "verification": {
+        "status": "verified",
+        "date": "2026-10-18",
+        "source": "https://www.sec.gov/Archives/edgar/data/1691421/000169142126000034/lmnd-20260331.htm",
+        "method": "Reviewed issuer filing cover: Lemonade, CIK, LMND common stock on NYSE. Revalidated against submissions on every collection."
+      },
+      "acceptedLegalNames": ["Lemonade, Inc."],
+      "source": {
+        "id": "sec-1691421",
+        "kind": "sec-submissions",
+        "url": "https://data.sec.gov/submissions/CIK0001691421.json",
+        "policyUrl": "https://www.sec.gov/search-filings/edgar-application-programming-interfaces",
+        "policyReviewedAt": "2026-10-18"
+      }
+    },
+    {
+      "id": "candidate-nebius",
+      "name": "Nebius",
+      "ticker": "NBIS",
+      "exchange": null,
+      "shareClass": null,
+      "cik": null,
+      "aliases": ["Nebius Group"],
+      "verification": {
+        "status": "unverified",
+        "date": null,
+        "source": null,
+        "method": "Provisional user-supplied name and ticker; issuer, exchange and share class require review."
+      },
+      "acceptedLegalNames": [],
+      "source": null
+    },
+    {
+      "id": "candidate-ftai",
+      "name": "FTAI Aviation",
+      "ticker": "FTAI",
+      "exchange": null,
+      "shareClass": null,
+      "cik": null,
+      "aliases": ["FTAI"],
+      "verification": {
+        "status": "unverified",
+        "date": null,
+        "source": null,
+        "method": "Do not confuse with FTAI Infrastructure or preferred securities."
+      },
+      "acceptedLegalNames": [],
+      "source": null
+    },
+    {
+      "id": "candidate-sandisk",
+      "name": "SanDisk",
+      "ticker": "SNDK",
+      "exchange": null,
+      "shareClass": null,
+      "cik": null,
+      "aliases": ["Sandisk"],
+      "verification": {
+        "status": "unverified",
+        "date": null,
+        "source": null,
+        "method": "Issuer and security after corporate reorganizations require separate verification."
+      },
+      "acceptedLegalNames": [],
+      "source": null
+    },
+    {
+      "id": "candidate-iren",
+      "name": "IREN",
+      "ticker": "IREN",
+      "exchange": null,
+      "shareClass": null,
+      "cik": null,
+      "aliases": ["Iris Energy"],
+      "verification": {
+        "status": "unverified",
+        "date": null,
+        "source": null,
+        "method": "Provisional mapping; similarly named non-US companies must not be matched by name alone."
+      },
+      "acceptedLegalNames": [],
+      "source": null
+    },
+    {
+      "id": "candidate-next-vision",
+      "name": "Next Vision",
+      "ticker": null,
+      "exchange": null,
+      "shareClass": null,
+      "cik": null,
+      "aliases": ["נקסט ויז'ן"],
+      "verification": {
+        "status": "unverified",
+        "date": null,
+        "source": null,
+        "method": "No ticker, exchange or issuer identifier inferred from name."
+      },
+      "acceptedLegalNames": [],
+      "source": null
+    },
+    {
+      "id": "candidate-enlight",
+      "name": "Enlight Renewable Energy",
+      "ticker": null,
+      "exchange": null,
+      "shareClass": null,
+      "cik": null,
+      "aliases": ["אנלייט"],
+      "verification": {
+        "status": "unverified",
+        "date": null,
+        "source": null,
+        "method": "Dual-listing venue and exact security must be reviewed before selection."
+      },
+      "acceptedLegalNames": [],
+      "source": null
+    },
+    {
+      "id": "candidate-brainsway",
+      "name": "BrainsWay",
+      "ticker": null,
+      "exchange": null,
+      "shareClass": null,
+      "cik": null,
+      "aliases": ["בריינסוויי"],
+      "verification": {
+        "status": "unverified",
+        "date": null,
+        "source": null,
+        "method": "Ordinary shares and US depositary securities are not interchangeable."
+      },
+      "acceptedLegalNames": [],
+      "source": null
+    },
+    {
+      "id": "candidate-gilat-telecom",
+      "name": "Gilat Telecom",
+      "ticker": null,
+      "exchange": null,
+      "shareClass": null,
+      "cik": null,
+      "aliases": ["גילת טלקום"],
+      "verification": {
+        "status": "unverified",
+        "date": null,
+        "source": null,
+        "method": "Gilat Telecom is not automatically Gilat Satellite Networks / GILT. No source selected."
+      },
+      "acceptedLegalNames": [],
+      "source": null
+    }
+  ]
+}

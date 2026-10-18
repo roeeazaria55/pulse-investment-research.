@@ -1,41 +1,120 @@
-name: Deploy PULSE to GitHub Pages
+name: Publish PULSE
 on:
   push:
     branches: [main]
+    paths-ignore: ["public/data/feed.json", "public/data/ingestion-state.json"]
   workflow_dispatch:
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+  schedule:
+    # UTC alternatives for 07:23 / 19:23 Asia/Jerusalem across DST.
+    - cron: "23 4,5,16,17 * * *"
+permissions: {}
 concurrency:
-  group: pages
+  group: pulse-production
   cancel-in-progress: true
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  collect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    outputs:
+      skipped: ${{ steps.collect.outputs.skipped }}
+      base_sha: ${{ steps.base.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - id: base
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm test
-      - name: Build with repository base path
+      - name: Collect approved public SEC metadata
+        id: collect
+        run: node scripts/ingest/run.mjs
+        env:
+          SEC_USER_AGENT: ${{ vars.SEC_USER_AGENT }}
+      - name: Validate public feed
+        if: steps.collect.outputs.skipped != 'true'
+        run: node scripts/ingest/validate.mjs
+      - name: Test
+        if: steps.collect.outputs.skipped != 'true'
+        run: npm test
+      - name: Build the exact collected snapshot
+        if: steps.collect.outputs.skipped != 'true'
         run: npm run build
         env:
           VITE_BASE_PATH: /${{ github.event.repository.name }}/
-      - uses: actions/configure-pages@v5
+      - uses: actions/upload-artifact@v4
+        if: steps.collect.outputs.skipped != 'true'
+        with:
+          name: public-ingestion-state
+          path: |
+            public/data/feed.json
+            public/data/ingestion-state.json
+          retention-days: 7
       - uses: actions/upload-pages-artifact@v3
+        if: steps.collect.outputs.skipped != 'true'
         with:
           path: dist
+  persist:
+    needs: collect
+    if: needs.collect.outputs.skipped != 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    outputs:
+      sha: ${{ steps.persist.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/download-artifact@v4
+        with:
+          name: public-ingestion-state
+          path: work/ingestion-artifact
+      - name: Commit only selected public state files
+        id: persist
+        env:
+          EXPECTED_BASE: ${{ needs.collect.outputs.base_sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_BASE"
+          cp work/ingestion-artifact/feed.json public/data/feed.json
+          cp work/ingestion-artifact/ingestion-state.json public/data/ingestion-state.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- public/data/feed.json public/data/ingestion-state.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Update public SEC collection state [skip ci]"
+            git push origin HEAD:main
+          fi
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
   deploy:
-    needs: build
+    needs: [collect, persist]
+    if: needs.collect.outputs.skipped != 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     steps:
-      - name: Deploy
-        id: deployment
+      - name: Reject a superseded publication
+        uses: actions/github-script@v7
+        env:
+          EXPECTED_HEAD: ${{ needs.persist.outputs.sha }}
+        with:
+          script: |
+            const {data} = await github.rest.git.getRef({...context.repo, ref:'heads/main'});
+            if (data.object.sha !== process.env.EXPECTED_HEAD) throw new Error('A newer main exists; do not publish an old snapshot.');
+      - uses: actions/configure-pages@v5
+      - id: deployment
         uses: actions/deploy-pages@v4

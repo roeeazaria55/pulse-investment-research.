@@ -2,6 +2,8 @@
 
 A Hebrew, RTL, mobile-first investment research PWA. Built with React, Vite, TypeScript and Tailwind CSS. Runs entirely in the browser. No backend, credentials, paid services, tracking, or market-data API.
 
+**Phase 2:** public SEC metadata is collected in GitHub Actions, separately from the browser application. See [the Phase 2 operating guide](docs/phase-2.md) and [v2 JSON Schema](schemas/feed-v2.schema.json). Source status in the deployed feed, not this README, determines actual coverage. The registry begins with three reviewed identities and eight explicitly uncovered companies. No IR/RSS feed or AI summarization is enabled.
+
 ## Run locally
 
 Use Node.js 22.22.2+, Node 24.15+, or Node 26+.
@@ -40,15 +42,15 @@ Invalid or blocked storage produces an explicit error. A failed write is not rep
 
 ## Data honesty and freshness
 
-`public/data/feed.json` contains **three fictional, clearly labeled examples**, each linked to an `example.com` placeholder. They do not claim any company event happened. The briefing is a template, not an automated research report. No live prices, financial metrics, performance charts or implied market updates are shown.
+Before first collection `public/data/feed.json` can contain three explicitly fictional v1 examples. The first Phase 2 attempt replaces them with a v2 feed containing only validated SEC metadata (or an honest empty/failed status). Tests keep the v1 demo fixture separately under `tests/fixtures`. No live prices, fabricated metrics or AI research are shown. V2 titles remain source-original; briefings use disclosed rule templates.
 
-`updatedAt: null` means there has never been a successful real ingestion. A demo feed is always stale; a real feed older than 18 hours is stale. Refreshing the app or successfully downloading a demo does not advance the data timestamp. Fetch failures leave the last valid in-memory feed visible; offline loads use the service-worker cache. Publication/collection times remain the source's recorded values. Cached real data retains its original `updatedAt` and freshness warning.
+In v2, `lastAttemptAt` is separate from each source's `lastSuccessfulAt`. Global `lastSuccessfulAt` and legacy `updatedAt` are reserved for full registry coverage; they stay null while eight companies are uncovered, even if the three configured sources work. Source-level timestamps drive age warnings (18 hours); partial failures never refresh failed sources. Fetch failures leave the last valid in-memory feed visible; offline loads use the cached public feed. Missing publication times stay null. See the Phase 2 guide for exact semantics.
 
 ## GitHub Pages deployment
 
 1. Push this project to `main` in `roeeazaria55/pulse-investment-research.` (the trailing period is part of the supplied repository name).
 2. In the repository, choose **Settings → Pages → Build and deployment → Source: GitHub Actions**.
-3. Open **Actions → Deploy PULSE to GitHub Pages** and run it, or push a commit to `main`.
+3. Open **Actions → Publish PULSE → Run workflow → main**, or push a code commit to `main`.
 4. The workflow installs locked dependencies, runs tests, builds, uploads `dist`, then deploys through the Pages environment. The deployment job returns the actual site URL. Pages must be available for the repository/account plan.
 
 The workflow derives `VITE_BASE_PATH` from `github.event.repository.name`, including the trailing period. All JS, CSS, manifest, icon, service worker and data URLs respect that path. For a custom-domain/root site, change the build environment value to `/`. For a manual subpath build:
@@ -84,6 +86,6 @@ tests/             Contract, storage, research and UI behavior checks
 
 The public format is documented by [feed.schema.json](schemas/feed.schema.json) and [the ingestion plan](docs/data-contract.md). Public research and local research are separate: editing a public profile creates a private local override.
 
-## Intentionally unfinished / Phase 2
+## Remaining scope
 
-No crawler, live quotes, AI summarization service, verified market ticker/exchange mapping, real financial data, generated morning/evening briefings, scheduled ingestion, authentication, cloud sync or broker integration. The schema and deployment path support a future twice-daily GitHub Actions publisher. Before enabling it, verify every security's current exchange, symbol and share class, select permitted sources and maintain provenance. There is no investment recommendation engine.
+The scoped SEC filings collector, persisted deduplication, rule-template briefings and morning/evening schedule are implemented by `Publish PULSE`. Availability must be confirmed by an actual manual run and the published source statuses. Eight registry companies await reviewed mappings/sources. No live quotes, article crawler, IR/RSS ingestion, AI summarization, financial metric extraction, authentication, cloud sync, private-data ingestion or broker integration is included. The application is not an investment recommendation engine.

@@ -7,7 +7,7 @@ import { blankResearch, initialState } from "../src/data/initial";
 import { readState, validState } from "../src/state/storage";
 import schema from "../schemas/feed.schema.json";
 const fixture = JSON.parse(
-  readFileSync(new URL("../public/data/feed.json", import.meta.url), "utf8"),
+  readFileSync(new URL("./fixtures/demo-feed.json", import.meta.url), "utf8"),
 );
 afterEach(() => vi.unstubAllGlobals());
 describe("public data contract", () => {

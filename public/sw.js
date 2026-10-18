@@ -1,5 +1,5 @@
 /* Bump this identifier when publishing a new application shell. */
-const VERSION = "pulse-v1";
+const VERSION = "pulse-v2";
 const SCOPE = new URL(self.registration.scope);
 const CACHE = `${VERSION}-${SCOPE.pathname}`;
 const local = (path) => new URL(path, SCOPE).href;
@@ -57,7 +57,7 @@ self.addEventListener("fetch", (event) => {
           if (!response.ok) throw Error("Feed unavailable");
           const body = await response.clone().json();
           if (
-            body.version !== 1 ||
+            ![1,2].includes(body.version) ||
             !Array.isArray(body.news) ||
             !Array.isArray(body.research)
           )

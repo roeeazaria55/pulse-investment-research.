@@ -1,5 +1,6 @@
 import type { Feed, News, Research } from "../types";
 import { researchFields } from "../types";
+import { parseV2 } from "./feedV2";
 export const isUrl = (value: unknown): value is string => {
   try {
     return (
@@ -34,7 +35,7 @@ export function isNews(x: unknown): x is News {
       (k) => typeof (n as unknown as Record<string, unknown>)[k] === "string",
     ) &&
     isUrl(n.sourceUrl) &&
-    isDate(n.publishedAt) &&
+    (n.publishedAt === null || isDate(n.publishedAt)) &&
     isDate(n.collectedAt) &&
     ["high", "medium", "low"].includes(n.importance) &&
     typeof n.demo === "boolean"
@@ -42,6 +43,7 @@ export function isNews(x: unknown): x is News {
 }
 export function parseFeed(x: unknown): Feed {
   if (!x || typeof x !== "object") throw Error("מבנה נתונים לא תקין");
+  if ((x as { version?: number }).version === 2) return parseV2(x);
   const f = x as Feed;
   if (
     f.version !== 1 ||
@@ -79,6 +81,18 @@ export async function fetchFeed(): Promise<Feed> {
   return parseFeed(await response.json());
 }
 export function isStale(feed: Feed | null, now = Date.now()) {
+  if (feed?.version === 2) {
+    const active = feed.sources.filter((s) => s.url);
+    return (
+      active.length === 0 ||
+      active.some(
+        (s) =>
+          !s.lastSuccessfulAt ||
+          now - Date.parse(s.lastSuccessfulAt) > 18 * 60 * 60 * 1000 ||
+          Date.parse(s.lastSuccessfulAt) - now > 5 * 60 * 1000,
+      )
+    );
+  }
   return (
     !feed ||
     feed.demo ||
