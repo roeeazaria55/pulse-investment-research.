@@ -6,6 +6,7 @@ export interface OfficialItem {
   publishedDate: string|null; collectedAt: string; lastSeenAt: string;
   metadataStatus: 'index-link'|'page-metadata'; metadataCheckedAt: string|null;
   metadataError: string|null; contentScope: 'metadata-only';
+  sourceKind?:'company-ir'|'issuer-distributed';issuerEvidenceUrl?:string|null;
   titleBasis?:'page-heading'|'link-label'|'index-context'|'filename'; sourceLabel?:string;
   language?:'he'|'en'|null; documentPeriod?:string|null;
   periodBasis?:'index-heading'|'title'|'filename-hint'|'unknown';
@@ -34,8 +35,10 @@ export function parseOfficialSnapshot(value: unknown): OfficialSnapshot {
   for(const n of f.items){
     const source=sourceMap.get(n.sourceId),company=source?.company;
     const u=new URL(n.url);
-    if(!company||n.companyId!==company.id||n.ticker!==company.ticker||!/^official:[a-f0-9]{32}$/.test(n.id)||ids.has(n.id)||!text(n.title)||u.protocol!=='https:'||u.username||u.password||u.port||u.hash||!company.allowedHosts.includes(u.hostname)||!company.documentPaths.some(p=>u.pathname.startsWith(p))||!['document','schedule','results','release'].includes(n.kind)||n.contentScope!=='metadata-only'||!['index-link','page-metadata'].includes(n.metadataStatus)||!stamp(n.collectedAt)||!stamp(n.lastSeenAt)||!nullableStamp(n.metadataCheckedAt)||!(n.metadataError===null||text(n.metadataError,180))||n.publishedDate!==null&&(!/^\d{4}-\d{2}-\d{2}$/.test(n.publishedDate)||!Number.isFinite(Date.parse(n.publishedDate))))throw Error('Invalid official item attribution');
+    if(!company||n.companyId!==company.id||n.ticker!==company.ticker||!/^official:[a-f0-9]{32}$/.test(n.id)||ids.has(n.id)||!text(n.title)||u.protocol!=='https:'||u.username||u.password||u.port||u.hash||!company.allowedHosts.includes(u.hostname)||!company.documentPaths.some(p=>u.pathname.startsWith(p))||!['document','schedule','results','release'].includes(n.kind)||n.contentScope!=='metadata-only'||!['index-link','page-metadata'].includes(n.metadataStatus)||!stamp(n.collectedAt)||!stamp(n.lastSeenAt)||!nullableStamp(n.metadataCheckedAt)||!(n.metadataError===null||text(n.metadataError,180))||n.publishedDate!==null&&(!/^\d{4}-\d{2}-\d{2}$/.test(n.publishedDate)||!Number.isFinite(Date.parse(n.publishedDate))||new Date(n.publishedDate).toISOString().slice(0,10)!==n.publishedDate))throw Error('Invalid official item attribution');
     if(n.metadataStatus==='page-metadata'&&!stamp(n.metadataCheckedAt))throw Error('Missing page metadata check');
+    if(n.sourceKind==='issuer-distributed'&&(!source||!('kind' in source)||source.kind!=='issuer-distributed'||n.issuerEvidenceUrl!==source.url))throw Error('Wrong issuer-distribution proof');
+    if(n.sourceKind!==undefined&&!['company-ir','issuer-distributed'].includes(n.sourceKind))throw Error('Invalid source kind');
     if(n.titleBasis!==undefined&&!['page-heading','link-label','index-context','filename'].includes(n.titleBasis)||n.language!==undefined&&n.language!==null&&!['he','en'].includes(n.language)||n.documentPeriod!==undefined&&n.documentPeriod!==null&&!text(n.documentPeriod,160)||n.periodBasis!==undefined&&!['index-heading','title','filename-hint','unknown'].includes(n.periodBasis)||n.sourceLabel!==undefined&&typeof n.sourceLabel!=='string')throw Error('Invalid document description');
     if(n.publishedDateBasis!==undefined){
       if(!['page-published-metadata','index-time','legacy-metadata','unknown'].includes(n.publishedDateBasis))throw Error('Invalid publication evidence');

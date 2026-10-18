@@ -7,7 +7,7 @@ import time
 import urllib.parse
 from pathlib import Path
 from earnings import get_page, approved
-from official_metadata import OfficialPage, describe, clean, iso_date
+from official_metadata import OfficialPage, describe, clean, iso_date, organization_key
 
 def date_only(value):
     if not isinstance(value,str):return None
@@ -18,6 +18,7 @@ def date_only(value):
 
 def kind(title,url):
     t=title.lower()
+    if 'maya.tase.co.il/he/reports/' in url:return 'document'
     if url.lower().split('?')[0].endswith('.pdf') or '/static-files/' in url or '/assets/' in url:return 'document'
     if any(x in t for x in ('to report','to release','date of','timing of')):return 'schedule'
     if re.search(r'\b(reports|reported)\b.*\bresults\b',t):return 'results'
@@ -62,7 +63,9 @@ def collect(config,previous,now,getter=get_official_page):
                 links={}
                 for href,title in page.links:
                     url=canonical(urllib.parse.urljoin(source['url'],href))
-                    if document_url(url,company) and 1<=len(clean(title))<=600:
+                    context=getattr(page,'link_contexts',{}).get(href,{})
+                    verified_publisher=source.get('kind')!='issuer-distributed' or context.get('publisherKey')==organization_key(source['url'])
+                    if verified_publisher and document_url(url,company) and 1<=len(clean(title))<=600:
                         if url not in links or len(title)>len(links[url]):links[url]=title
                 if not links:raise ValueError('No supported document links; page may require JavaScript or review')
                 for rank,(url,title) in enumerate(list(links.items())[:8]):
@@ -71,10 +74,10 @@ def collect(config,previous,now,getter=get_official_page):
                     context=getattr(page,'link_contexts',{}).get(next((href for href,_ in page.links if canonical(urllib.parse.urljoin(source['url'],href))==url),url),{})
                     # Index dates apply only to release cards, not financial PDF
                     # periods or dates embedded in document paths/filenames.
-                    index_date=context.get('publishedDate') if kind(title,url)!='document' else None
+                    index_date=context.get('publishedDate') if kind(title,url)!='document' or source.get('publicationDates') is True else None
                     if index_date and index_date>now[:10]:index_date=None
                     record={**old_item,'id':ident,'companyId':company['id'],'ticker':company['ticker'],
-                            'title':title,'sourceLabel':clean(title),'url':url,'indexRank':rank,'sourceId':source['id'],'kind':kind(title,url),
+                            'title':title,'sourceKind':source.get('kind','company-ir'),'issuerEvidenceUrl':source['url'] if source.get('kind')=='issuer-distributed' else None,'sourceLabel':clean(title),'url':url,'indexRank':rank,'sourceId':source['id'],'kind':kind(title,url),
                             'publishedDate':old_item.get('publishedDate'),'collectedAt':old_item.get('collectedAt',now),
                             'lastSeenAt':now,'metadataStatus':'index-link','metadataCheckedAt':old_item.get('metadataCheckedAt'),
                             'metadataError':None,'contentScope':'metadata-only',

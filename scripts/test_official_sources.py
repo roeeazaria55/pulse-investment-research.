@@ -55,3 +55,27 @@ class OfficialTests(unittest.TestCase):
         a=collect(self.config,{},NOW,getter)
         self.assertEqual(len(a['items']),8);self.assertEqual(len(calls),4)
         self.assertFalse(any(u.endswith('.pdf') for u in calls))
+
+class IssuerDistributionTests(unittest.TestCase):
+    def test_wrong_publisher_cannot_become_official_company_news(self):
+        from official_metadata import OfficialPage
+        config={'version':1,'companies':[{'id':'test-issuer','ticker':'IREN','name':'IREN','allowedHosts':['www.globenewswire.com'],'documentPaths':['/news-release/'],'sources':[{'id':'issuer-wire','label':'Issuer releases','url':'https://www.globenewswire.com/search/organization/IREN%2520Limited','kind':'issuer-distributed'}]}]}
+        def getter(url,hosts):
+            p=OfficialPage()
+            if '/search/' in url:
+                p.feed('''<main><article><a href="/search/organization/IREN%2520Limited">IREN</a><a href="/news-release/actual">IREN reports financial results</a></article><article><a href="/search/organization/Law%2520Firm">Law firm</a><a href="/news-release/wrong">IREN investor investigation announced by a law firm</a></article></main>''')
+            else:p.feed('<h1>IREN reports financial results</h1><meta property="article:published_time" content="2026-10-14T10:00:00Z">')
+            return p
+        result=collect(config,{},NOW,getter)
+        self.assertEqual(len(result['items']),1)
+        self.assertTrue(result['items'][0]['url'].endswith('/actual'))
+        self.assertEqual(result['items'][0]['sourceKind'],'issuer-distributed')
+        self.assertEqual(result['items'][0]['publishedDate'],'2026-10-14')
+        self.assertEqual(result['items'][0]['dateEvidenceUrl'],result['items'][0]['url'])
+    def test_distributor_without_publisher_proof_is_failed(self):
+        from official_metadata import OfficialPage
+        config={'version':1,'companies':[{'id':'test-issuer','ticker':'IREN','name':'IREN','allowedHosts':['www.globenewswire.com'],'documentPaths':['/news-release/'],'sources':[{'id':'issuer-wire','label':'Issuer releases','url':'https://www.globenewswire.com/search/organization/IREN%2520Limited','kind':'issuer-distributed'}]}]}
+        def getter(*_):
+            p=OfficialPage();p.feed('<a href="/news-release/wrong">IREN mentioned in a third-party release</a>');return p
+        result=collect(config,{},NOW,getter)
+        self.assertEqual(result['items'],[]);self.assertEqual(result['sources'][0]['status'],'failed')

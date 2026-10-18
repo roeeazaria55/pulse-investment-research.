@@ -23,3 +23,18 @@ not repository files and are never modified by these collector changes.
   metadata read-only before validating and building the exact test snapshot.
 - Rollback: revert the commit named `Fix document labels and publication-date
   provenance`; retained earlier version-1 snapshots remain readable.
+
+## Quality 2 — verified issuer distribution and Gilat coverage
+
+- Added GlobeNewswire organization indexes for IREN, DLO, FTAI and BrainsWay.
+  A matching publisher badge in the same card is required before collecting a
+  release; unrelated publishers and law-firm mentions are rejected.
+- Added Gilat Telecom's verified Satcom-Gilat investor financial/immediate
+  reporting pages, including explicitly linked Maya reports. Dates must appear
+  in an individual report entry; URL years are not used.
+- Distributor releases are labeled separately from company-hosted IR documents.
+  Registry additions do not imply successful collection; live CI reports actual
+  availability, and blocked or empty sources remain visible.
+- Validation: 51 Python tests, 60 JavaScript tests and production build passed.
+- Rollback: revert `Add verified issuer distribution and Gilat investor sources`.
+  The preceding metadata commit is `4129dd62d42f274c49f866d95efd35797627d43e`.

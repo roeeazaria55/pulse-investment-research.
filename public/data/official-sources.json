@@ -74,11 +74,14 @@
         "ticker": "DLO",
         "name": "dLocal",
         "allowedHosts": [
-          "dlocal.gcs-web.com"
+          "dlocal.gcs-web.com",
+          "www.globenewswire.com",
+          "rss.globenewswire.com"
         ],
         "documentPaths": [
           "/news-releases/news-release-details/",
-          "/static-files/"
+          "/static-files/",
+          "/news-release/"
         ],
         "sources": [
           {
@@ -90,6 +93,14 @@
             "id": "dlo-financials",
             "label": "תוצאות רבעוניות",
             "url": "https://dlocal.gcs-web.com/financial-information/quarterly-results"
+          },
+          {
+            "id": "us-dlo-nasdaq-a-issuer-wire",
+            "label": "הודעות שהופצו בשם החברה — GlobeNewswire",
+            "url": "https://rss.globenewswire.com/search/organization/dlocal%2520limited",
+            "kind": "issuer-distributed",
+            "identitySource": "https://www.globenewswire.com/news-release/2026/08/13/3344936/0/en/dlocal-reports-second-quarter-2026-financial-results.html",
+            "reviewedAt": "2026-10-18"
           }
         ],
         "questions": [
@@ -109,17 +120,28 @@
         "ticker": "FTAI",
         "name": "FTAI Aviation",
         "allowedHosts": [
-          "ir.ftaiaviation.com"
+          "ir.ftaiaviation.com",
+          "www.globenewswire.com",
+          "rss.globenewswire.com"
         ],
         "documentPaths": [
           "/news-releases/news-release-details/",
-          "/static-files/"
+          "/static-files/",
+          "/news-release/"
         ],
         "sources": [
           {
             "id": "candidate-ftai-official",
             "label": "מקור משקיעים רשמי",
             "url": "https://ir.ftaiaviation.com/news-events/press-releases"
+          },
+          {
+            "id": "candidate-ftai-issuer-wire",
+            "label": "הודעות שהופצו בשם החברה — GlobeNewswire",
+            "url": "https://www.globenewswire.com/search/organization/FTAI%2520Aviation%2520Ltd%C2%A7",
+            "kind": "issuer-distributed",
+            "identitySource": "https://www.globenewswire.com/news-release/2026/04/29/3284285/35538/en/ftai-aviation-ltd-reports-first-quarter-2026-results-increases-dividend-to-0-45-per-ordinary-share.html",
+            "reviewedAt": "2026-10-18"
           }
         ],
         "questions": [
@@ -196,11 +218,14 @@
         "name": "IREN",
         "allowedHosts": [
           "iren.gcs-web.com",
-          "iren.com"
+          "iren.com",
+          "www.globenewswire.com",
+          "rss.globenewswire.com"
         ],
         "documentPaths": [
           "/news-releases/news-release-details/",
-          "/static-files/"
+          "/static-files/",
+          "/news-release/"
         ],
         "sources": [
           {
@@ -212,6 +237,14 @@
             "id": "iren-presentations",
             "label": "אירועים ומצגות",
             "url": "https://iren.com/investor/events-and-presentations"
+          },
+          {
+            "id": "candidate-iren-issuer-wire",
+            "label": "הודעות שהופצו בשם החברה — GlobeNewswire",
+            "url": "https://rss.globenewswire.com/en/search/organization/IREN%2520Limited?page=1",
+            "kind": "issuer-distributed",
+            "identitySource": "https://www.globenewswire.com/news-release/2026/08/13/3344878/0/en/iren-to-release-fy26-results-on-august-27-2026.html",
+            "reviewedAt": "2026-10-18"
           }
         ],
         "questions": [
@@ -288,17 +321,28 @@
         "ticker": "",
         "name": "BrainsWay",
         "allowedHosts": [
-          "investors.brainsway.com"
+          "investors.brainsway.com",
+          "www.globenewswire.com",
+          "rss.globenewswire.com"
         ],
         "documentPaths": [
           "/news-releases/news-release-details/",
-          "/static-files/"
+          "/static-files/",
+          "/news-release/"
         ],
         "sources": [
           {
             "id": "candidate-brainsway-official",
             "label": "מקור משקיעים רשמי",
             "url": "https://investors.brainsway.com/"
+          },
+          {
+            "id": "candidate-brainsway-issuer-wire",
+            "label": "הודעות שהופצו בשם החברה — GlobeNewswire",
+            "url": "https://www.globenewswire.com/search/organization/BrainsWay%2520Ltd%C2%A7",
+            "kind": "issuer-distributed",
+            "identitySource": "https://www.globenewswire.com/news-release/2026/08/12/3343549/17676/en/brainsway-reports-second-quarter-2026-financial-results-and-operational-highlights.html",
+            "reviewedAt": "2026-10-18"
           }
         ],
         "questions": [
@@ -317,16 +361,34 @@
         "ticker": "",
         "name": "Gilat Telecom",
         "allowedHosts": [
-          "gilat.net"
+          "gilat.net",
+          "satcom-gilat.co.il",
+          "maya.tase.co.il"
         ],
         "documentPaths": [
-          "/wp-content/uploads/"
+          "/wp-content/uploads/",
+          "/he/reports/"
         ],
         "sources": [
           {
             "id": "candidate-gilat-telecom-official",
             "label": "מקור החברה — טעון בדיקת כיסוי",
             "url": "https://gilat.net/gilat-israel/"
+          },
+          {
+            "id": "gilat-immediate",
+            "label": "דיווחים מידיים באתר קשרי המשקיעים",
+            "url": "https://satcom-gilat.co.il/%D7%93%D7%99%D7%95%D7%95%D7%97%D7%99%D7%9D-%D7%9E%D7%99%D7%93%D7%99%D7%99%D7%9D/",
+            "identitySource": "https://satcom-gilat.co.il/%D7%90%D7%95%D7%93%D7%95%D7%AA-%D7%9E%D7%A9%D7%A7%D7%99%D7%A2%D7%99%D7%9D/",
+            "reviewedAt": "2026-10-18",
+            "publicationDates": true
+          },
+          {
+            "id": "gilat-financial",
+            "label": "דוחות כספיים באתר קשרי המשקיעים",
+            "url": "https://satcom-gilat.co.il/%D7%93%D7%95%D7%97%D7%95%D7%AA-%D7%9B%D7%A1%D7%A4%D7%99%D7%99%D7%9D/",
+            "identitySource": "https://satcom-gilat.co.il/%D7%90%D7%95%D7%93%D7%95%D7%AA-%D7%9E%D7%A9%D7%A7%D7%99%D7%A2%D7%99%D7%9D/",
+            "reviewedAt": "2026-10-18"
           }
         ],
         "questions": [
@@ -999,6 +1061,20 @@
       "error": "HTTP Error 403: Forbidden"
     },
     {
+      "id": "us-dlo-nasdaq-a-issuer-wire",
+      "label": "הודעות שהופצו בשם החברה — GlobeNewswire",
+      "url": "https://rss.globenewswire.com/search/organization/dlocal%2520limited",
+      "kind": "issuer-distributed",
+      "identitySource": "https://www.globenewswire.com/news-release/2026/08/13/3344936/0/en/dlocal-reports-second-quarter-2026-financial-results.html",
+      "reviewedAt": "2026-10-18",
+      "companyId": "us-dlo-nasdaq-a",
+      "status": "not-checked",
+      "lastAttemptAt": null,
+      "lastSuccessfulAt": null,
+      "count": 0,
+      "error": null
+    },
+    {
       "id": "candidate-ftai-official",
       "label": "מקור משקיעים רשמי",
       "url": "https://ir.ftaiaviation.com/news-events/press-releases",
@@ -1008,6 +1084,20 @@
       "lastSuccessfulAt": null,
       "count": 0,
       "error": "HTTP Error 403: Forbidden"
+    },
+    {
+      "id": "candidate-ftai-issuer-wire",
+      "label": "הודעות שהופצו בשם החברה — GlobeNewswire",
+      "url": "https://www.globenewswire.com/search/organization/FTAI%2520Aviation%2520Ltd%C2%A7",
+      "kind": "issuer-distributed",
+      "identitySource": "https://www.globenewswire.com/news-release/2026/04/29/3284285/35538/en/ftai-aviation-ltd-reports-first-quarter-2026-results-increases-dividend-to-0-45-per-ordinary-share.html",
+      "reviewedAt": "2026-10-18",
+      "companyId": "candidate-ftai",
+      "status": "not-checked",
+      "lastAttemptAt": null,
+      "lastSuccessfulAt": null,
+      "count": 0,
+      "error": null
     },
     {
       "id": "us-lmnd-nyse-common-official",
@@ -1054,6 +1144,20 @@
       "error": "HTTP Error 403: Forbidden"
     },
     {
+      "id": "candidate-iren-issuer-wire",
+      "label": "הודעות שהופצו בשם החברה — GlobeNewswire",
+      "url": "https://rss.globenewswire.com/en/search/organization/IREN%2520Limited?page=1",
+      "kind": "issuer-distributed",
+      "identitySource": "https://www.globenewswire.com/news-release/2026/08/13/3344878/0/en/iren-to-release-fy26-results-on-august-27-2026.html",
+      "reviewedAt": "2026-10-18",
+      "companyId": "candidate-iren",
+      "status": "not-checked",
+      "lastAttemptAt": null,
+      "lastSuccessfulAt": null,
+      "count": 0,
+      "error": null
+    },
+    {
       "id": "candidate-next-vision-official",
       "label": "מקור משקיעים רשמי",
       "url": "https://investor-relations.nextvision-sys.com/",
@@ -1087,6 +1191,20 @@
       "error": "HTTP Error 403: Forbidden"
     },
     {
+      "id": "candidate-brainsway-issuer-wire",
+      "label": "הודעות שהופצו בשם החברה — GlobeNewswire",
+      "url": "https://www.globenewswire.com/search/organization/BrainsWay%2520Ltd%C2%A7",
+      "kind": "issuer-distributed",
+      "identitySource": "https://www.globenewswire.com/news-release/2026/08/12/3343549/17676/en/brainsway-reports-second-quarter-2026-financial-results-and-operational-highlights.html",
+      "reviewedAt": "2026-10-18",
+      "companyId": "candidate-brainsway",
+      "status": "not-checked",
+      "lastAttemptAt": null,
+      "lastSuccessfulAt": null,
+      "count": 0,
+      "error": null
+    },
+    {
       "id": "candidate-gilat-telecom-official",
       "label": "מקור החברה — טעון בדיקת כיסוי",
       "url": "https://gilat.net/gilat-israel/",
@@ -1096,6 +1214,32 @@
       "lastSuccessfulAt": null,
       "count": 0,
       "error": "HTTP Error 403: Forbidden"
+    },
+    {
+      "id": "gilat-immediate",
+      "label": "דיווחים מידיים באתר קשרי המשקיעים",
+      "url": "https://satcom-gilat.co.il/%D7%93%D7%99%D7%95%D7%95%D7%97%D7%99%D7%9D-%D7%9E%D7%99%D7%93%D7%99%D7%99%D7%9D/",
+      "identitySource": "https://satcom-gilat.co.il/%D7%90%D7%95%D7%93%D7%95%D7%AA-%D7%9E%D7%A9%D7%A7%D7%99%D7%A2%D7%99%D7%9D/",
+      "reviewedAt": "2026-10-18",
+      "companyId": "candidate-gilat-telecom",
+      "status": "not-checked",
+      "lastAttemptAt": null,
+      "lastSuccessfulAt": null,
+      "count": 0,
+      "error": null
+    },
+    {
+      "id": "gilat-financial",
+      "label": "דוחות כספיים באתר קשרי המשקיעים",
+      "url": "https://satcom-gilat.co.il/%D7%93%D7%95%D7%97%D7%95%D7%AA-%D7%9B%D7%A1%D7%A4%D7%99%D7%99%D7%9D/",
+      "identitySource": "https://satcom-gilat.co.il/%D7%90%D7%95%D7%93%D7%95%D7%AA-%D7%9E%D7%A9%D7%A7%D7%99%D7%A2%D7%99%D7%9D/",
+      "reviewedAt": "2026-10-18",
+      "companyId": "candidate-gilat-telecom",
+      "status": "not-checked",
+      "lastAttemptAt": null,
+      "lastSuccessfulAt": null,
+      "count": 0,
+      "error": null
     }
   ],
   "notice": "כותרות, קישורים ותאריכי פרסום כאשר זמינים. תוכן המסמכים לא נאסף ולא סוכם ב־AI.",

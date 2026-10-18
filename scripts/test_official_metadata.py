@@ -29,3 +29,9 @@ class MetadataTests(unittest.TestCase):
         self.assertEqual(visible_date('1 Oct 2026'),'2026-10-01')
         self.assertIsNone(visible_date('Report on October 1, 2026'))
         self.assertIsNone(iso_date('2026-02-30'))
+    def test_publisher_card_identity_is_retained_and_not_borrowed(self):
+        from official_metadata import organization_key
+        p=OfficialPage();p.feed('''<main><article><a href="/search/organization/IREN%2520Limited">IREN</a><h3>IREN reports results</h3><a href="/news-release/iren">Read more</a></article><article><a href="/search/organization/Other%2520Ltd">Other</a><h3>Other discusses IREN</h3><a href="/news-release/other">Read more</a></article></main>''')
+        self.assertEqual(p.link_contexts['/news-release/iren']['publisherKey'],organization_key('https://rss.globenewswire.com/en/search/organization/IREN%2520Limited'))
+        self.assertEqual(p.link_contexts['/news-release/other']['publisherKey'],'otherltd')
+        self.assertEqual(visible_date('07/10/2026'),'2026-10-07')

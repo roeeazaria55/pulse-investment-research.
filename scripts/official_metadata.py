@@ -20,6 +20,10 @@ def visible_date(value):
     value=clean(value)
     direct=iso_date(value)
     if direct:return direct
+    numeric=re.fullmatch(r'(\d{2})/(\d{2})/(20\d{2})',value)
+    if numeric:
+        try:return dt.date(int(numeric[3]),int(numeric[2]),int(numeric[1])).isoformat()
+        except ValueError:return None
     patterns=(r'([A-Za-z]+)\.?\s+(\d{1,2}),?\s+(20\d{2})',r'(\d{1,2})\s+([A-Za-z]+)\.?\s+(20\d{2})')
     for index,pattern in enumerate(patterns):
         m=re.fullmatch(pattern,value)
@@ -72,6 +76,12 @@ def describe(company,url,label,context=None,page_title=None):
         period=period_hint(readable);period_basis='filename-hint' if period else 'unknown'
     if basis=='index-context' and lang:title+=' · '+('עברית' if lang=='he' else 'אנגלית')
     return {'title':title[:600],'titleBasis':basis,'language':lang,'documentPeriod':period,'periodBasis':period_basis}
+
+def organization_key(url):
+    path=urllib.parse.urlsplit(url).path
+    if '/search/organization/' not in path:return None
+    name=path.split('/search/organization/',1)[1].split('/')[0]
+    return re.sub(r'[^a-z0-9]+','',urllib.parse.unquote(urllib.parse.unquote(name)).casefold()) or None
 
 class OfficialPage(Page):
     """Attach headings/dates only to small containing blocks, not page-wide text."""
@@ -127,8 +137,10 @@ class OfficialPage(Page):
         # A nearby card/section may link English and Hebrew versions of the same
         # document. Large page/nav containers cannot lend dates to every link.
         urls=set(node['links'])
-        if 0<len(urls)<=4 and len(text)<3000:
+        if 0<len(urls)<=6 and len(text)<3000:
+            publishers={key for href in urls if (key:=organization_key(href))}
             for href in urls:
                 context=self.link_contexts.setdefault(href,{})
+                if len(publishers)==1:context.setdefault('publisherKey',next(iter(publishers)))
                 if node['headings']:context.setdefault('heading',node['headings'][-1])
                 if len(urls)==1 and len(set(node['dates']))==1:context.setdefault('publishedDate',node['dates'][0])
