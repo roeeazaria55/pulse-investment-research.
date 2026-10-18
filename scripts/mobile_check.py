@@ -38,6 +38,15 @@ with sync_playwright() as pw:
         page.screenshot(path=f'work/mobile-{width}-text200.png',full_page=False)
         # Emulate keyboard's visual viewport independently from layout viewport.
         page.evaluate("document.documentElement.style.fontSize='16px'")
+        nav.get_by_role('button',name='מחקר',exact=True).click()
+        official=page.get_by_role('region',name='מקורות רשמיים וחבילת מחקר')
+        official.get_by_role('button',name='NBIS',exact=True).click()
+        official.get_by_role('button',name='הכנת חבילת מקורות ל־NBIS',exact=True).click()
+        pack=page.get_by_role('dialog',name='בקשת ניתוח ל־ChatGPT')
+        assert 'מטא־נתונים וקישורים בלבד' in pack.get_by_role('textbox',name='טקסט להעתקה').input_value()
+        pack.get_by_role('button',name='סגירה',exact=True).click()
+        assert page.evaluate('document.documentElement.scrollWidth')<=width+1,f'Official panel overflow at {width}'
+        page.screenshot(path=f'work/mobile-{width}-official.png',full_page=False)
         nav.get_by_role('button',name='תיק השקעות',exact=True).click()
         page.get_by_role('button',name='הוספת אחזקה',exact=True).click()
         dialog=page.get_by_role('dialog')

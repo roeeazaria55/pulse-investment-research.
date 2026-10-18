@@ -2,7 +2,7 @@ name: Publish PULSE
 on:
   push:
     branches: [main]
-    paths-ignore: ["public/data/feed.json", "public/data/ingestion-state.json"]
+    paths-ignore: ["public/data/feed.json", "public/data/ingestion-state.json", "public/data/official-sources.json"]
   workflow_dispatch:
   schedule:
     # About every 30 minutes; 13:00 Jerusalem daily window is generated on
@@ -15,7 +15,7 @@ concurrency:
 jobs:
   collect:
     runs-on: ubuntu-24.04
-    timeout-minutes: 12
+    timeout-minutes: 20
     permissions:
       contents: read
     outputs:
@@ -55,6 +55,9 @@ jobs:
       - name: Validate enriched public snapshot
         if: steps.collect.outputs.skipped != 'true'
         run: node scripts/ingest/validate.mjs
+      - name: Collect pilot official company sources
+        if: steps.collect.outputs.skipped != 'true'
+        run: python3 scripts/official_sources.py
       - name: Test
         if: steps.collect.outputs.skipped != 'true'
         run: npm test
@@ -70,6 +73,7 @@ jobs:
           path: |
             public/data/feed.json
             public/data/ingestion-state.json
+            public/data/official-sources.json
           retention-days: 7
       - name: Install browser test runtime for code/manual releases only
         if: github.event_name != 'schedule'
@@ -121,9 +125,10 @@ jobs:
           test "$(git rev-parse HEAD)" = "$EXPECTED_BASE"
           cp work/ingestion-artifact/feed.json public/data/feed.json
           cp work/ingestion-artifact/ingestion-state.json public/data/ingestion-state.json
+          cp work/ingestion-artifact/official-sources.json public/data/official-sources.json
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -- public/data/feed.json public/data/ingestion-state.json
+          git add -- public/data/feed.json public/data/ingestion-state.json public/data/official-sources.json
           if ! git diff --cached --quiet; then
             git commit -m "Update public news and SEC collection state [skip ci]"
             git push origin HEAD:main

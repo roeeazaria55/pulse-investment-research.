@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "reviewedAt": "2026-10-18",
+  "companies": [
+    {
+      "id": "candidate-nebius", "ticker": "NBIS", "name": "Nebius Group",
+      "allowedHosts": ["nebius.com", "assets.nebius.com"],
+      "documentPaths": ["/newsroom/", "/assets/"],
+      "sources": [
+        {"id": "nbis-news", "label": "חדר החדשות הרשמי", "url": "https://nebius.com/newsroom"},
+        {"id": "nbis-financials", "label": "דוחות ומצגות", "url": "https://nebius.com/financials"}
+      ],
+      "questions": ["מה השתנה בהכנסות בפועל לעומת ARR ותחזיות?", "כיצד ימומנו השקעות ההון ומה הסיכון לדילול?", "מה מצב ההקמה, ניצול הקיבולת וריכוז הלקוחות?"]
+    },
+    {
+      "id": "candidate-iren", "ticker": "IREN", "name": "IREN",
+      "allowedHosts": ["iren.gcs-web.com", "iren.com"],
+      "documentPaths": ["/news-releases/news-release-details/", "/static-files/"],
+      "sources": [
+        {"id": "iren-news", "label": "פורטל הודעות המשקיעים", "url": "https://iren.gcs-web.com/news-releases"},
+        {"id": "iren-presentations", "label": "אירועים ומצגות", "url": "https://iren.com/investor/events-and-presentations"}
+      ],
+      "questions": ["מהן הכנסות AI בפועל לעומת ARR חוזי וקיבולת מתוכננת?", "מהם לוחות הזמנים למסירה ולחיבור לחשמל?", "כיצד ממומנות ההשקעות ומה החשיפה לחוב, דילול ולקוחות גדולים?"]
+    },
+    {
+      "id": "us-dlo-nasdaq-a", "ticker": "DLO", "name": "dLocal",
+      "allowedHosts": ["dlocal.gcs-web.com"],
+      "documentPaths": ["/news-releases/news-release-details/", "/static-files/"],
+      "sources": [
+        {"id": "dlo-news", "label": "פורטל הודעות המשקיעים", "url": "https://dlocal.gcs-web.com/news-events/news-releases"},
+        {"id": "dlo-financials", "label": "תוצאות רבעוניות", "url": "https://dlocal.gcs-web.com/financial-information/quarterly-results"}
+      ],
+      "questions": ["כיצד השתנו TPV, הכנסות ורווח גולמי ומה היחס ביניהם?", "מה השתנה ב־take rate, בריכוז הלקוחות ובתמהיל המדינות?", "האם הצמיחה מתורגמת לתזרים ומהם סיכוני המטבע והרגולציה?"]
+    }
+  ]
+}

@@ -31,6 +31,7 @@ import { CoveragePanel, BriefingPanel } from "./components/Intelligence";
 import { resolveSecurity } from "./data/feedV2";
 import { DiscoveryPanel, WebNewsSearch } from "./components/Discovery";
 import {DailyPanel,CalendarPanel,NotificationsPanel} from './components/PhaseThree';
+import { OfficialSources } from "./components/OfficialSources";
 import type { Feed, Holding, News, Research, Security } from "./types";
 
 const tabs = [
@@ -893,6 +894,7 @@ export default function App() {
           )}
           {tab === "research" && (
             <>
+              <OfficialSources ticker={security?.ticker} onPrepare={setPrompt} />
               {!security ? (
                 <Empty title="בחרו חברה למחקר">
                   הוסיפו חברה לתיק או לרשימת המעקב.

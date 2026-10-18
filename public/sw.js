@@ -1,5 +1,5 @@
 /* Bump this identifier when publishing a new application shell. */
-const VERSION = "pulse-v3.0";
+const VERSION = "pulse-v3.1-official";
 const SCOPE = new URL(self.registration.scope);
 const CACHE = `${VERSION}-${SCOPE.pathname}`;
 const local = (path) => new URL(path, SCOPE).href;
@@ -21,6 +21,7 @@ self.addEventListener("install", (event) => {
         local("icons/icon-512.png"),
         local("icons/maskable-512.png"),
         local("data/feed.json"),
+        local("data/official-sources.json"),
       ]);
       await self.skipWaiting();
     })(),
@@ -49,7 +50,9 @@ self.addEventListener("fetch", (event) => {
     !url.pathname.startsWith(SCOPE.pathname)
   )
     return;
-  if (url.pathname.endsWith("/data/feed.json")) {
+  if (url.pathname.endsWith("/data/feed.json") || url.pathname.endsWith("/data/official-sources.json")) {
+    const official = url.pathname.endsWith("/data/official-sources.json");
+    const dataKey = local(official ? "data/official-sources.json" : "data/feed.json");
     event.respondWith(
       (async () => {
         try {
@@ -57,16 +60,15 @@ self.addEventListener("fetch", (event) => {
           if (!response.ok) throw Error("Feed unavailable");
           const body = await response.clone().json();
           if (
-            ![1, 2].includes(body.version) ||
-            !Array.isArray(body.news) ||
-            !Array.isArray(body.research)
+            (official ? body.version !== 1 || !Array.isArray(body.items) || !Array.isArray(body.sources) :
+            ![1, 2].includes(body.version) || !Array.isArray(body.news) || !Array.isArray(body.research))
           )
             throw Error("Invalid feed");
           const cache = await caches.open(CACHE);
-          await cache.put(local("data/feed.json"), response.clone());
+          await cache.put(dataKey, response.clone());
           return response;
         } catch {
-          const cached = await caches.match(local("data/feed.json"));
+          const cached = await caches.match(dataKey);
           return cached || new Response("Unavailable", { status: 503 });
         }
       })(),
