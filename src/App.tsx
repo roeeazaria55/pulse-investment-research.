@@ -389,7 +389,7 @@ export default function App() {
                     <span>THE DAILY PULSE</span>
                     <span className="badge">
                       {feed?.version === 2
-                        ? "דיווחי SEC • תבנית"
+                        ? feed.discovery ? "כותרות מהרשת • תבנית" : "דיווחי SEC • תבנית"
                         : "תדריך הדגמה"}
                     </span>
                   </div>
@@ -479,7 +479,7 @@ export default function App() {
                   </div>
                 </Section>
               </div>
-              {feed?.version === 2 && (
+              {feed?.version === 2 && feed.news.some(n => n.sourceId?.startsWith('sec-')) && (
                 <div className="live-briefing">
                   <BriefingPanel feed={feed} />
                 </div>
@@ -523,7 +523,7 @@ export default function App() {
                         {
                           state.watchlist.filter((w) =>
                             feed?.version === 2
-                              ? !resolveSecurity(feed, w)
+                              ? resolveSecurity(feed, w)?.verification.status !== 'verified'
                               : !w.verified,
                           ).length
                         }{" "}
@@ -723,7 +723,7 @@ export default function App() {
               <p className="muted small-note">
                 {news.length} פריטים •{" "}
                 {feed?.version === 2
-                  ? "דיווחי SEC עם סיווג לפי כללים; לא המלצת השקעה ולא ניתוח AI."
+                  ? "כותרות ומקורות ציבוריים עם סיווג לפי כללים; לא המלצת השקעה ולא ניתוח AI."
                   : "פריטי הדגמה מסומנים ואינם חדשות אמיתיות."}
               </p>
               <div className="news-grid">

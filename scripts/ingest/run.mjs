@@ -99,6 +99,11 @@ for (const [path, data] of [
 }
 if (process.env.GITHUB_OUTPUT)
   await appendFile(process.env.GITHUB_OUTPUT, "skipped=false\n");
+if (process.env.GITHUB_STEP_SUMMARY && result.feed.discovery) {
+  const d=result.feed.discovery;
+  await appendFile(process.env.GITHUB_STEP_SUMMARY,
+    `## Public headline discovery\n\nStatus: **${d.status}**. Retained headlines: **${result.feed.articles.length}**. Newly discovered: ${d.newCount}.\n\n| Company | Provider | Search result | Count |\n| --- | --- | --- | --- |\n${d.sources.map(s=>`| ${s.securityId} | ${s.provider} | ${s.status} | ${s.count} |`).join('\n')}\n\nGDELT remains disabled after HTTP 429 in the feasibility run. SEC status below is supplemental and independent.\n`);
+}
 if (process.env.GITHUB_STEP_SUMMARY)
   await appendFile(
     process.env.GITHUB_STEP_SUMMARY,

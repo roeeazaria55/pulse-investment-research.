@@ -1,5 +1,10 @@
 # Phase 2: public filings ingestion
 
+This guide describes the supplemental SEC collector. For the current public
+headline search, independently reviewed company identities and actual provider
+proof, see [News discovery](NEWS-DISCOVERY.md). "Without coverage" below refers
+only to SEC coverage, not to the independent company news search.
+
 ## Scope and identity
 
 The checked-in `public/data/registry.json` is a **public research universe**, independent of the user's local watchlist. Stable IDs identify a specific selected listing/class, not a display name or a ticker alone. Each record carries name, ticker, venue, CIK if verified, share class, aliases, verification evidence/date and an explicit source or `null`.

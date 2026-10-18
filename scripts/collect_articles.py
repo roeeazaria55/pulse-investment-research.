@@ -112,7 +112,7 @@ def collect(registry, previous, now, getter=fetch, pause=time.sleep):
     working = sum(s["status"] != "failed" for s in statuses)
     complete = bool(statuses) and working == len(statuses)
     local = dt.datetime.fromisoformat(now).astimezone(ZoneInfo("Asia/Jerusalem"))
-    slot = local.strftime("%Y-%m-%d") + (":morning" if local.hour < 15 else ":evening")
+    slot = local.strftime("%Y-%m-%d") + (":morning" if local.hour < 17 else ":evening")
     prior_brief = next((b for b in old.get("briefings", []) if b["id"] == slot), {})
     briefing = {"id": slot, "generatedAt": now, "timezone": "Asia/Jerusalem",
                 "itemIds": list(dict.fromkeys(prior_brief.get("itemIds", []) + new_ids))[:220],
