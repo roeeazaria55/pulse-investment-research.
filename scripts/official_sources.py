@@ -7,6 +7,7 @@ import time
 import urllib.parse
 from pathlib import Path
 from earnings import get_page, approved
+from official_metadata import OfficialPage, describe, clean, iso_date
 
 def date_only(value):
     if not isinstance(value,str):return None
@@ -29,12 +30,22 @@ def canonical(url):
     return urllib.parse.urlunsplit((p.scheme,p.netloc,p.path,p.query,''))
 
 def document_url(url,company):
-    return (approved(url,company['allowedHosts']) and
+    return (not re.search(r'\.(?:png|jpe?g|gif|svg|webp|css|js|ico)$',urllib.parse.urlsplit(url).path,re.I) and approved(url,company['allowedHosts']) and
             any(urllib.parse.urlsplit(url).path.startswith(p) for p in company['documentPaths']))
 
-def collect(config,previous,now,getter=get_page):
+def get_official_page(url,hosts):return get_page(url,hosts,page_factory=OfficialPage)
+
+def collect(config,previous,now,getter=get_official_page):
     old_items=previous.get('items',[])
-    items={i['id']:dict(i) for i in old_items if any(i['companyId']==c['id'] and document_url(i['url'],c) for c in config['companies'])}
+    items={}
+    for item in old_items:
+        company=next((c for c in config['companies'] if item['companyId']==c['id'] and document_url(item['url'],c)),None)
+        if company:
+            fixed={**item,**describe(company,item['url'],item['title'])}
+            if item.get('titleBasis'):fixed.update({k:item[k] for k in ('title','titleBasis','language','documentPeriod','periodBasis') if k in item})
+            fixed.setdefault('publishedDateBasis','legacy-metadata' if fixed.get('publishedDate') else 'unknown')
+            fixed.setdefault('dateEvidenceUrl',fixed['url'] if fixed.get('publishedDate') else None)
+            items[item['id']]=fixed
     statuses=[]
     deadline=time.monotonic()+240
     for company in config['companies']:
@@ -51,27 +62,38 @@ def collect(config,previous,now,getter=get_page):
                 links={}
                 for href,title in page.links:
                     url=canonical(urllib.parse.urljoin(source['url'],href))
-                    if document_url(url,company) and 8<=len(title)<=600:
+                    if document_url(url,company) and 1<=len(clean(title))<=600:
                         if url not in links or len(title)>len(links[url]):links[url]=title
                 if not links:raise ValueError('No supported document links; page may require JavaScript or review')
                 for rank,(url,title) in enumerate(list(links.items())[:8]):
                     ident='official:'+hashlib.sha256((company['id']+'|'+url).encode()).hexdigest()[:32]
                     old_item=items.get(ident,{})
+                    context=getattr(page,'link_contexts',{}).get(next((href for href,_ in page.links if canonical(urllib.parse.urljoin(source['url'],href))==url),url),{})
+                    # Index dates apply only to release cards, not financial PDF
+                    # periods or dates embedded in document paths/filenames.
+                    index_date=context.get('publishedDate') if kind(title,url)!='document' else None
+                    if index_date and index_date>now[:10]:index_date=None
                     record={**old_item,'id':ident,'companyId':company['id'],'ticker':company['ticker'],
-                            'title':title,'url':url,'indexRank':rank,'sourceId':source['id'],'kind':kind(title,url),
+                            'title':title,'sourceLabel':clean(title),'url':url,'indexRank':rank,'sourceId':source['id'],'kind':kind(title,url),
                             'publishedDate':old_item.get('publishedDate'),'collectedAt':old_item.get('collectedAt',now),
                             'lastSeenAt':now,'metadataStatus':'index-link','metadataCheckedAt':old_item.get('metadataCheckedAt'),
-                            'metadataError':None,'contentScope':'metadata-only'}
+                            'metadataError':None,'contentScope':'metadata-only',
+                            'publishedDateBasis':old_item.get('publishedDateBasis','unknown'),
+                            'dateEvidenceUrl':old_item.get('dateEvidenceUrl')}
+                    record.update(describe(company,url,title,context))
+                    if index_date:record.update(publishedDate=index_date,publishedDateBasis='index-time',dateEvidenceUrl=source['url'])
                     # Three release pages per company, no PDF fetching/parsing. A
                     # document link is not evidence that its contents were read.
                     if detail_count<(3 if company['ticker'] in ('NBIS','IREN','DLO') else 1) and record['kind']!='document' and time.monotonic()<deadline:
                         detail_count+=1
                         try:
                             detail=getter(url,company['allowedHosts'])
-                            heading=' '.join(detail.title).strip() or detail.meta_title
+                            heading=clean(' '.join(detail.title)) or clean(detail.meta_title)
                             if not heading or len(heading)>600:raise ValueError('Release heading unavailable')
-                            record.update(title=heading,kind=kind(heading,url),
-                                          publishedDate=date_only(detail.publication),metadataStatus='page-metadata',metadataCheckedAt=now)
+                            record.update(describe(company,url,title,context,page_title=heading))
+                            record.update(kind=kind(heading,url),metadataStatus='page-metadata',metadataCheckedAt=now)
+                            publication=iso_date(detail.publication_value if isinstance(detail,OfficialPage) else detail.publication)
+                            if publication and publication<=now[:10]:record.update(publishedDate=publication,publishedDateBasis='page-published-metadata',dateEvidenceUrl=url)
                         except Exception as exc:record['metadataError']=str(exc)[:180]
                     items[ident]=record;status['count']+=1
                 status.update(status='ok',lastSuccessfulAt=now)
@@ -80,7 +102,7 @@ def collect(config,previous,now,getter=get_page):
     # Stable IDs retain first collection time; current visibility is separate.
     retained=sorted(items.values(),key=lambda i:(i['publishedDate'] or '',i['lastSeenAt'],-i.get('indexRank',0),i['id']),reverse=True)
     retained=[i for c in config['companies'] for i in [x for x in retained if x['companyId']==c['id']][:24]]
-    return {'version':1,'generatedAt':now,'registry':config,'items':retained,'sources':statuses,
+    return {'version':1,'metadataVersion':2,'generatedAt':now,'registry':config,'items':retained,'sources':statuses,
             'notice':'כותרות, קישורים ותאריכי פרסום כאשר זמינים. תוכן המסמכים לא נאסף ולא סוכם ב־AI.'}
 
 if __name__=='__main__':

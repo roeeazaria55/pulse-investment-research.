@@ -34,7 +34,7 @@ def approved(url,hosts):
     p=urllib.parse.urlsplit(url)
     return p.scheme=='https' and p.hostname in hosts and not p.username and not p.password and p.port in (None,443) and not p.fragment
 
-def get_page(url,hosts):
+def get_page(url,hosts,page_factory=Page):
     if not approved(url,hosts):raise ValueError('unapproved IR destination')
     class Redirects(urllib.request.HTTPRedirectHandler):
         def redirect_request(self,req,fp,code,msg,headers,newurl):
@@ -57,7 +57,7 @@ def get_page(url,hosts):
                     if size>1024*1024:raise ValueError('IR size limit')
                     chunks.append(chunk)
                 body=b''.join(chunks).decode('utf-8',errors='replace')
-                page=Page();page.feed(body)
+                page=page_factory();page.feed(body)
                 return page
         except urllib.error.HTTPError as exc:
             if exc.code in (401,403,451) or (exc.code!=429 and exc.code<500) or attempt:raise
