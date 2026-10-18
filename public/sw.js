@@ -1,5 +1,5 @@
 /* Bump this identifier when publishing a new application shell. */
-const VERSION = "pulse-v2";
+const VERSION = "pulse-v2.1";
 const SCOPE = new URL(self.registration.scope);
 const CACHE = `${VERSION}-${SCOPE.pathname}`;
 const local = (path) => new URL(path, SCOPE).href;
@@ -57,16 +57,16 @@ self.addEventListener("fetch", (event) => {
           if (!response.ok) throw Error("Feed unavailable");
           const body = await response.clone().json();
           if (
-            ![1,2].includes(body.version) ||
+            ![1, 2].includes(body.version) ||
             !Array.isArray(body.news) ||
             !Array.isArray(body.research)
           )
             throw Error("Invalid feed");
           const cache = await caches.open(CACHE);
-          await cache.put(event.request, response.clone());
+          await cache.put(local("data/feed.json"), response.clone());
           return response;
         } catch {
-          const cached = await caches.match(event.request);
+          const cached = await caches.match(local("data/feed.json"));
           return cached || new Response("Unavailable", { status: 503 });
         }
       })(),

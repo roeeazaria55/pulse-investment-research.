@@ -37,6 +37,12 @@ Collection runs only in Actions, never from the browser. A client limits each re
 
 The UI shows successful coverage count, every uncovered company, source failures, last attempts, last source successes and overall full-success time. Data older than 18 hours is marked stale. A recent partial failure still shows the error; it does not refresh the old source's age. Source details include verification evidence and the Actions run URL.
 
+The browser's static feed request uses a public schema/version and minute bucket to avoid a preceding Pages deployment's CDN response. The service worker stores one canonical feed snapshot rather than accumulating per-query cache entries. This request contains no personal security list. GitHub Actions summaries also show collection health independently of the green test/deployment result.
+
+### First production check, 2026-10-18
+
+[Manual run 39126167218](https://github.com/roeeazaria55/pulse-investment-research./actions/runs/39126167218) passed validation, 36 tests, build, selected-file persistence and deployment. The actual public payload reported **0/11 working coverage**, all three SEC endpoints blocked, no invented items and `lastSuccessfulAt: null`. This verifies failure handling/publication, **not an active news scanner**. The official Meta IR RSS discovery page was reviewed; an availability probe of its advertised feed also returned 403, so no RSS source was enabled. No access restriction was bypassed. A later working-source claim requires a new successful ingestion and published status.
+
 ## Morning/evening briefings and scheduling
 
 Briefings are deterministic Hebrew templates with original filing title, source link, classification reason and questions to check. `kind: rule-template` explicitly excludes AI. IDs are the **Asia/Jerusalem local date + morning/evening**, with `Intl` resolving DST. Same-period retries merge IDs without duplication. On a new period, already-seen reports are not repeated. If no source succeeds, the briefing says collection failed instead of claiming there were no new filings. 28 briefings are retained (UI displays latest plus four history entries).

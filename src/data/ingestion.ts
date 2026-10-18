@@ -74,9 +74,14 @@ export function parseFeed(x: unknown): Feed {
   return f;
 }
 export async function fetchFeed(): Promise<Feed> {
-  const response = await fetch(`${import.meta.env.BASE_URL}data/feed.json`, {
-    cache: "no-store",
-  });
+  // Public minute bucket avoids serving a previous deployment's CDN response.
+  // The service worker stores one canonical snapshot, not one entry per query.
+  const response = await fetch(
+    `${import.meta.env.BASE_URL}data/feed.json?schema=2&t=${Math.floor(Date.now() / 60000)}`,
+    {
+      cache: "no-store",
+    },
+  );
   if (!response.ok) throw Error("לא ניתן לטעון את העדכון");
   return parseFeed(await response.json());
 }

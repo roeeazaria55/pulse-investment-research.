@@ -88,6 +88,11 @@ for (const [path, data] of [
 }
 if (process.env.GITHUB_OUTPUT)
   await appendFile(process.env.GITHUB_OUTPUT, "skipped=false\n");
+if (process.env.GITHUB_STEP_SUMMARY)
+  await appendFile(
+    process.env.GITHUB_STEP_SUMMARY,
+    `## Public source health\n\nCollection status: **${result.feed.status}**. Working sources: **${result.feed.coverage.working}/${result.feed.coverage.total}**. New records: ${result.feed.newCount}.\n\nA successful workflow can publish an honest failed/partial collection status; it is not proof of active coverage.\n\n| Source | Status | Error |\n| --- | --- | --- |\n${result.feed.sources.map((s) => `| ${s.id} | ${s.status} | ${s.errorCode || "—"} |`).join("\n")}\n`,
+  );
 console.log(
   JSON.stringify({
     status: result.feed.status,

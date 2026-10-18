@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import React from "react";
-import registry from '../public/data/registry.json';
+import registry from "../public/data/registry.json";
 import { afterEach, describe, it, expect, vi } from "vitest";
 import {
   render,
@@ -90,7 +90,7 @@ describe("v2 public display and privacy", () => {
     });
     expect(screen.getByText("לא נמצאו פריטים")).toBeTruthy();
     for (const [url, options] of fetchMock.mock.calls) {
-      expect(url).toBe("/data/feed.json");
+      expect(url).toMatch(/^\/data\/feed.json\?schema=2&t=\d+$/);
       expect(options).toEqual({ cache: "no-store" });
     }
   });
