@@ -1,14 +1,14 @@
 import {useEffect,useState} from 'react';
-import {officialRegistry,parseOfficialSnapshot,type OfficialSnapshot} from '../data/official';
+import {officialRegistry,officialCompany,parseOfficialSnapshot,type OfficialSnapshot} from '../data/official';
 import {officialPack} from '../research/officialPack';
 import {dateTime} from './UI';
 const kinds={results:'פרסום תוצאות',schedule:'הודעה על מועד עתידי',document:'מסמך או מצגת',release:'הודעת חברה'};
 const statuses={ok:'נאספו קישורים',failed:'הבדיקה האחרונה נכשלה', 'not-checked':'טרם נבדק'};
-export function OfficialSources({ticker,onPrepare}:{ticker?:string;onPrepare:(text:string)=>void}){
-  const [active,setActive]=useState(officialRegistry.companies.find(c=>c.ticker===ticker)?.ticker||'NBIS');
+export function OfficialSources({ticker,name,onPrepare}:{ticker?:string;name?:string;onPrepare:(text:string)=>void}){
+  const [active,setActive]=useState(officialCompany(ticker,name)?.id||'candidate-nebius');
   const [snapshot,setSnapshot]=useState<OfficialSnapshot|null>(null);
   const [error,setError]=useState('');const [loading,setLoading]=useState(true);const [reload,setReload]=useState(0);
-  useEffect(()=>{if(officialRegistry.companies.some(c=>c.ticker===ticker))setActive(ticker!);},[ticker]);
+  useEffect(()=>{const company=officialCompany(ticker,name);if(company)setActive(company.id);},[ticker,name]);
   useEffect(()=>{
     const controller=new AbortController();setLoading(true);
     fetch(`${import.meta.env.BASE_URL}data/official-sources.json`,{cache:'no-cache',signal:controller.signal})
@@ -18,12 +18,12 @@ export function OfficialSources({ticker,onPrepare}:{ticker?:string;onPrepare:(te
       .finally(()=>{if(!controller.signal.aborted)setLoading(false);});
     return ()=>controller.abort();
   },[reload]);
-  const c=officialRegistry.companies.find(c=>c.ticker===active)!;
+  const c=officialRegistry.companies.find(c=>c.id===active)!;
   const items=snapshot?.items.filter(n=>n.companyId===c.id)||[];
   return <section className="official-panel" aria-label="מקורות רשמיים וחבילת מחקר">
-    <div className="official-heading"><div><small>מקורות החברה · NBIS / IREN / DLO</small><h2>מהמקור אל התזה.</h2></div><button onClick={()=>setReload(x=>x+1)} disabled={loading}>{loading?'בודק מקורות שמורים…':'רענון המקורות'}</button></div>
+    <div className="official-heading"><div><small>מקורות החברה · כל 11 החברות</small><h2>מהמקור אל התזה.</h2></div><button onClick={()=>setReload(x=>x+1)} disabled={loading}>{loading?'בודק מקורות שמורים…':'רענון המקורות'}</button></div>
     <p>הודעות חברה, דוחות ומצגות — עם מקור ותאריך כאשר זמינים. תוכן המסמכים לא נאסף ולא סוכם ב־AI.</p>
-    <div className="official-tabs" aria-label="חברה לחבילת מקורות">{officialRegistry.companies.map(x=><button key={x.id} aria-pressed={active===x.ticker} onClick={()=>setActive(x.ticker)}>{x.ticker}</button>)}</div>
+    <div className="official-tabs" aria-label="חברה לחבילת מקורות">{officialRegistry.companies.map(x=><button key={x.id} aria-pressed={active===x.id} onClick={()=>setActive(x.id)}>{x.label}</button>)}</div>
     {error&&<p role="status">{error}</p>}
     <div className="official-statuses">{c.sources.map(source=>{const status=snapshot?.sources.find(s=>s.id===source.id);return <div key={source.id}>
       <a href={source.url} target="_blank" rel="noopener noreferrer">{source.label} ↗</a>
@@ -32,7 +32,7 @@ export function OfficialSources({ticker,onPrepare}:{ticker?:string;onPrepare:(te
       {status?.lastSuccessfulAt&&<small>איסוף מוצלח אחרון: {dateTime(status.lastSuccessfulAt)}</small>}
       {status?.status==='failed'&&<small>ייתכן שקיים מידע חדש שלא נאסף. {status.error}</small>}
     </div>;})}</div>
-    <div className="official-pack"><div><strong>חבילת מחקר ל־{c.ticker}</strong><p>מקורות ושאלות ממוקדות להעתקה ל־ChatGPT. הניתוח יתבצע לאחר פתיחת המקורות.</p></div><button className="primary" disabled={!snapshot||loading} onClick={()=>snapshot&&onPrepare(officialPack(active,snapshot))}>הכנת חבילת מקורות ל־{c.ticker}</button></div>
+    <div className="official-pack"><div><strong>חבילת מחקר ל־{c.label}</strong><p>מקורות ושאלות ממוקדות להעתקה ל־ChatGPT. הניתוח יתבצע לאחר פתיחת המקורות.</p></div><button className="primary" disabled={!snapshot||loading} onClick={()=>snapshot&&onPrepare(officialPack(active,snapshot))}>הכנת חבילת מקורות ל־{c.label}</button></div>
     {snapshot&&<small>מועד איסוף החבילה: {snapshot.generatedAt?dateTime(snapshot.generatedAt):'טרם בוצע איסוף'}. רענון כאן טוען את החבילה האחרונה; איסוף מאתרי החברות מתבצע בסריקה המתוזמנת.</small>}
     {!loading&&!items.length&&<p>טרם נאספו פריטים לחברה זו. הקישורים הרשמיים זמינים לבדיקה ידנית; אין להסיק שלא פורסם מידע.</p>}
     <div className="official-grid">{items.slice(0,8).map(n=><article key={n.id} className="official-card">

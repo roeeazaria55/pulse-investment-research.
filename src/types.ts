@@ -36,7 +36,11 @@ export interface Note {
   createdAt: string;
   text: string;
 }
-export type Research = Record<ResearchField, string> & { notes: Note[] };
+export interface ResearchImportInfo {
+  companyId:string; asOf:string; importedAt:string; sourceUrls:string[]; missing:string[]; kind:'user-imported'; appliedFields:ResearchField[];
+}
+export interface ResearchVersion {id:string;savedAt:string;fields:Record<ResearchField,string>;importInfo?:ResearchImportInfo;}
+export type Research = Record<ResearchField, string> & { notes: Note[]; importInfo?:ResearchImportInfo; versions?:ResearchVersion[] };
 export interface News {
   id: string;
   ticker: string;

@@ -17,7 +17,7 @@ const nullableStamp=(x:unknown)=>x===null||stamp(x);
 const text=(x:unknown,max=600):x is string=>typeof x==='string'&&x.length>0&&x.length<=max;
 export function parseOfficialSnapshot(value: unknown): OfficialSnapshot {
   const f=value as OfficialSnapshot;
-  if(!f||f.version!==1||!nullableStamp(f.generatedAt)||!Array.isArray(f.items)||f.items.length>72||!Array.isArray(f.sources))throw Error('Invalid official snapshot');
+  if(!f||f.version!==1||!nullableStamp(f.generatedAt)||!Array.isArray(f.items)||f.items.length>264||!Array.isArray(f.sources))throw Error('Invalid official snapshot');
   const sourceMap=new Map(registry.companies.flatMap(c=>c.sources.map(s=>[s.id,{...s,company:c}])));
   const keys=new Set<string>();
   for(const s of f.sources){
@@ -35,4 +35,11 @@ export function parseOfficialSnapshot(value: unknown): OfficialSnapshot {
     ids.add(n.id);
   }
   return f;
+}
+
+export function officialCompany(ticker?:string,name?:string){
+ const norm=(s:string)=>s.trim().toLocaleLowerCase();
+ if(ticker){const found=registry.companies.find(c=>c.ticker&&norm(c.ticker)===norm(ticker));if(found)return found;}
+ if(name)return registry.companies.find(c=>[c.name,c.label,...c.aliases].some(a=>norm(a)===norm(name)));
+ return undefined;
 }

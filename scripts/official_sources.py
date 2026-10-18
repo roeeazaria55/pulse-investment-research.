@@ -3,6 +3,7 @@ import datetime as dt
 import hashlib
 import json
 import re
+import time
 import urllib.parse
 from pathlib import Path
 from earnings import get_page, approved
@@ -35,6 +36,7 @@ def collect(config,previous,now,getter=get_page):
     old_items=previous.get('items',[])
     items={i['id']:dict(i) for i in old_items if any(i['companyId']==c['id'] and document_url(i['url'],c) for c in config['companies'])}
     statuses=[]
+    deadline=time.monotonic()+240
     for company in config['companies']:
         detail_count=0
         for source in company['sources']:
@@ -42,6 +44,7 @@ def collect(config,previous,now,getter=get_page):
             status={**source,'companyId':company['id'],'status':'failed','lastAttemptAt':now,
                     'lastSuccessfulAt':old.get('lastSuccessfulAt'),'count':0,'error':None}
             try:
+                if time.monotonic()>deadline:raise ValueError('Collection time budget exhausted; retained items require later refresh')
                 page=getter(source['url'],company['allowedHosts'])
                 # get_page uses the shared HTML parser. Only allowlisted document
                 # links are followed; scripts and response text are never executed.
@@ -61,7 +64,7 @@ def collect(config,previous,now,getter=get_page):
                             'metadataError':None,'contentScope':'metadata-only'}
                     # Three release pages per company, no PDF fetching/parsing. A
                     # document link is not evidence that its contents were read.
-                    if detail_count<3 and record['kind']!='document':
+                    if detail_count<(3 if company['ticker'] in ('NBIS','IREN','DLO') else 1) and record['kind']!='document' and time.monotonic()<deadline:
                         detail_count+=1
                         try:
                             detail=getter(url,company['allowedHosts'])

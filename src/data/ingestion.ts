@@ -1,5 +1,6 @@
 import type { Feed, News, Research } from "../types";
 import { researchFields } from "../types";
+import { safeSource, validDate } from "../research/exchange";
 import { parseV2 } from "./feedV2";
 export const isUrl = (value: unknown): value is string => {
   try {
@@ -13,11 +14,16 @@ export const isUrl = (value: unknown): value is string => {
 };
 const isDate = (x: unknown) =>
   typeof x === "string" && Number.isFinite(Date.parse(x));
+function validImportInfo(x: NonNullable<Research['importInfo']>){
+ return x && typeof x.companyId==='string' && validDate(x.asOf) && isDate(x.importedAt) && x.kind==='user-imported' && Array.isArray(x.appliedFields) && x.appliedFields.length>0 && x.appliedFields.every(k=>researchFields.includes(k)) && Array.isArray(x.sourceUrls) && x.sourceUrls.length<=30 && x.sourceUrls.every(safeSource) && Array.isArray(x.missing) && x.missing.length<=30 && x.missing.every(s=>typeof s==='string'&&s.length<=1000);
+}
 export function isResearch(x: unknown): x is Research {
   if (!x || typeof x !== "object") return false;
   const r = x as Research;
   return (
     researchFields.every((k) => typeof r[k] === "string") &&
+    (r.importInfo === undefined || validImportInfo(r.importInfo)) &&
+    (r.versions === undefined || Array.isArray(r.versions) && r.versions.length<=3 && r.versions.every(v=>v && typeof v.id==='string' && isDate(v.savedAt) && researchFields.every(k=>typeof v.fields?.[k]==='string') && (v.importInfo===undefined||validImportInfo(v.importInfo)))) &&
     Array.isArray(r.notes) &&
     r.notes.every(
       (n) =>

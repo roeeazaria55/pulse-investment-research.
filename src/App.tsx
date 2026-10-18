@@ -32,6 +32,8 @@ import { resolveSecurity } from "./data/feedV2";
 import { DiscoveryPanel, WebNewsSearch } from "./components/Discovery";
 import {DailyPanel,CalendarPanel,NotificationsPanel} from './components/PhaseThree';
 import { OfficialSources } from "./components/OfficialSources";
+import { ResearchExchange } from "./components/ResearchExchange";
+import { officialCompany } from "./data/official";
 import type { Feed, Holding, News, Research, Security } from "./types";
 
 const tabs = [
@@ -894,7 +896,7 @@ export default function App() {
           )}
           {tab === "research" && (
             <>
-              <OfficialSources ticker={security?.ticker} onPrepare={setPrompt} />
+              <OfficialSources ticker={security?.ticker} name={security?.name} onPrepare={setPrompt} />
               {!security ? (
                 <Empty title="בחרו חברה למחקר">
                   הוסיפו חברה לתיק או לרשימת המעקב.
@@ -934,6 +936,7 @@ export default function App() {
                     </button>
                     <WebNewsSearch name={security.name}/>
                   </div>
+                  <ResearchExchange key={researchKey} company={(()=>{const c=officialCompany(security.ticker,security.name);return c?{id:c.id,name:c.name,label:c.label}:{id:security.id,name:security.name,label:security.ticker||security.name};})()} current={draft} onChange={next=>{setDraft(next);setDirty(true);notify("המחקר נטען לטיוטה. בדוק ושמור את המחקר.");}} onPrepare={setPrompt}/>
                   <div className="research-layout">
                     <div>
                       <div className="research-fields">
@@ -1031,6 +1034,7 @@ export default function App() {
                                 draft,
                                 related,
                                 publicResearch?.sourceUrls,
+                                officialCompany(security.ticker,security.name)?.id || security.id,
                               ),
                             )
                           }
