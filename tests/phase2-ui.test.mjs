@@ -45,6 +45,25 @@ afterEach(() => {
   localStorage.clear();
 });
 describe("v2 public display and privacy", () => {
+  it("does not describe collected bootstrap reports or no-new-items when collection failed", async () => {
+    const { feed } = await collect({
+      registry,
+      now: new Date().toISOString(),
+      getJson: async () => {
+        throw Error("blocked");
+      },
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({ ok: true, json: async () => feed }),
+    );
+    render(React.createElement(App));
+    await screen.findByRole("heading", { name: "אין מקור פעיל בריצה האחרונה" });
+    expect(screen.queryByText(/אתחול מקור:/)).toBeNull();
+    expect(
+      screen.queryByText(/אין פריטים חדשים במקורות שנבדקו בהצלחה/),
+    ).toBeNull();
+  });
   it("shows partial coverage and unknown publication time without claiming full success", async () => {
     const feed = await fixture();
     vi.stubGlobal(

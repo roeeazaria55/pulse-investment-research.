@@ -124,7 +124,7 @@ export function BriefingPanel({ feed }: { feed: LiveFeed }) {
       <p>
         {b.date} • {b.timezone} • הופק: {dateTime(b.generatedAt)}
       </p>
-      {b.bootstrap && (
+      {b.bootstrap && b.itemIds.length > 0 && (
         <div className="alert">
           אתחול מקור: כולל דיווחים אחרונים מ־30 הימים שקדמו לאיסוף. הם אינם
           מוצגים כאירועים שהתרחשו עכשיו.
