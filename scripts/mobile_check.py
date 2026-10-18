@@ -64,11 +64,20 @@ with sync_playwright() as pw:
         fields={k:'' for k in ('thesis','revenue','profitability','cashFlow','valuation','advantages','catalysts','risks','bear','base','bull')}
         fields['thesis']='MOBILE TEST IMPORT ONLY'
         payload={'version':1,'companyId':'candidate-nebius','asOf':'2026-10-18','fields':fields,'sourceUrls':['https://nebius.com/financials'],'missing':['SIMULATED mobile test']}
-        exchange.get_by_role('textbox',name='ניתוח להחזרה',exact=True).fill(json.dumps(payload))
+        exchange.get_by_role('textbox',name='ניתוח להחזרה',exact=True).fill('SIMULATED ChatGPT answer\n```json\n'+json.dumps(payload)+'\n```\nEnd of test answer')
         exchange.get_by_role('button',name='בדיקה ותצוגה מקדימה',exact=True).click()
         exchange.get_by_role('button',name='החלת השדות שבחרתי בטיוטה',exact=True).click()
         page.get_by_role('button',name='שמירת מחקר',exact=True).click()
         assert page.evaluate("JSON.parse(localStorage.getItem('pulse.personal.v1')).research.NBIS.thesis")=='MOBILE TEST IMPORT ONLY'
+        prior=page.evaluate("JSON.parse(localStorage.getItem('pulse.personal.v1')).research.NBIS.versions[0].fields.thesis")
+        page.reload();nav.get_by_role('button',name='מחקר',exact=True).click()
+        exchange=page.get_by_role('region',name='ניתוח מסמכים וייבוא מחקר')
+        exchange.locator('summary').filter(has_text='גרסאות מחקר קודמות').click()
+        exchange.get_by_text('הצגת הגרסה',exact=True).first.click()
+        exchange.get_by_role('button',name='טעינת גרסה זו לטיוטה',exact=True).first.click()
+        page.get_by_role('button',name='שמירת מחקר',exact=True).click()
+        assert page.evaluate("JSON.parse(localStorage.getItem('pulse.personal.v1')).research.NBIS.thesis")==prior
+        assert page.evaluate("JSON.parse(localStorage.getItem('pulse.personal.v1')).research.NBIS.versions[0].fields.thesis")=='MOBILE TEST IMPORT ONLY'
         assert page.evaluate('document.documentElement.scrollWidth')<=width+1,f'Research exchange overflow at {width}'
         page.screenshot(path=f'work/mobile-{width}-research.png',full_page=False)
         nav.get_by_role('button',name='תיק השקעות',exact=True).click()

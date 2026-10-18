@@ -38,3 +38,17 @@ not repository files and are never modified by these collector changes.
 - Validation: 51 Python tests, 60 JavaScript tests and production build passed.
 - Rollback: revert `Add verified issuer distribution and Gilat investor sources`.
   The preceding metadata commit is `4129dd62d42f274c49f866d95efd35797627d43e`.
+
+## Quality 3 — whole-answer import and recovery verification
+
+- Import now accepts a complete ChatGPT answer containing exactly one fenced
+  JSON object, while retaining company, date, field and source validation.
+  Ambiguous multiple code blocks and malformed/truncated JSON are rejected.
+- Preview and explicit field selection still precede any draft change.
+- Added regression coverage for prior-version restoration, personal-note
+  preservation and persistence compatibility. Extended mobile browser checks
+  to save, reload, restore the previous thesis and retain the imported version.
+- Validation: 62 JavaScript tests and production build passed locally; live
+  source collection and full browser checks run in GitHub Actions.
+- Rollback: revert `Accept single JSON answer blocks and verify research recovery`.
+  Coverage commit: `63777de8375259bd8e952e9f09db5d505b34ad3f`.

@@ -55,3 +55,22 @@ it('prepares a local-text pack with identity and source limitations',()=>{
  fireEvent.click(screen.getByText('הכנת ניתוח מהמסמך ל־NBIS'));
  const text=prepare.mock.calls[0][0];expect(text).toContain('USER PROVIDED DOCUMENT TEXT');expect(text).toContain('לא הוזן — אין להמציא מקור');expect(text).toContain(analysisContract(company.id));
 });
+
+it('accepts a complete answer with exactly one JSON block and rejects ambiguous blocks',()=>{
+ const p=payload();p.fields.thesis='Braces {inside text} and Hebrew עברית';
+ const block='```json\n'+JSON.stringify(p,null,2)+'\n```';
+ expect(parseAnalysis('Analysis before\n'+block+'\nExplanation after',company.id).fields.thesis).toBe(p.fields.thesis);
+ expect(parseAnalysis(block.replace(/\n/g,'\r\n'),company.id).companyId).toBe(company.id);
+ for(const raw of [block+'\n'+block,'```text\nother\n```\n'+block,'Summary '+JSON.stringify(p),block.slice(0,-3)])expect(()=>parseAnalysis(raw,company.id)).toThrow();
+ expect(()=>parseAnalysis('Analysis\n'+block,'candidate-iren')).toThrow();
+});
+it('loads a saved prior version into the draft while preserving the imported version and notes',()=>{
+ const old={...blankResearch(),thesis:'PRIOR THESIS',notes:[{id:'n',createdAt:'2026-10-17T12:00:00Z',text:'PERSONAL NOTE'}]};
+ const imported=applyAnalysis(old,parseAnalysis(JSON.stringify(payload()),company.id),['thesis']);
+ const changed=vi.fn();render(<ResearchExchange company={company} current={imported} onChange={changed} onPrepare={()=>{}}/>);
+ fireEvent.click(screen.getByText('טעינת גרסה זו לטיוטה'));
+ const restored=changed.mock.calls[0][0];
+ expect(restored.thesis).toBe('PRIOR THESIS');expect(restored.notes).toEqual(old.notes);
+ expect(restored.versions[0].fields.thesis).toBe('NEW THESIS');
+ expect(validState(JSON.parse(JSON.stringify({...initialState(),research:{NBIS:restored}})))).toBe(true);
+});

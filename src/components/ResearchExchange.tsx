@@ -25,7 +25,7 @@ export function ResearchExchange({company,current,onChange,onPrepare}:{company:{
    <button className="primary" onClick={prepare} disabled={busy}>הכנת ניתוח מהמסמך ל־{company.label}</button>
   </details>
   <details><summary>2. החזרת ניתוח מ־ChatGPT למחקר</summary>
-   <p>הדבק את אובייקט הייבוא שהתבקש בסוף הניתוח, או בחר קובץ JSON. לאחר בדיקה תבחר אילו שדות להחיל. שדות ריקים והערות אישיות לא יימחקו.</p>
+   <p>הדבק את אובייקט הייבוא או את תשובת ChatGPT הכוללת בלוק JSON יחיד, או בחר קובץ JSON. לאחר בדיקה תבחר אילו שדות להחיל. שדות ריקים והערות אישיות לא יימחקו.</p>
    <label className="field">קובץ ניתוח JSON<input type="file" accept=".json,application/json" onChange={async e=>{const f=e.target.files?.[0];setPreview(null);if(!f)return;if(f.size>150000){setError('קובץ הניתוח גדול מדי.');return;}try{setRaw(await f.text());setError('');}catch{setError('קריאת הקובץ נכשלה.');}}}/></label>
    <label className="field">ניתוח להחזרה<textarea rows={8} maxLength={150000} dir="auto" value={raw} onChange={e=>{setRaw(e.target.value);setPreview(null);}}/></label>
    <button onClick={inspect}>בדיקה ותצוגה מקדימה</button>
