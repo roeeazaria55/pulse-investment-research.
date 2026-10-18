@@ -1,0 +1,24 @@
+name: Nebius news feasibility
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: nebius-news-feasibility
+  cancel-in-progress: false
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Test both public providers from this runner
+        run: python3 scripts/news_poc.py
+      - name: Preserve actual provider responses as metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: nebius-news-poc
+          path: work/news-poc.json
+          retention-days: 7
