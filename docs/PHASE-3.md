@@ -101,3 +101,18 @@ Screenshots are retained as `mobile-emulation-evidence`. This is not a physical
 Android keyboard or locked-device ntfy receipt test. Device receipt requires the
 owner's one-time installation, secrets and observation, and remains unverified
 until that observation is reported.
+
+## Persisted snapshot compatibility and rerating
+
+The collector validates a retained `evidence-3.1` snapshot with a dedicated,
+bounded prior-version schema before using it as input. It does not relabel old
+ratings as 3.2 or skip source/provenance checks. New published intelligence must
+still pass the strict current schema after all retained items are rerated.
+Unknown and mixed per-item rating versions are rejected. Historical daily
+publications retain their own rating version and revision history.
+
+SEC periodic report detection uses the retained form (`10-K`, `10-Q`, `20-F`,
+`40-F`, including amendments), not a previously generated classification that
+was overwritten during enrichment. A repeat run must retain the same evidence
+rating. Regression checks cover persisted-input compatibility, corrupt source
+attribution, rating evidence, missing ratings and repeat SEC enrichment.

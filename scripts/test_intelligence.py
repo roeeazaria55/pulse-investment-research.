@@ -34,6 +34,17 @@ class EvidenceTests(unittest.TestCase):
     def test_official_periodic_filing_has_evidence_gate(self):
         self.item.update(sourceId='sec-test',sourceUrl='https://www.sec.gov/Archives/test',headline='Quarterly report',classification={'rule':'periodic-report-v1'})
         r=rate(self.item,self.company);self.assertEqual(r['level'],'high');self.assertTrue(r['verifiedOfficial'])
+    def test_periodic_rating_survives_persist_and_reenrichment(self):
+        for form in ('10-Q', '10-K', '20-F', '40-F/A'):
+            item={**self.item,'sourceId':'sec-test','sourceUrl':'https://www.sec.gov/Archives/test',
+                  'headline':form,'form':form,'classification':{'rule':'periodic-report-v1'}}
+            first=rate(item,self.company)
+            item['importance']=first['level']
+            item['classification']={'rule':first['version']+':'+first['eventKind'],'reason':first['why']}
+            self.assertEqual(rate(item,self.company),first)
+            self.assertEqual(first['level'],'high')
+        item['form']='8-K'
+        self.assertNotEqual(rate(item,self.company)['eventKind'],'results')
     def test_syndication_is_not_independent_confirmation(self):
         a=self.item;b={**a,'id':'second-fixture','publisher':'Copy Site'}
         groups=group_events([a,b],{a['id']:rate(a,self.company),b['id']:rate(b,self.company)})
