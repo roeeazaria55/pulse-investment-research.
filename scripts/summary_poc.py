@@ -19,7 +19,16 @@ try:
     company=[{'title':n['headline'],'url':n['sourceUrl']} for n in feed.get('articles',[]) if n['securityId']=='candidate-nebius'][:3]
     query='AI cloud GPU data center capacity when:7d'
     url='https://news.google.com/rss/search?'+urllib.parse.urlencode({'q':query,'hl':'en-US','gl':'US','ceid':'US:en'})
-    industry=parse_google(fetch(url),required_term=None)[:3]
+    try:
+        industry=parse_google(fetch(url),required_term=None)[:3]
+        report['industryDiscoveryStatus']='rss-success'
+    except Exception as exc:
+        report['industryDiscoveryStatus']='rss-failed: '+str(exc)[:150]
+        # Actual already-collected cross-company industry-context headlines,
+        # explicitly not independent corroboration or a successful industry crawl.
+        industry=[{'title':n['headline'],'url':n['sourceUrl']} for n in feed.get('articles',[])
+                  if any(term in n['headline'].lower() for term in ('neocloud','ai cloud','gpu','data center'))][:3]
+        report['industryInputCoverage']='industry context in prior company feed; not independent sources'
     tokenizer=AutoTokenizer.from_pretrained(report['model'],trust_remote_code=False)
     model=AutoModelForCausalLM.from_pretrained(report['model'],trust_remote_code=False,use_safetensors=True,torch_dtype=torch.float32)
     model.eval()
