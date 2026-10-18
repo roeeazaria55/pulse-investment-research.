@@ -108,6 +108,14 @@ describe("PWA contract", () => {
     expect(h.requested).toContain(h.scope + "icons/icon-192.png");
     expect(h.entries.has(h.scope)).toBe(true);
   });
+  it("serves retained official source metadata when offline", async () => {
+    const h = harness();
+    await h.install();
+    h.entries.set(h.scope + "data/official-sources.json", new Response(JSON.stringify({version:1,items:[],sources:[]})));
+    h.goOffline();
+    const response = await h.request("data/official-sources.json");
+    expect(await response?.json()).toEqual({version:1,items:[],sources:[]});
+  });
   it("serves the cached application shell and feed without network", async () => {
     const h = harness();
     await h.install();

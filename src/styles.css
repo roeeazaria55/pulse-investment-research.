@@ -1644,3 +1644,10 @@ summary { cursor: pointer; min-height: 44px; padding-block: .55rem; line-height:
   input, textarea, select { font-size: 1rem; }
   .form-grid { grid-template-columns: 1fr; }
 }
+
+.official-panel{margin:0 0 2rem;padding:1.25rem;border:1px solid var(--border,#29384f);border-radius:18px;background:var(--surface,#101b2d);min-width:0}
+.official-heading,.official-pack{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.official-heading h2{margin:.35rem 0;font-size:1.6rem}.official-panel p{line-height:1.65}.official-tabs{display:flex;gap:.5rem;margin:1rem 0;flex-wrap:wrap}.official-tabs button[aria-pressed=true]{background:#55dec2;color:#0b1220}
+.official-statuses,.official-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;margin:1rem 0}
+.official-statuses>div{display:flex;flex-direction:column;gap:.35rem;padding:1rem;background:#142238;border-radius:12px}.official-pack{padding:1rem;background:#132d2d;border-radius:12px;margin-bottom:1rem}.official-pack p{margin:.35rem 0}.official-card{border:1px solid #29384f;border-radius:12px;padding:1rem;min-width:0;overflow-wrap:anywhere}.official-card h3{font-size:1rem;line-height:1.6;margin:.65rem 0}.official-card small{line-height:1.6}.official-card details{margin-top:.8rem}.official-card summary{cursor:pointer}.official-panel a{color:#7de8d3;text-decoration:underline;text-underline-offset:3px}.official-panel button{white-space:normal;max-width:100%}
+@media(max-width:600px){.official-statuses,.official-grid{grid-template-columns:1fr}.official-panel{padding:1rem}.official-heading>button,.official-pack>button{width:100%}}
