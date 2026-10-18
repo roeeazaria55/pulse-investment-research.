@@ -1,13 +1,13 @@
 import { readFile, writeFile, rename, appendFile } from "node:fs/promises";
 import { createClient } from "./network.mjs";
 import { collect, briefingSlot } from "./engine.mjs";
-import { validateFeed, validateRegistry } from "./validate.mjs";
+import { validateFeed, validatePersistedFeed, validateRegistry } from "./validate.mjs";
 const load = async (path) => JSON.parse(await readFile(path, "utf8"));
 const registry = await load("public/data/registry.json");
 validateRegistry(registry);
 const previous = await load("public/data/feed.json");
 // Never overwrite a corrupt persisted v2 feed with an empty replacement.
-if (previous.version === 2) validateFeed(previous);
+if (previous.version === 2) validatePersistedFeed(previous);
 else if (previous.version !== 1 || previous.demo !== true)
   throw Error("Unsupported prior feed");
 let state;

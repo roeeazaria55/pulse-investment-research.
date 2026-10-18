@@ -29,7 +29,13 @@ def rate(item, company=None):
     future_results=any(x in title.lower() for x in ('to report','to announce','timing of','announces date','schedules')) and any(x in title.lower() for x in ('results','earnings'))
     if future_results:event,label,potential='results-schedule','הודעה על מועד דוח עתידי',30
     if position_flow:event,label,potential='investor-position','שינוי אחזקה של משקיע אחר',15
-    if sec and any(x in item.get('classification',{}).get('rule','') for x in ('annual','quarter','financial','periodic-report')):
+    # Classification is derived output and is overwritten on every enrichment.
+    # Use the retained SEC form so rerating a persisted report is stable.
+    form=item.get('form')
+    periodic=bool(re.fullmatch(r'(?:10-K|10-Q|20-F|40-F)(?:/A)?',form or ''))
+    if not form:
+        periodic=any(x in item.get('classification',{}).get('rule','') for x in ('annual','quarter','financial','periodic-report'))
+    if sec and periodic:
         event,label,potential='results','מסמך תוצאות רשמי',85
     if opinion:event,label,potential='opinion','דעה או יעד מחיר',15
     if not match:potential=0

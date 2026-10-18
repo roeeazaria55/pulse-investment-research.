@@ -29,8 +29,23 @@ ajv.addFormat("uri", (v) => {
   }
 });
 ajv.addSchema(JSON.parse(readFileSync(new URL('../../schemas/discovery.schema.json', import.meta.url),'utf8')));
-ajv.addSchema(JSON.parse(readFileSync(new URL('../../schemas/intelligence.schema.json', import.meta.url),'utf8')));
+const intelligenceSchema = JSON.parse(readFileSync(new URL('../../schemas/intelligence.schema.json', import.meta.url),'utf8'));
+ajv.addSchema(intelligenceSchema);
 const validate = ajv.compile(schema);
+// Read the last known persisted format without relabeling its old ratings as
+// current. Output validation stays strict; build_intelligence.py recomputes them.
+const legacyIntelligence = structuredClone(intelligenceSchema);
+legacyIntelligence.$id = 'persisted-intelligence-3.1.schema.json';
+const legacyProperties = legacyIntelligence.definitions.intelligence.properties;
+legacyProperties.ratingVersion = { const: 'evidence-3.1' };
+legacyProperties.ratings.additionalProperties.properties.version = { const: 'evidence-3.1' };
+ajv.addSchema(legacyIntelligence);
+const legacySchema = structuredClone(schema);
+legacySchema.properties.intelligence = { $ref: 'persisted-intelligence-3.1.schema.json#/definitions/intelligence' };
+const validateLegacy = ajv.compile(legacySchema);
+export function validatePersistedFeed(feed) {
+  return validateSnapshot(feed, feed.intelligence?.ratingVersion === 'evidence-3.1' ? validateLegacy : validate);
+}
 export function validateRegistry(registry) {
   if (
     registry?.version !== 1 ||
@@ -88,8 +103,11 @@ export function validateRegistry(registry) {
   return true;
 }
 export function validateFeed(feed) {
-  if (!validate(feed))
-    throw Error(`Invalid feed: ${ajv.errorsText(validate.errors)}`);
+  return validateSnapshot(feed, validate);
+}
+function validateSnapshot(feed, validator) {
+  if (!validator(feed))
+    throw Error(`Invalid feed: ${ajv.errorsText(validator.errors)}`);
   validateRegistry(feed.registry);
   validateDiscovery(feed);
   validateIntelligence(feed);
