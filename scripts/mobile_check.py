@@ -23,7 +23,7 @@ with sync_playwright() as pw:
         page.goto(URL);page.get_by_role('heading',name='התדריך היומי.',exact=True).wait_for()
         page.get_by_text('התראות לאנדרואיד • הגדרה חד־פעמית',exact=True).wait_for()
         assert page.locator('html').get_attribute('dir')=='rtl'
-        assert page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'),f'Horizontal overflow at {width}'
+        assert page.evaluate('document.documentElement.scrollWidth')<=width+1,f'Horizontal overflow at {width}'
         nav=page.get_by_role('navigation',name='ניווט נייד')
         nav.get_by_role('button',name='חדשות',exact=True).click()
         page.get_by_role('textbox',name='חיפוש חדשות').fill('Nebius')
@@ -33,7 +33,7 @@ with sync_playwright() as pw:
         assert card.get_by_role('button',name='נקרא — ביטול סימון',exact=True).get_attribute('aria-pressed')=='true'
         page.screenshot(path=f'work/mobile-{width}.png',full_page=False)
         page.evaluate("document.documentElement.style.fontSize='32px'")
-        assert page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'),f'200% text overflow at {width}'
+        assert page.evaluate('document.documentElement.scrollWidth')<=width+1,f'200% text overflow at {width}'
         page.get_by_role('button',name='רענון מידע',exact=True).scroll_into_view_if_needed()
         page.screenshot(path=f'work/mobile-{width}-text200.png',full_page=False)
         # Emulate keyboard's visual viewport independently from layout viewport.

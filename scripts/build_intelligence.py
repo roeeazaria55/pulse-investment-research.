@@ -54,7 +54,8 @@ def collect_industries(config,previous,now,getter=fetch,pause=time.sleep):
 def make_briefing(feed,intel,now,previous):
     win=window(now)
     existing=next((b for b in previous if b['id']==win['id']),None)
-    if existing:return [existing]+[b for b in previous if b['id']!=win['id']][:29]
+    if existing and existing.get('queryVersion',1)==intel['industries']['config']['version'] and existing.get('ratingVersion',VERSION)==VERSION:
+        return [existing]+[b for b in previous if b['id']!=win['id']][:29]
     articles=[*feed.get('articles',[]),*feed['news']]
     eligible=[n for n in articles if within(n,win)]
     eligible_ids={n['id'] for n in eligible}
@@ -62,6 +63,7 @@ def make_briefing(feed,intel,now,previous):
     for c in feed['discovery']['registry']['companies']:
         status=next((s for s in feed['discovery']['sources'] if s['securityId']==c['id']),None)
         events=[g for g in intel['eventGroups'] if g['securityId']==c['id'] and any(i in eligible_ids for i in g['itemIds'])]
+        events.sort(key=lambda g:max(intel['ratings'][i]['eventScore'] for i in g['itemIds']),reverse=True)
         facts=[]
         for g in events[:8]:
             item=next(n for n in eligible if n['id'] in g['itemIds'])
@@ -77,12 +79,14 @@ def make_briefing(feed,intel,now,previous):
                                  'industryConnection':'הקשר ענפי לתחומי הפעילות שנרשמו לחברה; אירוע אצל מתחרה אינו אירוע של החברה.',
                                  'researchInterpretation':'שאלת מחקר, לא עובדה: האם ההתפתחות משנה הנחות על ביקוש, מימון, תחרות או סיכון?',
                                  'missing':['יש לקרוא את המקור המלא ולוודא נתונים והקשר.','הפיד אינו מוכיח השפעה כספית או כיוון מחיר.']})
-    briefing={**win,'generatedAt':now,'kind':'metadata-template-not-ai','ratingVersion':VERSION,'companies':company_sections,
+    briefing={**win,'generatedAt':now,'firstGeneratedAt':existing.get('firstGeneratedAt',existing['generatedAt']) if existing else now,
+              'revision':existing.get('revision',0)+1 if existing else 0,'queryVersion':intel['industries']['config']['version'],
+              'kind':'metadata-template-not-ai','ratingVersion':VERSION,'companies':company_sections,
               'companySearchesSuccessful':sum(s['status']!='failed' for s in feed['discovery']['sources']),
               'industrySearchesSuccessful':sum(s['status']!='failed' for s in intel['industries']['sources']),
               'summaryStatus':intel['summary']['status'],
               'notice':'תדריך מטא־נתונים בעברית. אין סיכום AI מאומת של כתבות מלאות. חלון הפרסום קבוע גם כאשר ההפקה מתעכבת.'}
-    return [briefing]+previous[:29]
+    return [briefing]+[b for b in previous if b['id']!=win['id']][:29]
 
 def build(feed,previous,industry_config,earnings_registry,now,industry_getter=fetch,ir_getter=None,pause=time.sleep):
     old=previous.get('intelligence',{})
@@ -95,8 +99,7 @@ def build(feed,previous,industry_config,earnings_registry,now,industry_getter=fe
         r=ratings[n['id']];n['importance']=r['level'];n['classification']={'rule':VERSION+':'+r['eventKind'],'reason':r['why']}
     intel={'version':1,'generatedAt':now,'ratingVersion':VERSION,'ratings':ratings,'eventGroups':group_events(items,ratings),
            'industries':industries,'calendar':calendar,
-           'summary':old.get('summary',{'status':'quality-rejected','model':'Qwen/Qwen2.5-0.5B-Instruct','reason':'בדיקת CPU אמיתית הסתיימה, אך המודל כתב באנגלית, השמיט הפניות ושינה שם חברה. לא אושר סיכום AI; מוצגות תבניות מטא־נתונים בלבד.',
-                                       'proofRun':'https://github.com/roeeazaria55/pulse-investment-research./actions/runs/39138925445'}),
+           'summary':json.loads(Path('public/data/summary-feasibility.json').read_text(encoding='utf-8'))['publicStatus'],
            'notificationNotice':'הגדרות התראות נשמרות ב־GitHub Secrets בלבד. רשימת המעקב המקומית אינה מסונכרנת להתראות. קבלה באנדרואיד טרם אומתה.'}
     intel['dailyBriefings']=make_briefing(feed,intel,now,old.get('dailyBriefings',[]))
     return intel

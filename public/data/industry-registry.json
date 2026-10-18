@@ -1,10 +1,10 @@
 {
-  "version": 1,
+  "version": 2,
   "industries": [
     {
       "id": "ai-cloud",
       "name": "תשתיות ענן ו־AI",
-      "query": "(AI cloud GPU data center capacity OR תשתיות ענן בינה מלאכותית)",
+      "query": "(\"AI cloud\" OR \"GPU capacity\" OR \"data center\" OR \"תשתיות בינה מלאכותית\")",
       "terms": [
         "ai",
         "cloud",
@@ -17,7 +17,7 @@
     {
       "id": "digital-advertising",
       "name": "פרסום דיגיטלי ורשתות חברתיות",
-      "query": "(digital advertising social media regulation OR פרסום דיגיטלי רשתות חברתיות)",
+      "query": "(\"digital advertising\" OR \"social media regulation\" OR \"פרסום דיגיטלי\")",
       "terms": [
         "advertising",
         "social media",
@@ -28,7 +28,7 @@
     {
       "id": "payments",
       "name": "תשלומים בשווקים מתעוררים",
-      "query": "(emerging markets cross border payments OR תשלומים שווקים מתעוררים)",
+      "query": "(\"cross-border payments\" OR \"emerging market payments\" OR \"תשלומים חוצי גבולות\")",
       "terms": [
         "payments",
         "cross border",
@@ -39,7 +39,7 @@
     {
       "id": "aviation",
       "name": "מנועי תעופה ותחזוקה",
-      "query": "(aircraft engine maintenance leasing OR מנועי תעופה תחזוקה)",
+      "query": "(\"aircraft engines\" OR \"engine maintenance\" OR \"aviation leasing\" OR \"מנועי תעופה\")",
       "terms": [
         "aircraft",
         "engine",
@@ -51,7 +51,7 @@
     {
       "id": "insurance",
       "name": "ביטוח דיגיטלי",
-      "query": "(digital insurance insurtech regulation OR ביטוח דיגיטלי רגולציה)",
+      "query": "(insurtech OR \"digital insurance\" OR \"ביטוח דיגיטלי\")",
       "terms": [
         "insurance",
         "insurtech",
@@ -61,7 +61,7 @@
     {
       "id": "flash-memory",
       "name": "זיכרון ואחסון",
-      "query": "(NAND flash memory storage demand OR זיכרון אחסון שבבים)",
+      "query": "(NAND OR \"flash memory\" OR \"זיכרון פלאש\")",
       "terms": [
         "nand",
         "flash",
@@ -74,7 +74,7 @@
     {
       "id": "defense-imaging",
       "name": "מצלמות ורחפנים ביטחוניים",
-      "query": "(stabilized cameras military drones OR מצלמות רחפנים ביטחון)",
+      "query": "(\"military drones\" OR \"stabilized cameras\" OR \"רחפנים צבאיים\")",
       "terms": [
         "camera",
         "cameras",
@@ -86,7 +86,7 @@
     {
       "id": "renewable-energy",
       "name": "אנרגיה מתחדשת ואגירה",
-      "query": "(renewable energy battery storage solar OR אנרגיה מתחדשת אגירה סולארית)",
+      "query": "(\"renewable energy\" OR \"battery storage\" OR \"אנרגיה מתחדשת\")",
       "terms": [
         "renewable",
         "solar",
@@ -99,7 +99,7 @@
     {
       "id": "neuromodulation",
       "name": "גירוי מוחי וטכנולוגיה רפואית",
-      "query": "(transcranial magnetic stimulation TMS depression OR גירוי מגנטי מוח דיכאון)",
+      "query": "(\"transcranial magnetic stimulation\" OR \"Deep TMS\" OR \"גירוי מגנטי מוחי\")",
       "terms": [
         "transcranial",
         "tms",
@@ -111,7 +111,7 @@
     {
       "id": "connectivity",
       "name": "תקשורת לוויינית וסיבים באפריקה",
-      "query": "(Africa satellite fiber broadband connectivity OR אפריקה תקשורת לוויין סיבים)",
+      "query": "(\"Africa broadband\" OR \"satellite connectivity\" OR \"תקשורת לוויינית\")",
       "terms": [
         "africa",
         "satellite",

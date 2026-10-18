@@ -2,6 +2,7 @@ export function validateIntelligence(feed){
   const x=feed.intelligence;if(!x)return;
   const news=[...feed.news,...(feed.articles||[])],ids=new Set(news.map(n=>n.id));
   const companies=new Set(feed.discovery?.registry.companies.map(c=>c.id));
+  if(new Set(x.dailyBriefings.map(b=>b.id)).size!==x.dailyBriefings.length)throw Error('Duplicate daily publication');
   if(!companies.size)throw Error('Intelligence needs discovery registry');
   for(const n of news){
     const r=x.ratings[n.id];if(!r || r.version!==x.ratingVersion || r.evidenceUrls[0]!==n.sourceUrl)throw Error('Missing rating provenance');

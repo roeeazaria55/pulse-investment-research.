@@ -3,7 +3,7 @@ import hashlib
 import re
 from collect_articles import relevant, contains, normalized
 
-VERSION='evidence-3.1'
+VERSION='evidence-3.2'
 EVENTS=[
     ('results','תוצאות כספיות',75,['financial results','quarter results','earnings results','דוחות כספיים','תוצאות כספיות']),
     ('guidance','שינוי תחזית',75,['raises guidance','cuts guidance','lowers guidance','raises outlook','cuts outlook','העלאת תחזית','הורדת תחזית']),
@@ -25,6 +25,10 @@ def rate(item, company=None):
     opinion=any(contains(title,x) for x in OPINION)
     for kind,he,points,terms in EVENTS:
         if any(contains(title,t) for t in terms):event,label,potential=kind,he,points;break
+    position_flow=bool(re.search(r'\b(?:acquires|buys|sells|reduces|increases|raises|boosts|cuts|trims|new)\b.{0,70}\b(?:shares of|shares in|stake in|holdings in|investment in|position in)\b',title,re.I))
+    future_results=any(x in title.lower() for x in ('to report','to announce','timing of','announces date','schedules')) and any(x in title.lower() for x in ('results','earnings'))
+    if future_results:event,label,potential='results-schedule','הודעה על מועד דוח עתידי',30
+    if position_flow:event,label,potential='investor-position','שינוי אחזקה של משקיע אחר',15
     if sec and any(x in item.get('classification',{}).get('rule','') for x in ('annual','quarter','financial','periodic-report')):
         event,label,potential='results','מסמך תוצאות רשמי',85
     if opinion:event,label,potential='opinion','דעה או יעד מחיר',15
@@ -37,6 +41,8 @@ def rate(item, company=None):
     reason=(f'{label}: עדיפות למחקר לפי סוג האירוע, לא תחזית לתנועת המניה. ' if match else 'הכותרת אינה עומדת בכללי שיוך החברה. ')
     reason+=('מקור ראשוני אומת; יש לקרוא את המסמך בהקשרו.' if official else 'הבסיס הוא כותרת ומטא־נתונים בלבד, לכן אין דירוג גבוה גם כשנזכר אירוע מהותי.')
     if opinion:reason+=' יעד מחיר או דעה אינם ראיה לאירוע מהותי.'
+    if position_flow:reason+=' רכישת מניות בידי משקיע אחר אינה עסקה שביצעה החברה.'
+    if future_results:reason+=' זו הודעה על מועד עתידי, לא פרסום התוצאות עצמן.'
     return {'version':VERSION,'eventKind':event,'eventLabel':label,'eventScore':score,'potentialMateriality':potential,
             'level':level,'sourceAuthority':authority,'sourceReliability':reliability,'companyRelevance':'direct' if direct else 'context' if match else 'rejected',
             'confidence':confidence,'basis':'official-metadata' if official else 'headline-only','verifiedOfficial':official,

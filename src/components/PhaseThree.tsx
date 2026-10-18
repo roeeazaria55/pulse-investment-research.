@@ -15,6 +15,7 @@ export function DailyPanel({intel,date,news=[]}:{intel:Intelligence;date?:string
     <div id={`briefing-${b.date}`} className="anchor-target"/>
     <p>חלון פרסום: {dateTime(b.startAt)} עד {dateTime(b.endAt)} • שעון ישראל</p>
     <p>הופק בפועל: {dateTime(b.generatedAt)}. ייתכנו עיכובים בריצות GitHub.</p>
+    {!!b.revision&&<p>תיקון גרסה {b.revision} לאחר עדכון כללי חיפוש; מזהה התדריך והחלון נשמרו. הפקה ראשונה: {b.firstGeneratedAt?dateTime(b.firstGeneratedAt):'לא נמסר'}.</p>}
     <p className="alert">{b.notice}</p>
     <p>חיפושי חברות שהצליחו: {b.companySearchesSuccessful}/11 • חיפושי תעשייה: {b.industrySearchesSuccessful}/{intel.industries.config.industries.length}</p>
     {b.companies.map(c=><details className="daily-company" key={c.securityId}>
@@ -22,6 +23,7 @@ export function DailyPanel({intel,date,news=[]}:{intel:Intelligence;date?:string
       {!c.facts.length&&<p>{c.searchStatus==='failed'?'החיפוש נכשל; אין להסיק שאין חדשות.':'לא נמצאו בחיפוש שהצליח כותרות מתוארכות בחלון זה.'}</p>}
       {c.facts.map(f=><article className="briefing-item" key={f.eventId}><p>{f.textHe}</p><a href={f.sourceUrl} target="_blank" rel="noopener noreferrer"><span dir="auto">{f.originalTitle}</span> ↗</a><p>{f.publisher} • {dateTime(f.publishedAt)} • קישור Google News כשמקורו בפיד RSS</p></article>)}
       <h3>הקשר ענפי</h3><p>{c.industryConnection}</p>
+      <p>תחומי הקשר: {(intel.industries.config.companyIndustries[c.securityId]||[]).map(id=>intel.industries.config.industries.find(i=>i.id===id)?.name).filter(Boolean).join(' • ')}</p>
       {c.industryItemIds.map(id=>{const n=intel.industries.items.find(n=>n.id===id);return n?<article className="briefing-item" key={id}><a href={n.sourceUrl} target="_blank" rel="noopener noreferrer" dir="auto">{n.headline} ↗</a><p>{n.publisher} • {n.publishedAt?dateTime(n.publishedAt):'תאריך לא נמסר'} • כותרת בלבד, דרך Google News</p></article>:<p key={id}>הפריט הענפי יצא מחלון השימור.</p>;})}
       {!c.industryItemIds.length&&<p>לא נכללו כותרות ענף מתוארכות בחלון; מצב המקורות מפורט להלן.</p>}
       <h3>משמעות אפשרית למחקר — פרשנות</h3><p>{c.researchInterpretation}</p>
@@ -33,7 +35,7 @@ export function DailyPanel({intel,date,news=[]}:{intel:Intelligence;date?:string
     {intel.dailyBriefings.length>1&&<details><summary>תדריכים קודמים</summary>{intel.dailyBriefings.slice(1,8).map(b=><a className="text-button" href={`#briefing=${b.date}`} key={b.id}>{b.date}</a>)}</details>}
   </Section>;
 }
-export function CalendarPanel({intel}:{intel:Intelligence}){
+export function CalendarPanel({intel,focus}:{intel:Intelligence;focus?:string}){
   const render=(e:typeof intel.calendar.events[number])=>{const source=intel.calendar.sources.find(s=>s.securityId===e.securityId);return <article className="earnings-card" id={`earnings-${e.id}`} key={e.id}>
     <h3 dir="auto">{e.name}</h3><span className="badge">{{confirmed:'מועד מאושר',estimated:'מועד משוער',unannounced:'מועד טרם אומת'}[e.status]}</span>
     <p>{e.period||'תקופת הדוח טרם אומתה'} • <b dir="ltr">{e.date||'אין תאריך מאומת'}</b></p>
@@ -47,7 +49,7 @@ export function CalendarPanel({intel}:{intel:Intelligence}){
     <div className="earnings-grid">{intel.calendar.events.filter(e=>e.status!=='unannounced').sort((a,b)=>(a.date||'').localeCompare(b.date||'')).map(render)}</div>
     <details><summary>חברות ללא מועד מאומת</summary>{intel.calendar.events.filter(e=>e.status==='unannounced').map(render)}</details>
     <p>תזכורות אוטומטיות: ברירת מחדל שלושה ימים ויום לפני. ההפעלה וההעדפות מוגדרות בנפרד ב־GitHub Secrets.</p>
-    <details><summary>פרסומי תוצאות שזוהו בפועל</summary>{intel.calendar.releases.length?intel.calendar.releases.slice().reverse().slice(0,15).map(r=><article id={`results-${r.id}`} key={r.id}><a className="text-button" href={r.sourceUrl} target="_blank" rel="noopener noreferrer" dir="auto">{r.headline} ↗</a><p>זוהה: {dateTime(r.firstDetectedAt)} • פרסום: {r.publishedAt?dateTime(r.publishedAt):'זמן לא נמסר'} • מקור רשמי</p></article>):<p>טרם זוהה פרסום תוצאות במקורות הזמינים. כשל מקור אינו הוכחה שלא פורסמו תוצאות.</p>}</details>
+    <details open={!!focus||undefined}><summary>פרסומי תוצאות שזוהו בפועל</summary>{intel.calendar.releases.length?intel.calendar.releases.slice().reverse().slice(0,15).map(r=><article id={`results-${r.id}`} key={r.id}><a className="text-button" href={r.sourceUrl} target="_blank" rel="noopener noreferrer" dir="auto">{r.headline} ↗</a><p>זוהה: {dateTime(r.firstDetectedAt)} • פרסום: {r.publishedAt?dateTime(r.publishedAt):'זמן לא נמסר'} • מקור רשמי</p></article>):<p>טרם זוהה פרסום תוצאות במקורות הזמינים. כשל מקור אינו הוכחה שלא פורסמו תוצאות.</p>}</details>
   </Section>;
 }
 export function NotificationsPanel({open=false}:{open?:boolean}){

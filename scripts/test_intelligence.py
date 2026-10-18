@@ -22,6 +22,12 @@ class EvidenceTests(unittest.TestCase):
     def test_opinion_price_target_is_low(self):
         self.item['headline']='Nebius price target raised despite financing concerns'
         self.assertEqual(rate(self.item,self.company)['level'],'low')
+    def test_shareholder_purchase_not_company_acquisition(self):
+        self.item['headline']='Test Fund Acquires 61,565 Shares of Nebius'
+        r=rate(self.item,self.company);self.assertEqual(r['level'],'low');self.assertEqual(r['eventKind'],'investor-position')
+    def test_future_earnings_not_actual_results(self):
+        self.item['headline']='Nebius to Report Third Quarter Financial Results'
+        r=rate(self.item,self.company);self.assertEqual(r['eventKind'],'results-schedule');self.assertEqual(r['level'],'low')
     def test_wrong_company_is_rejected(self):
         self.item['headline']='Other company financial results'
         r=rate(self.item,self.company);self.assertEqual(r['companyRelevance'],'rejected');self.assertEqual(r['eventScore'],0)
@@ -51,7 +57,7 @@ class DailyWindowTests(unittest.TestCase):
         self.assertTrue(within({'publishedAt':w['startAt']},w))
     def test_published_briefing_is_idempotent(self):
         b={**window(NOW),'generatedAt':NOW}
-        self.assertEqual(make_briefing({}, {}, NOW, [b]),[b])
+        self.assertEqual(make_briefing({}, {'industries':{'config':{'version':1}}}, NOW, [b]),[b])
 
 class CalendarTests(unittest.TestCase):
     def setUp(self):self.company={'securityId':'test-co','name':'Test Company','aliases':['Test Company'],'indexUrl':'https://example.org/news','allowedHosts':['example.org'],'event':{'period':'Q3 2026','date':'2026-10-21','time':None,'timeZone':None,'timing':None,'call':None,'sourceUrl':'https://example.org/release','status':'confirmed','eventKind':'results-date','verifiedAt':'2026-10-18','verificationMethod':'TEST FIXTURE'}}
@@ -70,6 +76,10 @@ class CalendarTests(unittest.TestCase):
         self.assertIsNone(r['time']);self.assertEqual(r['eventKind'],'earnings-call')
     def test_actual_release_missing_date_not_invented(self):
         p=self.page('Test Company Reports Third Quarter 2026 Financial Results','Results for the quarter.')
+        r=parse_release(p,'https://example.org/release',self.company,NOW)
+        self.assertEqual(r['kind'],'results-published');self.assertIsNone(r['publishedAt'])
+    def test_official_meta_title_fallback(self):
+        p=Page();p.feed('<meta property="og:title" content="Test Company Reports Third Quarter 2026 Financial Results"><h3>Financial results</h3>')
         r=parse_release(p,'https://example.org/release',self.company,NOW)
         self.assertEqual(r['kind'],'results-published');self.assertIsNone(r['publishedAt'])
     def test_blocked_source_preserves_known_date(self):

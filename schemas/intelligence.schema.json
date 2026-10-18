@@ -13,7 +13,7 @@
           "format": "date-time"
         },
         "ratingVersion": {
-          "const": "evidence-3.1"
+          "const": "evidence-3.2"
         },
         "ratings": {
           "type": "object",
@@ -22,7 +22,7 @@
             "type": "object",
             "properties": {
               "version": {
-                "const": "evidence-3.1"
+                "const": "evidence-3.2"
               },
               "eventKind": {
                 "type": "string",
@@ -321,7 +321,8 @@
               "type": "object",
               "properties": {
                 "version": {
-                  "const": 1
+                  "type": "integer",
+                  "minimum": 1
                 },
                 "industries": {
                   "type": "array",
@@ -783,7 +784,10 @@
                 "const": "metadata-template-not-ai"
               },
               "ratingVersion": {
-                "const": "evidence-3.1"
+                "enum": [
+                  "evidence-3.1",
+                  "evidence-3.2"
+                ]
               },
               "companies": {
                 "type": "array",
@@ -917,6 +921,18 @@
               "notice": {
                 "type": "string",
                 "maxLength": 6000
+              },
+              "queryVersion": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "revision": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "firstGeneratedAt": {
+                "type": "string",
+                "format": "date-time"
               }
             },
             "required": [

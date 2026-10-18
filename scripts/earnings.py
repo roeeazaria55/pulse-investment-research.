@@ -11,13 +11,14 @@ import urllib.request
 from html.parser import HTMLParser
 
 class Page(HTMLParser):
-    def __init__(self):super().__init__();self.skip=0;self.parts=[];self.links=[];self.href=None;self.anchor=[];self.h1=False;self.title=[];self.publication=None
+    def __init__(self):super().__init__();self.skip=0;self.parts=[];self.links=[];self.href=None;self.anchor=[];self.h1=False;self.title=[];self.publication=None;self.meta_title=None
     def handle_starttag(self,tag,attrs):
         a=dict(attrs)
         if tag in ('script','style'):self.skip+=1
         if tag=='h1':self.h1=True
         if tag=='a':self.href=a.get('href');self.anchor=[]
         if tag=='meta' and a.get('property')=='article:published_time':self.publication=a.get('content')
+        if tag=='meta' and a.get('property')=='og:title':self.meta_title=a.get('content')
         if tag=='time' and a.get('datetime'):self.publication=self.publication or a['datetime']
     def handle_endtag(self,tag):
         if tag in ('script','style'):self.skip=max(0,self.skip-1)
@@ -68,7 +69,7 @@ MONTHS={m:i for i,m in enumerate(['January','February','March','April','May','Ju
 DATE=r'('+'|'.join(MONTHS)+r')\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(20\d{2})'
 
 def parse_release(page,url,company,now):
-    title=' '.join(' '.join(page.title).split())[:1000]
+    title=' '.join((' '.join(page.title) or page.meta_title or '').split())[:1000]
     text=' '.join(' '.join(page.parts).split())
     if not title or not any(a.casefold() in title.casefold() for a in [company['name'],*company['aliases']]):return None
     lower=title.lower()
@@ -125,7 +126,7 @@ def collect_calendar(registry,previous,now,getter=get_page,pause=time.sleep):
                 if dates:
                     found=dates[0]
                     if event.get('date')!=found['date']:
-                        event.update(date=found['date'],time=None,timeZone=None,period=found['period'],sourceUrl=found['sourceUrl'],status='confirmed',eventKind=found['eventKind'],verifiedAt=now[:10],verificationMethod='Parsed explicit future event date in official issuer release.',changedAt=now)
+                        event.update(date=found['date'],time=None,timeZone=None,timing=None,call=None,period=found['period'],sourceUrl=found['sourceUrl'],status='confirmed',eventKind=found['eventKind'],verifiedAt=now[:10],verificationMethod='Parsed explicit future event date in official issuer release.',changedAt=now)
                     else:event['verifiedAt']=now[:10]
                 for r in parsed:
                     if r['kind']=='results-published' and r['sourceUrl'] not in seen_urls:

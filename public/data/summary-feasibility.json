@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "reviewedAt": "2026-10-18",
+  "publicStatus": {
+    "status": "quality-rejected",
+    "model": "Qwen2.5-0.5B-Instruct and Qwen3-1.7B",
+    "reason": "נבדקו בפועל שני מודלים פתוחים על CPU. הראשון כתב באנגלית ושינה שם חברה; השני העתיק כותרות באנגלית והפיק עברית לא מובנת עם פרטים לא נתמכים. לא אושר סיכום AI. התדריך הוא תבנית מטא־נתונים מסומנת בלבד.",
+    "proofRun": "https://github.com/roeeazaria55/pulse-investment-research./actions/runs/39139285363"
+  },
+  "evaluations": [
+    {
+      "model": "Qwen/Qwen2.5-0.5B-Instruct",
+      "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+      "license": "Apache-2.0",
+      "licenseSource": "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct",
+      "scriptSecondsExcludingDependencyInstallation": 30.09,
+      "run": "https://github.com/roeeazaria55/pulse-investment-research./actions/runs/39138925445",
+      "result": "rejected",
+      "reasons": ["English instead of requested Hebrew", "Missing source citations", "Changed the company name Crusoe to Crispy"],
+      "scope": "Three actual company headlines and three industry headlines; no full article bodies"
+    },
+    {
+      "model": "Qwen/Qwen3-1.7B",
+      "revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+      "license": "Apache-2.0",
+      "licenseSource": "https://huggingface.co/Qwen/Qwen3-1.7B",
+      "scriptSecondsExcludingDependencyInstallation": 130.63,
+      "run": "https://github.com/roeeazaria55/pulse-investment-research./actions/runs/39139285363",
+      "result": "rejected",
+      "reasons": ["Company response copied English headlines", "Industry Hebrew was incoherent and not faithful to cited headlines"],
+      "scope": "Three actual company headlines and three industry headlines; no full article bodies"
+    }
+  ],
+  "costScope": "No paid API, GPU or hosted inference. Standard Ubuntu CPU in the public repository. No claim that no other free model could work."
+}

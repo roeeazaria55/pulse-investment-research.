@@ -4,7 +4,7 @@ Existing personal storage version 1, holdings, notes and backups are unchanged.
 Read flags use a separate local key `pulse-read-news-v1`; unrelated flags remain
 local. These are not synced to GitHub and are not notification preferences.
 
-## Rating evidence-3.1
+## Rating evidence-3.2 (supersedes evidence-3.1)
 
 The prior rule matched event keywords and assigned medium/low, with no separate
 source reliability or company relevance. It has been replaced in the visible
@@ -16,6 +16,9 @@ metadata record can pass the high-event gate. No score predicts price direction.
 Syndicated/near-identical titles are grouped conservatively; source count never
 increases independent confirmations. Similar events with different titles may
 remain separate. Company identity exclusions still apply before scoring.
+Version 3.2 adds explicit exclusions for another investor's purchase of shares
+and for announcements of future earnings dates. Neither is treated as an
+acquisition by the company or publication of actual financial results.
 
 ## Daily windows and industry context
 
@@ -28,6 +31,9 @@ Selection is [start,end) by publication timestamp; collection timestamps never
 substitute for missing publication dates. Undated items are shown separately.
 The window and actual generation time are displayed. A published daily ID is
 immutable on reruns; late discoveries appear in news, not a duplicate briefing.
+An explicit query/rating version correction may update that same ID while
+preserving its first generation time and incrementing a visible revision;
+notification deduplication still uses the same daily ID.
 If the scheduler was absent for several days only the latest eligible window
 is produced; missed days are not silently backfilled as if produced on time.
 
@@ -50,6 +56,15 @@ on an industry RSS 503 before inference; a separate retry isolates that failure.
 Until a successful quality review, the UI explicitly offers a Hebrew metadata
 template with original headline links and questions, **not an AI article summary**.
 This is a material unfinished capability when no model passes the gate.
+
+Actual quality review: Qwen2.5-0.5B completed in 30.09 script seconds, but
+answered in English without citations and changed Crusoe to Crispy. Qwen3-1.7B
+completed in 130.63 script seconds but copied English company headlines and
+produced incoherent, unsupported industry Hebrew. Both use Apache-2.0 licenses
+and were rejected. Timings exclude dependency installation. Exact revisions
+and actual Actions runs are in `public/data/summary-feasibility.json`.
+This does not prove every other free model would fail; no tested candidate
+passed this quality gate.
 
 ## Earnings
 

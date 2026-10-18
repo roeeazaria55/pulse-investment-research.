@@ -293,7 +293,7 @@ export default function App() {
             ייצוא גיבוי אישי
           </button>
         </div>
-        <small className="version">PULSE / VERSION 2.0</small>
+        <small className="version">PULSE / VERSION 3.0 PREVIEW</small>
       </aside>
       <div className="workspace">
         <header className="topbar">
@@ -400,7 +400,7 @@ export default function App() {
               <button onClick={exportData}>ייצוא המידע המקורי</button>
             </div>
           )}
-          {feed?.version===2&&feed.intelligence&&tab==='home'&&<><DailyPanel intel={feed.intelligence} news={feed.news} date={new URLSearchParams(deepLink.slice(1)).get('briefing')||undefined}/><CalendarPanel intel={feed.intelligence}/><NotificationsPanel open={deepLink.includes('notifications=')}/></>}
+          {feed?.version===2&&feed.intelligence&&tab==='home'&&<><DailyPanel intel={feed.intelligence} news={feed.news} date={new URLSearchParams(deepLink.slice(1)).get('briefing')||undefined}/><CalendarPanel intel={feed.intelligence} focus={new URLSearchParams(deepLink.slice(1)).get('results')||undefined}/><NotificationsPanel open={deepLink.includes('notifications=')}/></>}
           {feed?.version === 2 &&
             ["home", "news", "watchlist"].includes(tab) && (
               <>{feed.intelligence?<details className="panel"><summary>מצב איסוף חדשות ומקורות</summary><DiscoveryPanel feed={feed}/><CoveragePanel feed={feed}/></details>:<><DiscoveryPanel feed={feed}/><CoveragePanel feed={feed}/></>}</>
