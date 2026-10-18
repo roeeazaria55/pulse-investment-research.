@@ -74,11 +74,14 @@
         "ticker": "DLO",
         "name": "dLocal",
         "allowedHosts": [
-          "dlocal.gcs-web.com"
+          "dlocal.gcs-web.com",
+          "www.globenewswire.com",
+          "rss.globenewswire.com"
         ],
         "documentPaths": [
           "/news-releases/news-release-details/",
-          "/static-files/"
+          "/static-files/",
+          "/news-release/"
         ],
         "sources": [
           {
@@ -90,6 +93,14 @@
             "id": "dlo-financials",
             "label": "תוצאות רבעוניות",
             "url": "https://dlocal.gcs-web.com/financial-information/quarterly-results"
+          },
+          {
+            "id": "us-dlo-nasdaq-a-issuer-wire",
+            "label": "הודעות שהופצו בשם החברה — GlobeNewswire",
+            "url": "https://rss.globenewswire.com/search/organization/dlocal%2520limited",
+            "kind": "issuer-distributed",
+            "identitySource": "https://www.globenewswire.com/news-release/2026/08/13/3344936/0/en/dlocal-reports-second-quarter-2026-financial-results.html",
+            "reviewedAt": "2026-10-18"
           }
         ],
         "questions": [
@@ -109,17 +120,28 @@
         "ticker": "FTAI",
         "name": "FTAI Aviation",
         "allowedHosts": [
-          "ir.ftaiaviation.com"
+          "ir.ftaiaviation.com",
+          "www.globenewswire.com",
+          "rss.globenewswire.com"
         ],
         "documentPaths": [
           "/news-releases/news-release-details/",
-          "/static-files/"
+          "/static-files/",
+          "/news-release/"
         ],
         "sources": [
           {
             "id": "candidate-ftai-official",
             "label": "מקור משקיעים רשמי",
             "url": "https://ir.ftaiaviation.com/news-events/press-releases"
+          },
+          {
+            "id": "candidate-ftai-issuer-wire",
+            "label": "הודעות שהופצו בשם החברה — GlobeNewswire",
+            "url": "https://www.globenewswire.com/search/organization/FTAI%2520Aviation%2520Ltd%C2%A7",
+            "kind": "issuer-distributed",
+            "identitySource": "https://www.globenewswire.com/news-release/2026/04/29/3284285/35538/en/ftai-aviation-ltd-reports-first-quarter-2026-results-increases-dividend-to-0-45-per-ordinary-share.html",
+            "reviewedAt": "2026-10-18"
           }
         ],
         "questions": [
@@ -196,11 +218,14 @@
         "name": "IREN",
         "allowedHosts": [
           "iren.gcs-web.com",
-          "iren.com"
+          "iren.com",
+          "www.globenewswire.com",
+          "rss.globenewswire.com"
         ],
         "documentPaths": [
           "/news-releases/news-release-details/",
-          "/static-files/"
+          "/static-files/",
+          "/news-release/"
         ],
         "sources": [
           {
@@ -212,6 +237,14 @@
             "id": "iren-presentations",
             "label": "אירועים ומצגות",
             "url": "https://iren.com/investor/events-and-presentations"
+          },
+          {
+            "id": "candidate-iren-issuer-wire",
+            "label": "הודעות שהופצו בשם החברה — GlobeNewswire",
+            "url": "https://rss.globenewswire.com/en/search/organization/IREN%2520Limited?page=1",
+            "kind": "issuer-distributed",
+            "identitySource": "https://www.globenewswire.com/news-release/2026/08/13/3344878/0/en/iren-to-release-fy26-results-on-august-27-2026.html",
+            "reviewedAt": "2026-10-18"
           }
         ],
         "questions": [
@@ -288,17 +321,28 @@
         "ticker": "",
         "name": "BrainsWay",
         "allowedHosts": [
-          "investors.brainsway.com"
+          "investors.brainsway.com",
+          "www.globenewswire.com",
+          "rss.globenewswire.com"
         ],
         "documentPaths": [
           "/news-releases/news-release-details/",
-          "/static-files/"
+          "/static-files/",
+          "/news-release/"
         ],
         "sources": [
           {
             "id": "candidate-brainsway-official",
             "label": "מקור משקיעים רשמי",
             "url": "https://investors.brainsway.com/"
+          },
+          {
+            "id": "candidate-brainsway-issuer-wire",
+            "label": "הודעות שהופצו בשם החברה — GlobeNewswire",
+            "url": "https://www.globenewswire.com/search/organization/BrainsWay%2520Ltd%C2%A7",
+            "kind": "issuer-distributed",
+            "identitySource": "https://www.globenewswire.com/news-release/2026/08/12/3343549/17676/en/brainsway-reports-second-quarter-2026-financial-results-and-operational-highlights.html",
+            "reviewedAt": "2026-10-18"
           }
         ],
         "questions": [
@@ -317,16 +361,34 @@
         "ticker": "",
         "name": "Gilat Telecom",
         "allowedHosts": [
-          "gilat.net"
+          "gilat.net",
+          "satcom-gilat.co.il",
+          "maya.tase.co.il"
         ],
         "documentPaths": [
-          "/wp-content/uploads/"
+          "/wp-content/uploads/",
+          "/he/reports/"
         ],
         "sources": [
           {
             "id": "candidate-gilat-telecom-official",
             "label": "מקור החברה — טעון בדיקת כיסוי",
             "url": "https://gilat.net/gilat-israel/"
+          },
+          {
+            "id": "gilat-immediate",
+            "label": "דיווחים מידיים באתר קשרי המשקיעים",
+            "url": "https://satcom-gilat.co.il/%D7%93%D7%99%D7%95%D7%95%D7%97%D7%99%D7%9D-%D7%9E%D7%99%D7%93%D7%99%D7%99%D7%9D/",
+            "identitySource": "https://satcom-gilat.co.il/%D7%90%D7%95%D7%93%D7%95%D7%AA-%D7%9E%D7%A9%D7%A7%D7%99%D7%A2%D7%99%D7%9D/",
+            "reviewedAt": "2026-10-18",
+            "publicationDates": true
+          },
+          {
+            "id": "gilat-financial",
+            "label": "דוחות כספיים באתר קשרי המשקיעים",
+            "url": "https://satcom-gilat.co.il/%D7%93%D7%95%D7%97%D7%95%D7%AA-%D7%9B%D7%A1%D7%A4%D7%99%D7%99%D7%9D/",
+            "identitySource": "https://satcom-gilat.co.il/%D7%90%D7%95%D7%93%D7%95%D7%AA-%D7%9E%D7%A9%D7%A7%D7%99%D7%A2%D7%99%D7%9D/",
+            "reviewedAt": "2026-10-18"
           }
         ],
         "questions": [
@@ -358,7 +420,13 @@
       "metadataStatus": "page-metadata",
       "metadataCheckedAt": "2026-10-18T19:22:22.729433+00:00",
       "metadataError": null,
-      "contentScope": "metadata-only"
+      "contentScope": "metadata-only",
+      "titleBasis": "link-label",
+      "language": null,
+      "documentPeriod": null,
+      "periodBasis": "unknown",
+      "publishedDateBasis": "unknown",
+      "dateEvidenceUrl": null
     },
     {
       "id": "official:050a539f4055a5fcd4cba38da36770d1",
@@ -375,7 +443,13 @@
       "metadataStatus": "index-link",
       "metadataCheckedAt": null,
       "metadataError": null,
-      "contentScope": "metadata-only"
+      "contentScope": "metadata-only",
+      "titleBasis": "link-label",
+      "language": null,
+      "documentPeriod": null,
+      "periodBasis": "unknown",
+      "publishedDateBasis": "unknown",
+      "dateEvidenceUrl": null
     },
     {
       "id": "official:6e3944526ac19b22d701ab7850499269",
@@ -392,7 +466,13 @@
       "metadataStatus": "index-link",
       "metadataCheckedAt": null,
       "metadataError": null,
-      "contentScope": "metadata-only"
+      "contentScope": "metadata-only",
+      "titleBasis": "link-label",
+      "language": null,
+      "documentPeriod": null,
+      "periodBasis": "unknown",
+      "publishedDateBasis": "unknown",
+      "dateEvidenceUrl": null
     },
     {
       "id": "official:14281df91f1d96b6e0edef33b8f1e85c",
@@ -409,7 +489,13 @@
       "metadataStatus": "page-metadata",
       "metadataCheckedAt": "2026-10-18T19:22:22.729433+00:00",
       "metadataError": null,
-      "contentScope": "metadata-only"
+      "contentScope": "metadata-only",
+      "titleBasis": "link-label",
+      "language": null,
+      "documentPeriod": null,
+      "periodBasis": "unknown",
+      "publishedDateBasis": "unknown",
+      "dateEvidenceUrl": null
     },
     {
       "id": "official:48b663d8479b1c71486e702920470fb4",
@@ -426,7 +512,13 @@
       "metadataStatus": "page-metadata",
       "metadataCheckedAt": "2026-10-18T19:22:22.729433+00:00",
       "metadataError": null,
-      "contentScope": "metadata-only"
+      "contentScope": "metadata-only",
+      "titleBasis": "link-label",
+      "language": null,
+      "documentPeriod": null,
+      "periodBasis": "unknown",
+      "publishedDateBasis": "unknown",
+      "dateEvidenceUrl": null
     },
     {
       "id": "official:3fe0aaec4891f0ef83aaf7df2e112516",
@@ -443,7 +535,13 @@
       "metadataStatus": "index-link",
       "metadataCheckedAt": null,
       "metadataError": null,
-      "contentScope": "metadata-only"
+      "contentScope": "metadata-only",
+      "titleBasis": "link-label",
+      "language": null,
+      "documentPeriod": "Q1 2026",
+      "periodBasis": "filename-hint",
+      "publishedDateBasis": "unknown",
+      "dateEvidenceUrl": null
     },
     {
       "id": "official:6cfe13589371f08027dff3c0cddf8b37",
@@ -460,7 +558,13 @@
       "metadataStatus": "index-link",
       "metadataCheckedAt": null,
       "metadataError": null,
-      "contentScope": "metadata-only"
+      "contentScope": "metadata-only",
+      "titleBasis": "link-label",
+      "language": null,
+      "documentPeriod": null,
+      "periodBasis": "unknown",
+      "publishedDateBasis": "unknown",
+      "dateEvidenceUrl": null
     },
     {
       "id": "official:2869d9a4debc5bb4cc9cdae989adec0d",
@@ -477,7 +581,13 @@
       "metadataStatus": "index-link",
       "metadataCheckedAt": null,
       "metadataError": null,
-      "contentScope": "metadata-only"
+      "contentScope": "metadata-only",
+      "titleBasis": "link-label",
+      "language": null,
+      "documentPeriod": "Q1 2026",
+      "periodBasis": "filename-hint",
+      "publishedDateBasis": "unknown",
+      "dateEvidenceUrl": null
     },
     {
       "id": "official:a39634c8a4dbc63b3db0fa643b6a0771",
@@ -494,7 +604,13 @@
       "metadataStatus": "index-link",
       "metadataCheckedAt": null,
       "metadataError": null,
-      "contentScope": "metadata-only"
+      "contentScope": "metadata-only",
+      "titleBasis": "link-label",
+      "language": null,
+      "documentPeriod": null,
+      "periodBasis": "unknown",
+      "publishedDateBasis": "unknown",
+      "dateEvidenceUrl": null
     },
     {
       "id": "official:7090cc7e955781877bca153419c88e34",
@@ -511,7 +627,13 @@
       "metadataStatus": "index-link",
       "metadataCheckedAt": null,
       "metadataError": null,
-      "contentScope": "metadata-only"
+      "contentScope": "metadata-only",
+      "titleBasis": "link-label",
+      "language": null,
+      "documentPeriod": "Q4 2025",
+      "periodBasis": "filename-hint",
+      "publishedDateBasis": "unknown",
+      "dateEvidenceUrl": null
     },
     {
       "id": "official:8900391fffd51437471d42e2cfacc957",
@@ -528,7 +650,13 @@
       "metadataStatus": "index-link",
       "metadataCheckedAt": null,
       "metadataError": null,
-      "contentScope": "metadata-only"
+      "contentScope": "metadata-only",
+      "titleBasis": "link-label",
+      "language": null,
+      "documentPeriod": null,
+      "periodBasis": "unknown",
+      "publishedDateBasis": "unknown",
+      "dateEvidenceUrl": null
     },
     {
       "id": "official:44c18b794dafc90ffb5448c55650e37e",
@@ -545,7 +673,13 @@
       "metadataStatus": "index-link",
       "metadataCheckedAt": null,
       "metadataError": null,
-      "contentScope": "metadata-only"
+      "contentScope": "metadata-only",
+      "titleBasis": "link-label",
+      "language": null,
+      "documentPeriod": "Q4 2025",
+      "periodBasis": "filename-hint",
+      "publishedDateBasis": "unknown",
+      "dateEvidenceUrl": null
     },
     {
       "id": "official:c0eab5f5cbb3b6e295f1eea3174d8052",
@@ -562,7 +696,13 @@
       "metadataStatus": "index-link",
       "metadataCheckedAt": null,
       "metadataError": null,
-      "contentScope": "metadata-only"
+      "contentScope": "metadata-only",
+      "titleBasis": "link-label",
+      "language": null,
+      "documentPeriod": null,
+      "periodBasis": "unknown",
+      "publishedDateBasis": "unknown",
+      "dateEvidenceUrl": null
     },
     {
       "id": "official:b89cd63b4a3681fb36b90aff7dd0f2e0",
@@ -579,7 +719,13 @@
       "metadataStatus": "index-link",
       "metadataCheckedAt": null,
       "metadataError": null,
-      "contentScope": "metadata-only"
+      "contentScope": "metadata-only",
+      "titleBasis": "link-label",
+      "language": null,
+      "documentPeriod": null,
+      "periodBasis": "unknown",
+      "publishedDateBasis": "unknown",
+      "dateEvidenceUrl": null
     },
     {
       "id": "official:dc09b17a0ac0fbf4ce02948410dce2fb",
@@ -596,7 +742,13 @@
       "metadataStatus": "index-link",
       "metadataCheckedAt": null,
       "metadataError": null,
-      "contentScope": "metadata-only"
+      "contentScope": "metadata-only",
+      "titleBasis": "link-label",
+      "language": null,
+      "documentPeriod": null,
+      "periodBasis": "unknown",
+      "publishedDateBasis": "unknown",
+      "dateEvidenceUrl": null
     },
     {
       "id": "official:7c172ddc93be903ca43d2cb6f7d0a4da",
@@ -613,13 +765,19 @@
       "metadataStatus": "index-link",
       "metadataCheckedAt": null,
       "metadataError": null,
-      "contentScope": "metadata-only"
+      "contentScope": "metadata-only",
+      "titleBasis": "link-label",
+      "language": null,
+      "documentPeriod": null,
+      "periodBasis": "unknown",
+      "publishedDateBasis": "unknown",
+      "dateEvidenceUrl": null
     },
     {
       "id": "official:95a8b86d017f5ad222f68508273b6801",
       "companyId": "candidate-next-vision",
       "ticker": "",
-      "title": "\r\n             \r\n               \r\n               \r\n               \r\n             \r\n             ENG PDF \r\n             › \r\n          ",
+      "title": "Next Vision — Agu2026 En isa",
       "url": "https://investor-relations.nextvision-sys.com/wp-content/uploads/2026/08/Agu2026_En_isa.pdf",
       "indexRank": 0,
       "sourceId": "candidate-next-vision-official",
@@ -630,13 +788,19 @@
       "metadataStatus": "index-link",
       "metadataCheckedAt": null,
       "metadataError": null,
-      "contentScope": "metadata-only"
+      "contentScope": "metadata-only",
+      "titleBasis": "filename",
+      "language": "en",
+      "documentPeriod": null,
+      "periodBasis": "unknown",
+      "publishedDateBasis": "unknown",
+      "dateEvidenceUrl": null
     },
     {
       "id": "official:34eb73cd66e3553596f08139ba394524",
       "companyId": "candidate-next-vision",
       "ticker": "",
-      "title": "\n ENG \n \n",
+      "title": "Next Vision — Periodic Report 2025 isa",
       "url": "https://investor-relations.nextvision-sys.com/wp-content/uploads/2025/03/Periodic_Report_2025_isa.pdf",
       "indexRank": 1,
       "sourceId": "candidate-next-vision-official",
@@ -647,13 +811,19 @@
       "metadataStatus": "index-link",
       "metadataCheckedAt": null,
       "metadataError": null,
-      "contentScope": "metadata-only"
+      "contentScope": "metadata-only",
+      "titleBasis": "filename",
+      "language": "en",
+      "documentPeriod": "FY 2025",
+      "periodBasis": "filename-hint",
+      "publishedDateBasis": "unknown",
+      "dateEvidenceUrl": null
     },
     {
       "id": "official:4b9d1d94d8e6c8ede2efe6052370c1d2",
       "companyId": "candidate-next-vision",
       "ticker": "",
-      "title": "\n HEB \n \n",
+      "title": "Next Vision — דוח תקופתי 2025 isa",
       "url": "https://investor-relations.nextvision-sys.com/wp-content/uploads/2025/03/דוח_תקופתי_2025_isa.pdf",
       "indexRank": 2,
       "sourceId": "candidate-next-vision-official",
@@ -664,13 +834,19 @@
       "metadataStatus": "index-link",
       "metadataCheckedAt": null,
       "metadataError": null,
-      "contentScope": "metadata-only"
+      "contentScope": "metadata-only",
+      "titleBasis": "filename",
+      "language": "he",
+      "documentPeriod": null,
+      "periodBasis": "unknown",
+      "publishedDateBasis": "unknown",
+      "dateEvidenceUrl": null
     },
     {
       "id": "official:020609c5c29f0a356414bfb1bae92625",
       "companyId": "candidate-next-vision",
       "ticker": "",
-      "title": "\n ENG \n \n",
+      "title": "Next Vision — NextVision FS 2024 גרסה לתרגום V5 2",
       "url": "https://investor-relations.nextvision-sys.com/wp-content/uploads/2025/03/NextVision-FS-2024-גרסה-לתרגום-V5-2.pdf",
       "indexRank": 3,
       "sourceId": "candidate-next-vision-official",
@@ -681,13 +857,19 @@
       "metadataStatus": "index-link",
       "metadataCheckedAt": null,
       "metadataError": null,
-      "contentScope": "metadata-only"
+      "contentScope": "metadata-only",
+      "titleBasis": "filename",
+      "language": "en",
+      "documentPeriod": null,
+      "periodBasis": "unknown",
+      "publishedDateBasis": "unknown",
+      "dateEvidenceUrl": null
     },
     {
       "id": "official:630020ad2a6e0240a77eeb9555d19ddd",
       "companyId": "candidate-next-vision",
       "ticker": "",
-      "title": "\n HEB \n \n",
+      "title": "Next Vision — דוח שנתי 2024",
       "url": "https://investor-relations.nextvision-sys.com/wp-content/uploads/2025/03/דוח-שנתי-2024.pdf",
       "indexRank": 4,
       "sourceId": "candidate-next-vision-official",
@@ -698,13 +880,19 @@
       "metadataStatus": "index-link",
       "metadataCheckedAt": null,
       "metadataError": null,
-      "contentScope": "metadata-only"
+      "contentScope": "metadata-only",
+      "titleBasis": "filename",
+      "language": "he",
+      "documentPeriod": null,
+      "periodBasis": "unknown",
+      "publishedDateBasis": "unknown",
+      "dateEvidenceUrl": null
     },
     {
       "id": "official:f77c0df496c5df6659dd73162b60ad72",
       "companyId": "candidate-next-vision",
       "ticker": "",
-      "title": "\n\t\t\t\t\t\t\tHEB\t\t\t\t\t\t",
+      "title": "Next Vision — NextVision May26HEB isa",
       "url": "https://investor-relations.nextvision-sys.com/wp-content/uploads/2026/05/NextVision_May26HEB_isa.pdf",
       "indexRank": 5,
       "sourceId": "candidate-next-vision-official",
@@ -715,13 +903,19 @@
       "metadataStatus": "index-link",
       "metadataCheckedAt": null,
       "metadataError": null,
-      "contentScope": "metadata-only"
+      "contentScope": "metadata-only",
+      "titleBasis": "filename",
+      "language": "he",
+      "documentPeriod": null,
+      "periodBasis": "unknown",
+      "publishedDateBasis": "unknown",
+      "dateEvidenceUrl": null
     },
     {
       "id": "official:f296a0e7e52d77dbef86f66ed8b09fde",
       "companyId": "candidate-next-vision",
       "ticker": "",
-      "title": "\n\t\t\t\t\t\t\tENG\t\t\t\t\t\t",
+      "title": "Next Vision — NextVision May2026 En isa",
       "url": "https://investor-relations.nextvision-sys.com/wp-content/uploads/2026/05/NextVision_May2026_En_isa.pdf",
       "indexRank": 6,
       "sourceId": "candidate-next-vision-official",
@@ -732,13 +926,19 @@
       "metadataStatus": "index-link",
       "metadataCheckedAt": null,
       "metadataError": null,
-      "contentScope": "metadata-only"
+      "contentScope": "metadata-only",
+      "titleBasis": "filename",
+      "language": "en",
+      "documentPeriod": null,
+      "periodBasis": "unknown",
+      "publishedDateBasis": "unknown",
+      "dateEvidenceUrl": null
     },
     {
       "id": "official:3ea6b403126a15f902a230d0354f0f73",
       "companyId": "candidate-next-vision",
       "ticker": "",
-      "title": "\r\n             \r\n               \r\n               \r\n               \r\n             \r\n             HEB PDF \r\n             › \r\n          ",
+      "title": "Next Vision — Agu2026 He isa",
       "url": "https://investor-relations.nextvision-sys.com/wp-content/uploads/2026/08/Agu2026_He_isa.pdf",
       "indexRank": 7,
       "sourceId": "candidate-next-vision-official",
@@ -749,13 +949,19 @@
       "metadataStatus": "index-link",
       "metadataCheckedAt": null,
       "metadataError": null,
-      "contentScope": "metadata-only"
+      "contentScope": "metadata-only",
+      "titleBasis": "filename",
+      "language": "he",
+      "documentPeriod": null,
+      "periodBasis": "unknown",
+      "publishedDateBasis": "unknown",
+      "dateEvidenceUrl": null
     },
     {
       "id": "official:dde425bb3b4ada805430434b2c354092",
       "companyId": "candidate-enlight",
       "ticker": "",
-      "title": "View File",
+      "title": "Enlight Renewable Energy — October 2026 Investor Presentation",
       "url": "https://enlightenergy.com/wp-content/uploads/2026/10/October-2026-Investor-Presentation.pdf",
       "indexRank": 0,
       "sourceId": "candidate-enlight-official",
@@ -766,7 +972,13 @@
       "metadataStatus": "index-link",
       "metadataCheckedAt": null,
       "metadataError": null,
-      "contentScope": "metadata-only"
+      "contentScope": "metadata-only",
+      "titleBasis": "filename",
+      "language": null,
+      "documentPeriod": "October 2026",
+      "periodBasis": "filename-hint",
+      "publishedDateBasis": "unknown",
+      "dateEvidenceUrl": null
     },
     {
       "id": "official:4a6e07aa4d348e29d33e9dd580c0c8c2",
@@ -783,7 +995,13 @@
       "metadataStatus": "index-link",
       "metadataCheckedAt": null,
       "metadataError": null,
-      "contentScope": "metadata-only"
+      "contentScope": "metadata-only",
+      "titleBasis": "link-label",
+      "language": null,
+      "documentPeriod": null,
+      "periodBasis": "unknown",
+      "publishedDateBasis": "unknown",
+      "dateEvidenceUrl": null
     }
   ],
   "sources": [
@@ -843,6 +1061,20 @@
       "error": "HTTP Error 403: Forbidden"
     },
     {
+      "id": "us-dlo-nasdaq-a-issuer-wire",
+      "label": "הודעות שהופצו בשם החברה — GlobeNewswire",
+      "url": "https://rss.globenewswire.com/search/organization/dlocal%2520limited",
+      "kind": "issuer-distributed",
+      "identitySource": "https://www.globenewswire.com/news-release/2026/08/13/3344936/0/en/dlocal-reports-second-quarter-2026-financial-results.html",
+      "reviewedAt": "2026-10-18",
+      "companyId": "us-dlo-nasdaq-a",
+      "status": "not-checked",
+      "lastAttemptAt": null,
+      "lastSuccessfulAt": null,
+      "count": 0,
+      "error": null
+    },
+    {
       "id": "candidate-ftai-official",
       "label": "מקור משקיעים רשמי",
       "url": "https://ir.ftaiaviation.com/news-events/press-releases",
@@ -852,6 +1084,20 @@
       "lastSuccessfulAt": null,
       "count": 0,
       "error": "HTTP Error 403: Forbidden"
+    },
+    {
+      "id": "candidate-ftai-issuer-wire",
+      "label": "הודעות שהופצו בשם החברה — GlobeNewswire",
+      "url": "https://www.globenewswire.com/search/organization/FTAI%2520Aviation%2520Ltd%C2%A7",
+      "kind": "issuer-distributed",
+      "identitySource": "https://www.globenewswire.com/news-release/2026/04/29/3284285/35538/en/ftai-aviation-ltd-reports-first-quarter-2026-results-increases-dividend-to-0-45-per-ordinary-share.html",
+      "reviewedAt": "2026-10-18",
+      "companyId": "candidate-ftai",
+      "status": "not-checked",
+      "lastAttemptAt": null,
+      "lastSuccessfulAt": null,
+      "count": 0,
+      "error": null
     },
     {
       "id": "us-lmnd-nyse-common-official",
@@ -898,6 +1144,20 @@
       "error": "HTTP Error 403: Forbidden"
     },
     {
+      "id": "candidate-iren-issuer-wire",
+      "label": "הודעות שהופצו בשם החברה — GlobeNewswire",
+      "url": "https://rss.globenewswire.com/en/search/organization/IREN%2520Limited?page=1",
+      "kind": "issuer-distributed",
+      "identitySource": "https://www.globenewswire.com/news-release/2026/08/13/3344878/0/en/iren-to-release-fy26-results-on-august-27-2026.html",
+      "reviewedAt": "2026-10-18",
+      "companyId": "candidate-iren",
+      "status": "not-checked",
+      "lastAttemptAt": null,
+      "lastSuccessfulAt": null,
+      "count": 0,
+      "error": null
+    },
+    {
       "id": "candidate-next-vision-official",
       "label": "מקור משקיעים רשמי",
       "url": "https://investor-relations.nextvision-sys.com/",
@@ -931,6 +1191,20 @@
       "error": "HTTP Error 403: Forbidden"
     },
     {
+      "id": "candidate-brainsway-issuer-wire",
+      "label": "הודעות שהופצו בשם החברה — GlobeNewswire",
+      "url": "https://www.globenewswire.com/search/organization/BrainsWay%2520Ltd%C2%A7",
+      "kind": "issuer-distributed",
+      "identitySource": "https://www.globenewswire.com/news-release/2026/08/12/3343549/17676/en/brainsway-reports-second-quarter-2026-financial-results-and-operational-highlights.html",
+      "reviewedAt": "2026-10-18",
+      "companyId": "candidate-brainsway",
+      "status": "not-checked",
+      "lastAttemptAt": null,
+      "lastSuccessfulAt": null,
+      "count": 0,
+      "error": null
+    },
+    {
       "id": "candidate-gilat-telecom-official",
       "label": "מקור החברה — טעון בדיקת כיסוי",
       "url": "https://gilat.net/gilat-israel/",
@@ -940,7 +1214,34 @@
       "lastSuccessfulAt": null,
       "count": 0,
       "error": "HTTP Error 403: Forbidden"
+    },
+    {
+      "id": "gilat-immediate",
+      "label": "דיווחים מידיים באתר קשרי המשקיעים",
+      "url": "https://satcom-gilat.co.il/%D7%93%D7%99%D7%95%D7%95%D7%97%D7%99%D7%9D-%D7%9E%D7%99%D7%93%D7%99%D7%99%D7%9D/",
+      "identitySource": "https://satcom-gilat.co.il/%D7%90%D7%95%D7%93%D7%95%D7%AA-%D7%9E%D7%A9%D7%A7%D7%99%D7%A2%D7%99%D7%9D/",
+      "reviewedAt": "2026-10-18",
+      "companyId": "candidate-gilat-telecom",
+      "status": "not-checked",
+      "lastAttemptAt": null,
+      "lastSuccessfulAt": null,
+      "count": 0,
+      "error": null
+    },
+    {
+      "id": "gilat-financial",
+      "label": "דוחות כספיים באתר קשרי המשקיעים",
+      "url": "https://satcom-gilat.co.il/%D7%93%D7%95%D7%97%D7%95%D7%AA-%D7%9B%D7%A1%D7%A4%D7%99%D7%99%D7%9D/",
+      "identitySource": "https://satcom-gilat.co.il/%D7%90%D7%95%D7%93%D7%95%D7%AA-%D7%9E%D7%A9%D7%A7%D7%99%D7%A2%D7%99%D7%9D/",
+      "reviewedAt": "2026-10-18",
+      "companyId": "candidate-gilat-telecom",
+      "status": "not-checked",
+      "lastAttemptAt": null,
+      "lastSuccessfulAt": null,
+      "count": 0,
+      "error": null
     }
   ],
-  "notice": "כותרות, קישורים ותאריכי פרסום כאשר זמינים. תוכן המסמכים לא נאסף ולא סוכם ב־AI."
+  "notice": "כותרות, קישורים ותאריכי פרסום כאשר זמינים. תוכן המסמכים לא נאסף ולא סוכם ב־AI.",
+  "metadataVersion": 2
 }

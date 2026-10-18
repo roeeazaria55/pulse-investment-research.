@@ -11,7 +11,14 @@ export function analysisContract(companyId:string){
 export function parseAnalysis(text:string,expectedCompanyId:string):AnalysisImport{
  if(text.length>150000)throw Error('הניתוח גדול מדי. הגבול הוא 150,000 תווים.');
  let x:AnalysisImport;
- try{x=JSON.parse(text.trim().replace(/^```(?:json)?\s*\n?/i,'').replace(/\n?```$/,''));}catch{throw Error('לא נמצא JSON תקין. העתק את אובייקט הייבוא בלבד.');}
+ let json=text.trim();
+ try{x=JSON.parse(json);}catch{
+  const blocks=[...json.matchAll(/^```(?:json)?[ \t]*\r?\n([\s\S]*?)^```[ \t]*$/gmi)];
+  const fences=json.match(/^```.*$/gm)||[];
+  if(blocks.length!==1||fences.length!==2)throw Error('לא נמצא אובייקט ייבוא יחיד. העתק JSON בלבד או תשובה עם בלוק JSON אחד.');
+  json=blocks[0][1];
+  try{x=JSON.parse(json);}catch{throw Error('לא נמצא JSON תקין. בדוק שהעתקת את בלוק הייבוא במלואו.');}
+ }
  if(!x||typeof x!=='object'||Array.isArray(x)||x.version!==1||x.companyId!==expectedCompanyId)throw Error('הניתוח אינו מתאים לחברה שנבחרה או שגרסת הייבוא אינה נתמכת.');
  if(!validDate(x.asOf)||!x.fields||typeof x.fields!=='object'||Array.isArray(x.fields)||Object.keys(x.fields).length!==researchFields.length||!researchFields.every(k=>typeof x.fields[k]==='string'&&x.fields[k].length<=5000)||Object.keys(x.fields).some(k=>!researchFields.includes(k as ResearchField)))throw Error('בדוק תאריך מחקר ואת כל שדות המחקר. שדה מוגבל ל־5,000 תווים.');
  if(!Array.isArray(x.sourceUrls)||x.sourceUrls.length>30||!x.sourceUrls.every(safeSource)||!Array.isArray(x.missing)||x.missing.length>30||!x.missing.every(s=>typeof s==='string'&&s.length<=1000))throw Error('רשימת המקורות או המידע החסר אינה תקינה. יש להשתמש בקישורי HTTPS.');

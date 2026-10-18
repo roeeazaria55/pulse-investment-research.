@@ -45,3 +45,10 @@ it('retains prior items after a refresh fails',async()=>{
  fireEvent.click(screen.getByRole('button',{name:'רענון המקורות'}));await screen.findByRole('status');
  expect(screen.getByText('Nebius reports financial results ↗')).toBeTruthy();
 });
+it('requires publication evidence and distinguishes filename period hints',()=>{
+ const f=parseOfficialSnapshot(fixture());
+ f.items[0].publishedDate='2026-10-14';f.items[0].publishedDateBasis='index-time';
+ expect(()=>parseOfficialSnapshot(f)).toThrow('Missing publication evidence');
+ f.items[0].dateEvidenceUrl='https://nebius.com/newsroom';expect(parseOfficialSnapshot(f).items[0].publishedDate).toBe('2026-10-14');
+ f.items[0].dateEvidenceUrl='https://evil.test/';expect(()=>parseOfficialSnapshot(f)).toThrow('Wrong publication source');
+});
