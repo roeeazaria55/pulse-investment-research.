@@ -1,0 +1,129 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PULSE public feed v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "updatedAt", "demo", "news", "research"],
+  "properties": {
+    "version": { "const": 1 },
+    "updatedAt": {
+      "anyOf": [{ "type": "string", "format": "date-time" }, { "type": "null" }]
+    },
+    "demo": { "type": "boolean" },
+    "news": { "type": "array", "items": { "$ref": "#/definitions/news" } },
+    "research": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/research" }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "demo": { "const": false } } },
+      "then": {
+        "properties": {
+          "updatedAt": { "type": "string", "format": "date-time" },
+          "news": { "items": { "properties": { "demo": { "const": false } } } },
+          "research": {
+            "items": { "properties": { "demo": { "const": false } } }
+          }
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "url": { "type": "string", "format": "uri", "pattern": "^https?://" },
+    "note": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "createdAt", "text"],
+      "properties": {
+        "id": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "text": { "type": "string" }
+      }
+    },
+    "content": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "thesis",
+        "revenue",
+        "profitability",
+        "cashFlow",
+        "valuation",
+        "advantages",
+        "catalysts",
+        "risks",
+        "bear",
+        "base",
+        "bull",
+        "notes"
+      ],
+      "properties": {
+        "thesis": { "type": "string" },
+        "revenue": { "type": "string" },
+        "profitability": { "type": "string" },
+        "cashFlow": { "type": "string" },
+        "valuation": { "type": "string" },
+        "advantages": { "type": "string" },
+        "catalysts": { "type": "string" },
+        "risks": { "type": "string" },
+        "bear": { "type": "string" },
+        "base": { "type": "string" },
+        "bull": { "type": "string" },
+        "notes": { "type": "array", "items": { "$ref": "#/definitions/note" } }
+      }
+    },
+    "news": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "ticker",
+        "company",
+        "headline",
+        "sourceUrl",
+        "publishedAt",
+        "collectedAt",
+        "importance",
+        "summary",
+        "demo"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "ticker": { "type": "string" },
+        "company": { "type": "string" },
+        "headline": { "type": "string" },
+        "sourceUrl": { "$ref": "#/definitions/url" },
+        "publishedAt": { "type": "string", "format": "date-time" },
+        "collectedAt": { "type": "string", "format": "date-time" },
+        "importance": { "enum": ["high", "medium", "low"] },
+        "summary": { "type": "string" },
+        "demo": { "type": "boolean" }
+      }
+    },
+    "research": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ticker",
+        "company",
+        "updatedAt",
+        "sourceUrls",
+        "content",
+        "demo"
+      ],
+      "properties": {
+        "ticker": { "type": "string" },
+        "company": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "sourceUrls": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/url" }
+        },
+        "content": { "$ref": "#/definitions/content" },
+        "demo": { "type": "boolean" }
+      }
+    }
+  }
+}
