@@ -48,6 +48,19 @@ with sync_playwright() as pw:
         assert page.evaluate('document.documentElement.scrollWidth')<=width+1,f'Official panel overflow at {width}'
         page.screenshot(path=f'work/mobile-{width}-official.png',full_page=False)
         exchange=page.get_by_role('region',name='ניתוח מסמכים וייבוא מחקר')
+        # Every initial company has its own published baseline; opening it is read-only.
+        company_select=page.get_by_label('חברה למחקר',exact=True)
+        labels=['NBIS','META','DLO','FTAI','LMND','SNDK','IREN','נקסט ויזן','אנלייט','בריינסוויי','גילת טלקום']
+        for index,label in enumerate(labels):
+            company_select.select_option(f'initial-{index}')
+            exchange.get_by_role('heading',name=f'מחקר בסיס ל־{label}',exact=True).wait_for()
+            exchange.get_by_text('קריאת המחקר המלא',exact=True).click()
+            assert page.evaluate('document.documentElement.scrollWidth')<=width+1,f'Baseline {label} overflow at {width}'
+            page.evaluate("document.documentElement.style.fontSize='32px'")
+            assert page.evaluate('document.documentElement.scrollWidth')<=width+1,f'Baseline {label} 200% overflow at {width}'
+            page.evaluate("document.documentElement.style.fontSize='16px'")
+        company_select.select_option('initial-0')
+        exchange.get_by_role('heading',name='מחקר בסיס ל־NBIS',exact=True).wait_for()
         exchange.locator('summary').filter(has_text='1. קריאת PDF').click()
         # Small in-memory PDF fixture tests the actual bundled PDF.js worker.
         content=b'BT /F1 12 Tf 40 150 Td (PULSE SOURCE TEST 2026) Tj ET'

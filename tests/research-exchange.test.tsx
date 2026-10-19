@@ -85,5 +85,6 @@ it('shows published NBIS research without overwriting personal fields and previe
 });
 it('does not offer NBIS baseline for another company',()=>{
  render(<ResearchExchange company={{id:'candidate-iren',name:'IREN',label:'IREN'}} current={blankResearch()} onChange={()=>{}} onPrepare={()=>{}}/>);
- expect(screen.queryByText('השוואת מחקר הבסיס למחקר שלי')).toBeNull();
+ expect(screen.queryByText('מחקר בסיס ל־NBIS')).toBeNull();
+ expect(screen.getByText('מחקר בסיס ל־IREN')).toBeTruthy();
 });
