@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "reviewedAt": "2026-10-18",
+  "reviewedAt": "2026-10-19",
   "companies": [
     {
       "id": "candidate-nebius",
@@ -42,16 +42,27 @@
       "ticker": "META",
       "name": "Meta Platforms",
       "allowedHosts": [
-        "investor.atmeta.com"
+        "investor.atmeta.com",
+        "data.sec.gov",
+        "www.sec.gov"
       ],
       "documentPaths": [
-        "/investor-news/press-release-details/"
+        "/investor-news/press-release-details/",
+        "/Archives/edgar/data/1326801/"
       ],
       "sources": [
         {
           "id": "us-meta-nasdaq-a-official",
           "label": "מקור משקיעים רשמי",
           "url": "https://investor.atmeta.com/investor-news/default.aspx"
+        },
+        {
+          "id": "us-meta-nasdaq-a-sec",
+          "label": "דיווחי SEC — תאריך הגשה",
+          "url": "https://data.sec.gov/submissions/CIK0001326801.json",
+          "format": "sec-submissions",
+          "cik": "1326801",
+          "reviewedAt": "2026-10-19"
         }
       ],
       "questions": [
@@ -139,6 +150,12 @@
           "kind": "issuer-distributed",
           "identitySource": "https://www.globenewswire.com/news-release/2026/04/29/3284285/35538/en/ftai-aviation-ltd-reports-first-quarter-2026-results-increases-dividend-to-0-45-per-ordinary-share.html",
           "reviewedAt": "2026-10-18"
+        },
+        {
+          "id": "candidate-ftai-reports-fallback",
+          "label": "דף רשמי חלופי — מסמכים והודעות",
+          "url": "https://ir.ftaiaviation.com/",
+          "reviewedAt": "2026-10-19"
         }
       ],
       "questions": [
@@ -162,13 +179,20 @@
       "documentPaths": [
         "/investor/news-and-events/",
         "/investor/news/",
-        "/investor/financials/"
+        "/investor/financials/",
+        "/investor-relations-bo/wp-content/uploads/"
       ],
       "sources": [
         {
           "id": "us-lmnd-nyse-common-official",
           "label": "מקור משקיעים רשמי",
           "url": "https://www.lemonade.com/investor/news"
+        },
+        {
+          "id": "us-lmnd-nyse-common-reports-fallback",
+          "label": "דף רשמי חלופי — מסמכים והודעות",
+          "url": "https://www.lemonade.com/investor/quarterly-results",
+          "reviewedAt": "2026-10-19"
         }
       ],
       "questions": [
@@ -197,6 +221,12 @@
           "id": "candidate-sandisk-official",
           "label": "מקור משקיעים רשמי",
           "url": "https://investor.sandisk.com/news-events/news-releases"
+        },
+        {
+          "id": "candidate-sandisk-reports-fallback",
+          "label": "דף רשמי חלופי — מסמכים והודעות",
+          "url": "https://investor.sandisk.com/",
+          "reviewedAt": "2026-10-19"
         }
       ],
       "questions": [

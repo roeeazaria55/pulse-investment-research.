@@ -37,7 +37,7 @@ def visible_date(value):
 GENERIC=re.compile(r'^(?:(?:eng|heb|en|he|pdf|download|view file|view|read more|להורדה|הורדה|עברית|אנגלית|קובץ|›|»|\W)+)$',re.I)
 def useful(value):
     value=clean(value)
-    return bool(len(value)>=8 and value.casefold() not in ('financials','financial information','news','press releases','investor relations','reports','earning release','earnings release','investor presentation','annual report','מצגות','דוחות') and not GENERIC.fullmatch(value))
+    return bool(len(value)>=8 and value.casefold() not in ('financials','financial information','news','press releases','investor relations','reports','earning release','earnings release','investor presentation','annual report','release details','press release details','shareholder letter','10-q report','10-k report','מצגות','דוחות') and not GENERIC.fullmatch(value))
 
 def language(label,url):
     text=clean(label)
@@ -69,7 +69,7 @@ def describe(company,url,label,context=None,page_title=None):
     stem=re.sub(r'\.(pdf|html?|aspx)$','',filename,flags=re.I)
     readable=clean(re.sub(r'[_\-]+',' ',stem))[:180]
     if useful(page_title):title,basis=clean(page_title),'page-heading'
-    elif raw.casefold() in ('earning release','earnings release','letter to shareholders','press release','investor presentation'):
+    elif raw.casefold() in ('earning release','earnings release','letter to shareholders','press release','investor presentation','shareholder letter','10-q report','10-k report'):
         if useful(heading):title,basis=heading+' — '+raw,'index-context'
         else:title,basis=company['name']+' — '+(readable or raw),'filename'
     elif useful(raw):title,basis=raw,'link-label'

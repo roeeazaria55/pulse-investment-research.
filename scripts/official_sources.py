@@ -18,7 +18,7 @@ def date_only(value):
 
 def kind(title,url):
     t=title.lower()
-    if 'maya.tase.co.il/he/reports/' in url:return 'document'
+    if 'maya.tase.co.il/he/reports/' in url or 'www.sec.gov/Archives/edgar/data/' in url:return 'document'
     if url.lower().split('?')[0].endswith('.pdf') or '/static-files/' in url or '/assets/' in url:return 'document'
     if any(x in t for x in ('to report','to release','date of','timing of')):return 'schedule'
     if re.search(r'\b(reports|reported)\b.*\bresults\b',t):return 'results'
@@ -57,7 +57,10 @@ def collect(config,previous,now,getter=get_official_page):
                     'lastSuccessfulAt':old.get('lastSuccessfulAt'),'count':0,'error':None}
             try:
                 if time.monotonic()>deadline:raise ValueError('Collection time budget exhausted; retained items require later refresh')
-                page=getter(source['url'],company['allowedHosts'])
+                if source.get('format')=='sec-submissions':
+                    from sec_metadata import submissions_page
+                    page=submissions_page(source,company)
+                else:page=getter(source['url'],company['allowedHosts'])
                 # get_page uses the shared HTML parser. Only allowlisted document
                 # links are followed; scripts and response text are never executed.
                 links={}
@@ -93,7 +96,7 @@ def collect(config,previous,now,getter=get_official_page):
                     if index_date:record.update(publishedDate=index_date,publishedDateBasis='index-time',dateEvidenceUrl=source['url'])
                     # Three release pages per company, no PDF fetching/parsing. A
                     # document link is not evidence that its contents were read.
-                    if detail_count<(3 if company['ticker'] in ('NBIS','IREN','DLO') else 1) and record['kind']!='document' and time.monotonic()<deadline:
+                    if source.get('format')!='sec-submissions' and detail_count<(3 if company['ticker'] in ('NBIS','IREN','DLO') else 1) and record['kind']!='document' and time.monotonic()<deadline:
                         detail_count+=1
                         try:
                             detail=getter(url,company['allowedHosts'])

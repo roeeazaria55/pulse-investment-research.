@@ -92,3 +92,29 @@ not repository files and are never modified by these collector changes.
 - Validation: 57 Python tests passed, including both observed heading forms and
   a two-source shared-document fixture. JavaScript/UI code is unchanged.
 - Rollback: revert `Handle generic section headings and scope navigation cleanup`.
+
+## Coverage extension — 19 October 2026
+
+- Add official homepage fallback indices for FTAI and SanDisk after live reads
+  confirmed current release links there while news indices failed.
+- Add Lemonade quarterly-results index and narrowly allow its official PDF
+  upload path. Metadata only: PDF contents have not been read.
+- Add Meta SEC submissions metadata with exact CIK/ticker identity validation,
+  issuer-scoped archive paths, no redirects, bounded response and safe document
+  names. Dates are filing dates, explicitly labeled in titles/source labels.
+- BrainsWay investor homepage is reachable in a fresh live check; collection
+  coverage remains subject to the final run and availability.
+- Validation: 61 Python tests, 62 JavaScript tests and production build passed.
+- Rollback: revert commit titled `Extend official coverage with issuer homepage
+  fallbacks and validated Meta SEC filings`. Existing browser research untouched.
+- GitHub upload blocked by automatic approval review; changes are local until
+  permission is resolved. No merge or deployment performed.
+
+- Live targeted collection: META 8, FTAI 3, LMND 8, SNDK 5, BrainsWay 3.
+- Generic Shareholder letter / 10-Q report labels now use document context or
+  filename; generic Release Details headings no longer replace issuer titles.
+- Full live collection completed: 136 retained metadata records covering all
+  11 companies (16 NBIS, 8 META, 16 DLO, 16 FTAI, 8 LMND, 10 SNDK,
+  24 IREN, 15 NextVision, 1 Enlight, 11 BrainsWay, 11 Gilat Telecom).
+  Four individual indices still fail; alternate sources cover their companies.
+  Coverage is metadata presence, not complete document/financial analysis.
