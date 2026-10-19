@@ -1657,3 +1657,7 @@ summary { cursor: pointer; min-height: 44px; padding-block: .55rem; line-height:
 .research-import-info { min-width: 0; overflow-wrap: anywhere; }
 .research-import-info details, .research-import-info p, .research-import-info h4 { min-width: 0; max-width: 100%; }
 .research-toolbar select { min-width: 0; max-width: 100%; }
+@media (max-width: 760px) {
+  .bottom-nav { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); width: 100%; max-width: 100%; }
+  .bottom-nav button, .bottom-nav button span { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+}

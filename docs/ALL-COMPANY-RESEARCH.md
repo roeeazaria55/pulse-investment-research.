@@ -68,3 +68,7 @@ The first CI pass found DLO horizontal overflow at 320px with 200% font size.
 Published baseline prose now permits wrapping inside nested cards; select width
 is bounded without clipping content. The mobile test retains the assertion and
 reports overflowing elements/saves a screenshot if a later regression occurs.
+The overflow diagnostic identified the fixed bottom navigation, not the research
+prose, on the repeated 200% company-switch check. Its five columns now have
+explicit zero-minimum grid tracks and a viewport-bounded width; text can wrap.
+The full repeated-company assertions remain enabled.
