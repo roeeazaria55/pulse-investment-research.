@@ -56,10 +56,14 @@ with sync_playwright() as pw:
             exchange.get_by_role('heading',name=f'מחקר בסיס ל־{label}',exact=True).wait_for()
             exchange.get_by_text('קריאת המחקר המלא',exact=True).click()
             assert page.evaluate('document.documentElement.scrollWidth')<=width+1,f'Baseline {label} overflow at {width}'
-            page.evaluate("document.documentElement.style.fontSize='32px'")
+            # Blur the native select/summary before resizing text. Let Chromium
+            # finish RTL focus scrolling before measuring the stable layout.
+            page.evaluate("document.activeElement?.blur(); document.documentElement.style.fontSize='32px'")
+            page.evaluate("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))")
+            page.evaluate("window.scrollTo({left:0,top:window.scrollY,behavior:'instant'})")
             if page.evaluate('document.documentElement.scrollWidth')>width+1:
                 page.screenshot(path=f'work/mobile-{width}-baseline-overflow.png',full_page=False)
-                overflow=page.evaluate("""() => [...document.querySelectorAll('body *')].filter(e=>{const r=e.getBoundingClientRect();return r.width>0&&(r.left < -1||r.right>innerWidth+1)}).map(e=>({tag:e.tagName,cls:e.className,text:e.textContent.slice(0,100),rect:[e.getBoundingClientRect().left,e.getBoundingClientRect().right]})).slice(-20)""")
+                overflow=page.evaluate("""() => [...document.querySelectorAll('body *')].filter(e=>{const r=e.getBoundingClientRect();return r.width>0&&(r.left < -1||r.right>document.documentElement.clientWidth+1)}).map(e=>({tag:e.tagName,cls:e.className,text:e.textContent.slice(0,100),rect:[e.getBoundingClientRect().left,e.getBoundingClientRect().right]})).slice(-20)""")
                 metrics=page.evaluate("() => ({inner:innerWidth,client:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth,x:scrollX,visual:visualViewport.width,navWidth:getComputedStyle(document.querySelector('.bottom-nav')).width})")
                 raise AssertionError(f'Baseline {label} 200% overflow at {width}: {metrics} {overflow}')
             page.evaluate("document.documentElement.style.fontSize='16px'")
