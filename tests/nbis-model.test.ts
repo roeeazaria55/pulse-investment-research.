@@ -34,7 +34,8 @@ it('required multiple reproduces reference price after dilution and discounting'
  expect(modelYears).toBeGreaterThan(1.19);expect(modelYears).toBeLessThan(1.21);
 });
 it('invalid or missing values suppress outputs, while operating cash can be negative',()=>{
- for(const update of [{issuePrice:0},{loanDraw:776},{margin:101},{operatingCash:NaN},{newAwards:-1},{capex2027:Infinity},{debtShare:101}])expect(nbisModel({...base,...update})).toBeNull();
+ for(const update of [{issuePrice:0},{issuePrice:1e-320},{loanDraw:776},{margin:101},{operatingCash:NaN},{newAwards:-1},{capex2027:Infinity},{debtShare:101}])expect(nbisModel({...base,...update})).toBeNull();
  expect(nbisModel({...base,operatingCash:-1000})).not.toBeNull();
  expect(nbisModel({...base,revenue:0})!.requiredMultiple).toBeNull();
+ expect(nbisModel({...base,margin:1e-320})!.requiredMultiple).toBeNull();
 });

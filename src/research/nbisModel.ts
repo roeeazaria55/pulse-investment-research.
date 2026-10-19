@@ -19,7 +19,7 @@ export function dilutedValue(assets:number,seniorDebt:number,shares:number,notes
 }
 export function nbisModel(x:ModelInputs){
  const keys:(keyof ModelInputs)[]=['revenue','margin','multiple','capexH2','capex2027','operatingCash','netAdvances','minCash','debtShare','issuePrice','newAwards','loanDraw','discount'];
- if(keys.some(k=>!Number.isFinite(x[k])||Math.abs(x[k])>1e7||(k!=='operatingCash'&&k!=='netAdvances'&&x[k]<0))||x.margin>100||x.debtShare>100||x.discount>100||x.multiple>100||x.issuePrice<=0||x.loanDraw>facts.julyFacility)return null;
+ if(keys.some(k=>!Number.isFinite(x[k])||Math.abs(x[k])>1e7||(k!=='operatingCash'&&k!=='netAdvances'&&x[k]<0))||x.margin>100||x.debtShare>100||x.discount>100||x.multiple>100||x.issuePrice<0.000001||x.loanDraw>facts.julyFacility)return null;
  const opening=facts.cashJune+facts.augustNetProceeds+x.loanDraw;
  const beforeFunding=opening+x.operatingCash+x.netAdvances-x.capexH2-x.capex2027;
  const gap=Math.max(0,x.minCash-beforeFunding);
@@ -36,6 +36,8 @@ export function nbisModel(x:ModelInputs){
  const factor=(1+x.discount/100)**modelYears;
  const futureReference=facts.referencePrice*factor;
  const requiredEnterprise=futureReference*shares+seniorDebt+facts.notes.reduce((s,n)=>s+Math.max(n.claim,futureReference*n.original*n.rate/1000),0)-cash;
- const requiredMultiple=x.revenue*x.margin>0?requiredEnterprise/(x.revenue*x.margin/100):null;
+ const ebitda=x.revenue*x.margin/100;
+ const requiredRatio=ebitda>0?requiredEnterprise/ebitda:NaN;
+ const requiredMultiple=Number.isFinite(requiredRatio)?requiredRatio:null;
  return {opening,beforeFunding,gap,newDebt,newEquity,fundingShares,shares,cash,enterprise,seniorDebt,debtOnly,diluted,present:diluted.price/factor,requiredMultiple,upside:(diluted.price/factor/facts.referencePrice-1)*100};
 }
