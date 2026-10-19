@@ -118,3 +118,16 @@ not repository files and are never modified by these collector changes.
   24 IREN, 15 NextVision, 1 Enlight, 11 BrainsWay, 11 Gilat Telecom).
   Four individual indices still fail; alternate sources cover their companies.
   Coverage is metadata presence, not complete document/financial analysis.
+
+## 2026-10-19 — Cash/debt research bridges and NBIS numerical worksheet
+- FTAI H1 cash flow and debt from SEC 10-Q; distinguish asset sales from
+  recurring operations and carrying debt from issuance costs.
+- Gilat consolidated cash bridge after capex, lease principal and interest;
+  separate bonds, leases and restricted cash with explicit reporting date.
+- NextVision period discrepancy resolved for the research against the issuer's
+  Hebrew Q2 report; customer concentration quantified. Presentation correction
+  remains unverified.
+- NBIS editable illustrative end-2027 EV/revenue scenarios with diluted shares,
+  debt/cash bridge, discounting, zero floor, input validation and reset.
+  Seeds are examples, not a completed fair-value opinion; edits are temporary.
+- See RESEARCH-VALUATION.md for provenance, limitations, tests and rollback.
