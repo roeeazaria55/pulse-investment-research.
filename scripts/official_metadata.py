@@ -37,7 +37,7 @@ def visible_date(value):
 GENERIC=re.compile(r'^(?:(?:eng|heb|en|he|pdf|download|view file|view|read more|להורדה|הורדה|עברית|אנגלית|קובץ|›|»|\W)+)$',re.I)
 def useful(value):
     value=clean(value)
-    return bool(len(value)>=8 and value.casefold() not in ('financials','financial information','news','press releases','investor relations','reports','מצגות','דוחות') and not GENERIC.fullmatch(value))
+    return bool(len(value)>=8 and value.casefold() not in ('financials','financial information','news','press releases','investor relations','reports','earning release','earnings release','investor presentation','annual report','release details','press release details','shareholder letter','10-q report','10-k report','מצגות','דוחות') and not GENERIC.fullmatch(value))
 
 def language(label,url):
     text=clean(label)
@@ -49,11 +49,15 @@ def language(label,url):
     return None
 
 def period_hint(value):
-    value=clean(value)
+    value=clean(re.sub(r'[_\-]+',' ',value))
     q=re.search(r'\b(Q[1-4])\s*[-_ ]*(?:FY\s*)?(20\d{2})\b',value,re.I)
     if q:return q[1].upper()+' '+q[2]
     fy=re.search(r'\b(?:FY|full.year|annual report|periodic report)\s*[-_ ]*(20\d{2})\b',value,re.I)
     if fy:return 'FY '+fy[1]
+    hebrew_q=re.search(r'רבעון\s*([1-4])\s*(20\d{2})\b',value)
+    if hebrew_q:return 'Q'+hebrew_q[1]+' '+hebrew_q[2]
+    hebrew_fy=re.search(r'דוח\s+(?:שנתי|תקופתי)\s+(20\d{2})\b',value)
+    if hebrew_fy:return 'FY '+hebrew_fy[1]
     month=re.fullmatch(r'('+'|'.join(MONTHS)+r')\s+(20\d{2})(?:\s+investor presentation)?',value,re.I)
     if month:return month[1].title()+' '+month[2]
     return None
@@ -65,7 +69,9 @@ def describe(company,url,label,context=None,page_title=None):
     stem=re.sub(r'\.(pdf|html?|aspx)$','',filename,flags=re.I)
     readable=clean(re.sub(r'[_\-]+',' ',stem))[:180]
     if useful(page_title):title,basis=clean(page_title),'page-heading'
-    elif raw.casefold() in ('earnings release','letter to shareholders','press release') and useful(heading):title,basis=heading+' — '+raw,'index-context'
+    elif raw.casefold() in ('earning release','earnings release','letter to shareholders','press release','investor presentation','shareholder letter','10-q report','10-k report'):
+        if useful(heading):title,basis=heading+' — '+raw,'index-context'
+        else:title,basis=company['name']+' — '+(readable or raw),'filename'
     elif useful(raw):title,basis=raw,'link-label'
     elif useful(heading):title,basis=heading,'index-context'
     else:title,basis=company['name']+' — '+(readable or 'מסמך רשמי'),'filename'
@@ -90,6 +96,12 @@ class OfficialPage(Page):
         super().__init__();self.stack=[];self.link_contexts={};self.publication_value=None;self.publication_basis=None;self.jsonld=None
     def handle_starttag(self,tag,attrs):
         attrs=dict(attrs);super().handle_starttag(tag,list(attrs.items()))
+        if tag=='a' and attrs.get('href'):
+            # Track each occurrence: a document also linked in the body remains
+            # eligible even if a repeated menu/footer link was seen first.
+            navigation=any(n['tag'] in ('nav','header','footer') or n['attrs'].get('role') in ('navigation','contentinfo','banner') or re.search(r'(?:^|[\s_-])(?:menu|navbar)(?:$|[\s_-])',n['attrs'].get('class',''),re.I) for n in self.stack)
+            context=self.link_contexts.setdefault(attrs['href'],{})
+            context['navigationOnly']=context.get('navigationOnly',True) and navigation
         prop=attrs.get('property') or attrs.get('name') or attrs.get('itemprop')
         if prop in ('article:published_time','datePublished') and iso_date(attrs.get('content')):
             self.publication_value=attrs['content'];self.publication_basis='page-published-metadata'

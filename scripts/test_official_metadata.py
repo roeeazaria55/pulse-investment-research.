@@ -35,3 +35,21 @@ class MetadataTests(unittest.TestCase):
         self.assertEqual(p.link_contexts['/news-release/iren']['publisherKey'],organization_key('https://rss.globenewswire.com/en/search/organization/IREN%2520Limited'))
         self.assertEqual(p.link_contexts['/news-release/other']['publisherKey'],'otherltd')
         self.assertEqual(visible_date('07/10/2026'),'2026-10-07')
+    def test_generic_report_labels_retain_period_and_filename_provenance(self):
+        for label in ('Earning Release','Earnings Release','Investor Presentation'):
+            n=describe(C,'https://example.org/uploads/2026/05/ENG_Q3_2025_isa.pdf',label,{'heading':'Q3 2025 financial results'})
+            self.assertIn('Q3 2025',n['title']);self.assertEqual(n['documentPeriod'],'Q3 2025')
+            self.assertEqual(n['periodBasis'],'index-heading')
+            n=describe(C,'https://example.org/uploads/2026/05/ENG_Q3_2025_isa.pdf',label)
+            self.assertIn('Q3 2025',n['title']);self.assertEqual(n['periodBasis'],'filename-hint')
+            self.assertNotIn('publishedDate',n)
+    def test_hebrew_periods_and_underscores_are_only_document_hints(self):
+        for filename,period in (('דוח_כספי_רבעון_1_2026_isa.pdf','Q1 2026'),('דוח_תקופתי_2025_isa.pdf','FY 2025'),('דוח-שנתי-2024.pdf','FY 2024')):
+            n=describe(C,'https://example.org/uploads/2026/05/'+filename,'View File')
+            self.assertEqual(n['documentPeriod'],period);self.assertEqual(n['periodBasis'],'filename-hint')
+            self.assertNotIn('publishedDate',n)
+        self.assertIsNone(describe(C,'https://example.org/uploads/2026/05/HEB_clean_isa.pdf','HEB')['documentPeriod'])
+    def test_section_only_heading_cannot_hide_report_filename(self):
+        n=describe(C,'https://example.org/ENG_Q3_2025_isa.pdf','Q3',{'heading':'Earning Release'})
+        self.assertIn('ENG Q3 2025',n['title']);self.assertEqual(n['titleBasis'],'filename')
+        self.assertEqual(n['documentPeriod'],'Q3 2025');self.assertEqual(n['periodBasis'],'filename-hint')

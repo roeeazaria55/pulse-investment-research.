@@ -52,3 +52,69 @@ not repository files and are never modified by these collector changes.
   source collection and full browser checks run in GitHub Actions.
 - Rollback: revert `Accept single JSON answer blocks and verify research recovery`.
   Coverage commit: `63777de8375259bd8e952e9f09db5d505b34ad3f`.
+
+## Night 1 — prevent menu documents from replacing financial reports
+
+- Confirmed on 19 October 2026: all eight retained Gilat items were policy,
+  accessibility and pay-equality menu links, not the financial/immediate reports
+  present in the issuer pages. They exhausted the eight-link source limit.
+- Exclude navigation/header/footer and menu-role links before applying that limit.
+  A URL also linked in body content remains eligible. Remove an earlier menu-only
+  record only after a successful source read proves that classification; failed
+  sources still retain records. No publication date is inferred from a filename.
+- Validation: 53 Python tests passed, including polluted-snapshot refresh,
+  repeated body/menu links and blocked-source retention. Live collection and
+  browser checks run on the PR; their results are recorded in its description.
+- Rollback: revert `Exclude navigation documents before official source limits`.
+  No personal browser data or main-branch snapshots are changed by this commit.
+
+## Night 2 — meaningful report labels and Hebrew period hints
+
+- Generic `Earning Release`, `Earnings Release` and `Investor Presentation`
+  labels now include the containing heading or a clearly labeled company/file
+  fallback, rather than hiding the identifiable document behind a generic title.
+- Recognize explicit Hebrew quarter/annual periods and underscore-delimited
+  filenames. Filename-derived periods remain `filename-hint`; path years, file
+  dates and collection time never become publication dates. Opaque filenames
+  remain unknown. Previously retained records update when seen again.
+- Validation: 55 Python tests and 62 JavaScript tests passed; production build
+  passed. Regression examples include actual NextVision filename forms.
+- Rollback: revert `Clarify generic report titles and Hebrew period hints`.
+  No personal notes, research or stored document contents are changed.
+
+## Night 3 — section-only headings and source-scoped cleanup
+
+- Follow-up inspection found NextVision links labeled Q1/Q2 under a heading
+  containing only `Earning Release`. Treat such category-only headings as generic
+  too, preserving a meaningful file fallback and its period provenance.
+- Limit navigation cleanup to records collected by that same source, so a second
+  index cannot remove a document legitimately linked in the first index's body.
+- Validation: 57 Python tests passed, including both observed heading forms and
+  a two-source shared-document fixture. JavaScript/UI code is unchanged.
+- Rollback: revert `Handle generic section headings and scope navigation cleanup`.
+
+## Coverage extension — 19 October 2026
+
+- Add official homepage fallback indices for FTAI and SanDisk after live reads
+  confirmed current release links there while news indices failed.
+- Add Lemonade quarterly-results index and narrowly allow its official PDF
+  upload path. Metadata only: PDF contents have not been read.
+- Add Meta SEC submissions metadata with exact CIK/ticker identity validation,
+  issuer-scoped archive paths, no redirects, bounded response and safe document
+  names. Dates are filing dates, explicitly labeled in titles/source labels.
+- BrainsWay investor homepage is reachable in a fresh live check; collection
+  coverage remains subject to the final run and availability.
+- Validation: 61 Python tests, 62 JavaScript tests and production build passed.
+- Rollback: revert commit titled `Extend official coverage with issuer homepage
+  fallbacks and validated Meta SEC filings`. Existing browser research untouched.
+- GitHub upload blocked by automatic approval review; changes are local until
+  permission is resolved. No merge or deployment performed.
+
+- Live targeted collection: META 8, FTAI 3, LMND 8, SNDK 5, BrainsWay 3.
+- Generic Shareholder letter / 10-Q report labels now use document context or
+  filename; generic Release Details headings no longer replace issuer titles.
+- Full live collection completed: 136 retained metadata records covering all
+  11 companies (16 NBIS, 8 META, 16 DLO, 16 FTAI, 8 LMND, 10 SNDK,
+  24 IREN, 15 NextVision, 1 Enlight, 11 BrainsWay, 11 Gilat Telecom).
+  Four individual indices still fail; alternate sources cover their companies.
+  Coverage is metadata presence, not complete document/financial analysis.

@@ -18,7 +18,7 @@ def date_only(value):
 
 def kind(title,url):
     t=title.lower()
-    if 'maya.tase.co.il/he/reports/' in url:return 'document'
+    if 'maya.tase.co.il/he/reports/' in url or 'www.sec.gov/Archives/edgar/data/' in url:return 'document'
     if url.lower().split('?')[0].endswith('.pdf') or '/static-files/' in url or '/assets/' in url:return 'document'
     if any(x in t for x in ('to report','to release','date of','timing of')):return 'schedule'
     if re.search(r'\b(reports|reported)\b.*\bresults\b',t):return 'results'
@@ -57,15 +57,24 @@ def collect(config,previous,now,getter=get_official_page):
                     'lastSuccessfulAt':old.get('lastSuccessfulAt'),'count':0,'error':None}
             try:
                 if time.monotonic()>deadline:raise ValueError('Collection time budget exhausted; retained items require later refresh')
-                page=getter(source['url'],company['allowedHosts'])
+                if source.get('format')=='sec-submissions':
+                    from sec_metadata import submissions_page
+                    page=submissions_page(source,company)
+                else:page=getter(source['url'],company['allowedHosts'])
                 # get_page uses the shared HTML parser. Only allowlisted document
                 # links are followed; scripts and response text are never executed.
                 links={}
+                navigation_urls={canonical(urllib.parse.urljoin(source['url'],href)) for href,context in getattr(page,'link_contexts',{}).items() if context.get('navigationOnly')}
+                content_urls={canonical(urllib.parse.urljoin(source['url'],href)) for href,context in getattr(page,'link_contexts',{}).items() if not context.get('navigationOnly')}
+                navigation_urls-=content_urls
+                # Remove previously misclassified menu documents only after a
+                # successful read proves that the same URL is navigation-only.
+                items={ident:item for ident,item in items.items() if not (item['companyId']==company['id'] and item.get('sourceId')==source['id'] and item['url'] in navigation_urls)}
                 for href,title in page.links:
                     url=canonical(urllib.parse.urljoin(source['url'],href))
                     context=getattr(page,'link_contexts',{}).get(href,{})
                     verified_publisher=source.get('kind')!='issuer-distributed' or context.get('publisherKey')==organization_key(source['url'])
-                    if verified_publisher and document_url(url,company) and 1<=len(clean(title))<=600:
+                    if url not in navigation_urls and verified_publisher and document_url(url,company) and 1<=len(clean(title))<=600:
                         if url not in links or len(title)>len(links[url]):links[url]=title
                 if not links:raise ValueError('No supported document links; page may require JavaScript or review')
                 for rank,(url,title) in enumerate(list(links.items())[:8]):
@@ -87,7 +96,7 @@ def collect(config,previous,now,getter=get_official_page):
                     if index_date:record.update(publishedDate=index_date,publishedDateBasis='index-time',dateEvidenceUrl=source['url'])
                     # Three release pages per company, no PDF fetching/parsing. A
                     # document link is not evidence that its contents were read.
-                    if detail_count<(3 if company['ticker'] in ('NBIS','IREN','DLO') else 1) and record['kind']!='document' and time.monotonic()<deadline:
+                    if source.get('format')!='sec-submissions' and detail_count<(3 if company['ticker'] in ('NBIS','IREN','DLO') else 1) and record['kind']!='document' and time.monotonic()<deadline:
                         detail_count+=1
                         try:
                             detail=getter(url,company['allowedHosts'])
