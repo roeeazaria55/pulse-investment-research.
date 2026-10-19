@@ -7,7 +7,7 @@
     "dev": "vite --configLoader runner --host 0.0.0.0",
     "build": "tsc -b && vite build --configLoader runner",
     "typecheck": "tsc -b",
-    "test": "vitest run --configLoader runner",
+    "test": "vitest run --maxWorkers=2 --testTimeout=15000 --configLoader runner",
     "preview": "vite preview --configLoader runner --host 127.0.0.1 --port 4173",
     "collect": "node scripts/ingest/run.mjs",
     "validate:data": "node scripts/ingest/validate.mjs"

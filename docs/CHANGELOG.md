@@ -131,3 +131,16 @@ not repository files and are never modified by these collector changes.
   debt/cash bridge, discounting, zero floor, input validation and reset.
   Seeds are examples, not a completed fair-value opinion; edits are temporary.
 - See RESEARCH-VALUATION.md for provenance, limitations, tests and rollback.
+
+## 2026-10-19 — NBIS sourced funding/dilution valuation
+- Replace example cash/debt/share seeds with dated primary evidence, a full
+  June-2026 → end-2027 conditional cash/funding bridge, eight note series,
+  pre-funded warrants, awards and explicit assumed equity financing.
+- Derive value from analyst revenue/margin/EBITDA multiple cases, show economic
+  conversion without double-counting the retired debt, discounting and multiple
+  required to justify the historical October 16 reference (not a live quote).
+- Explicitly disclose conservative future maturity claims, the June-series
+  reporting discrepancy, unverified current balances, funding availability,
+  temporary edits, excluded private-asset value and legal-conversion limitations.
+- Lazy-render the model only when opened. See NBIS-VALUATION.md for reproducible
+  assumptions, preset outputs, validation requirements and rollback.

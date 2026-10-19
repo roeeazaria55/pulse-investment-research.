@@ -70,9 +70,10 @@ with sync_playwright() as pw:
         company_select.select_option('initial-0')
         exchange.get_by_role('heading',name='מחקר בסיס ל־NBIS',exact=True).wait_for()
         exchange.get_by_text('NBIS · מחשבון תרחישים מספרי לסוף 2027',exact=True).click()
-        exchange.get_by_label('מניות לאחר דילול (מיליונים)').first.fill('0')
+        exchange.get_by_text('עריכת ההנחות · דוב',exact=True).click()
+        exchange.get_by_label('מחיר גיוס הון עתידי למניה ($)').first.fill('0')
         exchange.get_by_role('alert').wait_for()
-        exchange.get_by_role('button',name='איפוס דוגמה',exact=True).first.click()
+        exchange.get_by_role('button',name='איפוס הנחות',exact=True).first.click()
         assert exchange.get_by_role('alert').count()==0
         page.evaluate("document.activeElement?.blur(); document.documentElement.style.fontSize='32px'")
         page.evaluate("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))")
