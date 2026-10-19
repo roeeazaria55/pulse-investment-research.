@@ -1,4 +1,5 @@
 import {useState} from 'react';
+import {NbisValuation} from './NbisValuation';
 import {publishedFor} from '../data/publishedResearch';
 import {ResearchBaselineStatus} from './ResearchBaselineStatus';
 import type {Research,ResearchField} from '../types';
@@ -21,6 +22,7 @@ export function ResearchExchange({company,current,onChange,onPrepare}:{company:{
   {published&&<div className="research-import-info" aria-label="מחקר בסיס זמין באתר">
    <h3>מחקר בסיס ל־{company.label}</h3><p>תקופת דיווח: {baseline?.period} · היקף: {baseline?.scope}</p><p>עודכן: {published.asOf} · הוכן ב־ChatGPT ממקורות החברה. זהו מחקר ציבורי לקריאה; המחקר וההערות שלך נשמרים בנפרד.</p>
    <ResearchBaselineStatus pack={published}/>
+   {company.id==='candidate-nebius'&&<NbisValuation/>}
    <details><summary>קריאת המחקר המלא</summary>{researchFields.map(k=><div key={k}><h4>{labels[k]}</h4><p>{published.fields[k]}</p></div>)}<h4>מקורות שנקראו</h4>{published.sourceUrls.map((url,i)=><p key={url}><a href={url} target="_blank" rel="noopener noreferrer">מקור {i+1}: {new URL(url).hostname}</a></p>)}<h4>מידע חסר ומגבלות</h4>{published.missing.map((m,i)=><p key={i}>{m}</p>)}</details>
    <button onClick={()=>{setRaw(JSON.stringify(published,null,2));setPreview(published);setSelected(researchFields.filter(k=>!!published.fields[k].trim()&&published.fields[k]!==current[k]));setError('');}}>השוואת מחקר הבסיס למחקר שלי</button>
   </div>}
