@@ -74,3 +74,16 @@ it('loads a saved prior version into the draft while preserving the imported ver
  expect(restored.versions[0].fields.thesis).toBe('NEW THESIS');
  expect(validState(JSON.parse(JSON.stringify({...initialState(),research:{NBIS:restored}})))).toBe(true);
 });
+it('shows published NBIS research without overwriting personal fields and previews adoption',()=>{
+ const onChange=vi.fn();const current={...blankResearch(),thesis:'My thesis',notes:[{id:'note',text:'Keep this',createdAt:'2026-10-19T08:00:00Z'}]};
+ render(<ResearchExchange company={company} current={current} onChange={onChange} onPrepare={()=>{}}/>);
+ expect(screen.getByText('מחקר בסיס ל־NBIS')).toBeTruthy();expect(onChange).not.toHaveBeenCalled();
+ fireEvent.click(screen.getByText('השוואת מחקר הבסיס למחקר שלי'));
+ expect(screen.getByText('My thesis')).toBeTruthy();expect(onChange).not.toHaveBeenCalled();
+ fireEvent.click(screen.getByText('החלת השדות שבחרתי בטיוטה'));
+ const next=onChange.mock.calls[0][0];expect(next.notes).toEqual(current.notes);expect(next.versions[0].fields.thesis).toBe('My thesis');expect(next.importInfo.companyId).toBe(company.id);
+});
+it('does not offer NBIS baseline for another company',()=>{
+ render(<ResearchExchange company={{id:'candidate-iren',name:'IREN',label:'IREN'}} current={blankResearch()} onChange={()=>{}} onPrepare={()=>{}}/>);
+ expect(screen.queryByText('השוואת מחקר הבסיס למחקר שלי')).toBeNull();
+});
