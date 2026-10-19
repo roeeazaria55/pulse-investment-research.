@@ -2,7 +2,7 @@
   "version": 2,
   "demo": false,
   "updatedAt": null,
-  "lastAttemptAt": "2026-10-19T14:23:34.838Z",
+  "lastAttemptAt": "2026-10-19T17:30:25.051Z",
   "lastSuccessfulAt": null,
   "status": "failed",
   "newCount": 0,
@@ -20,7 +20,7 @@
       "name": "SEC EDGAR submissions",
       "url": "https://data.sec.gov/submissions/CIK0001326801.json",
       "status": "blocked",
-      "lastAttemptAt": "2026-10-19T14:23:34.838Z",
+      "lastAttemptAt": "2026-10-19T17:30:25.051Z",
       "lastSuccessfulAt": null,
       "errorCode": "blocked",
       "newCount": 0,
@@ -32,7 +32,7 @@
       "name": "SEC EDGAR submissions",
       "url": "https://data.sec.gov/submissions/CIK0001846832.json",
       "status": "blocked",
-      "lastAttemptAt": "2026-10-19T14:23:34.838Z",
+      "lastAttemptAt": "2026-10-19T17:30:25.051Z",
       "lastSuccessfulAt": null,
       "errorCode": "blocked",
       "newCount": 0,
@@ -44,7 +44,7 @@
       "name": "SEC EDGAR submissions",
       "url": "https://data.sec.gov/submissions/CIK0001691421.json",
       "status": "blocked",
-      "lastAttemptAt": "2026-10-19T14:23:34.838Z",
+      "lastAttemptAt": "2026-10-19T17:30:25.051Z",
       "lastSuccessfulAt": null,
       "errorCode": "blocked",
       "newCount": 0,
@@ -397,7 +397,7 @@
       "date": "2026-10-19",
       "period": "evening",
       "timezone": "Asia/Jerusalem",
-      "generatedAt": "2026-10-19T14:23:34.838Z",
+      "generatedAt": "2026-10-19T17:30:25.051Z",
       "kind": "rule-template",
       "status": "failed",
       "itemIds": [],
@@ -470,8 +470,8 @@
     }
   ],
   "run": {
-    "url": "https://github.com/roeeazaria55/pulse-investment-research./actions/runs/39268395639",
-    "trigger": "push"
+    "url": "https://github.com/roeeazaria55/pulse-investment-research./actions/runs/39294557419",
+    "trigger": "schedule"
   },
   "limitations": [
     "SEC submissions metadata only; no article or filing text scraping.",
@@ -479,6 +479,214 @@
     "Recent submissions only; older historical files are not crawled."
   ],
   "articles": [
+    {
+      "id": "article:358f6e460c8bbf83a082aaf3d8a3787e",
+      "securityId": "candidate-nebius",
+      "ticker": "NBIS",
+      "company": "Nebius Group",
+      "headline": "Nebius Vs. CoreWeave Vs. IREN: AI Backlog Is Booming, Shareholder Returns Remain Unproven - Seeking Alpha",
+      "originalTitle": "Nebius Vs. CoreWeave Vs. IREN: AI Backlog Is Booming, Shareholder Returns Remain Unproven - Seeking Alpha",
+      "sourceUrl": "https://news.google.com/rss/articles/CBMixAFBVV95cUxNN0xTb0JYeWExN3ExcHZfQmRxZWVfOGFGSmZpWmxkdlhiWmZlTmMxQml2aXZMZFl6M0hPYjF2ZEtlRlRHYmE3Skg0T05XZDZCTXluZGdMYnJuYUE5T0ZhTEt4aWpodFhJdnZDcG1lRXR2TnpLWFVfQlF5cTJVQndJRUJaeVdxS0tNT3Q1UVhKMkhQSDRxSTZLdlNsdF9lUGN0YXhReVN4VmdRbmw5Ry1TVTltX3NSM1ptQ2hqTkpoXzFzbDRL?oc=5",
+      "publisher": "Seeking Alpha",
+      "sourceName": "Seeking Alpha",
+      "sourceId": "google-news:candidate-nebius",
+      "discoveryProvider": "google-news",
+      "linkKind": "google-news-redirect",
+      "publishedAt": "2026-10-19T16:08:03+00:00",
+      "discoveredAt": null,
+      "collectedAt": "2026-10-19T17:29:47.012390+00:00",
+      "importance": "low",
+      "classification": {
+        "rule": "evidence-3.2:general",
+        "reason": "עדכון למעקב: עדיפות למחקר לפי סוג האירוע, לא תחזית לתנועת המניה. הבסיס הוא כותרת ומטא־נתונים בלבד, לכן אין דירוג גבוה גם כשנזכר אירוע מהותי."
+      },
+      "summary": "",
+      "summaryKind": "metadata-only",
+      "demo": false,
+      "documentId": "358f6e460c8bbf83a082aaf3d8a3787e"
+    },
+    {
+      "id": "article:edd1b002a9d4deb310eda2b70fee2c89",
+      "securityId": "candidate-iren",
+      "ticker": "IREN",
+      "company": "IREN",
+      "headline": "Nebius Vs. CoreWeave Vs. IREN: AI Backlog Is Booming, Shareholder Returns Remain Unproven - Seeking Alpha",
+      "originalTitle": "Nebius Vs. CoreWeave Vs. IREN: AI Backlog Is Booming, Shareholder Returns Remain Unproven - Seeking Alpha",
+      "sourceUrl": "https://news.google.com/rss/articles/CBMixAFBVV95cUxNN0xTb0JYeWExN3ExcHZfQmRxZWVfOGFGSmZpWmxkdlhiWmZlTmMxQml2aXZMZFl6M0hPYjF2ZEtlRlRHYmE3Skg0T05XZDZCTXluZGdMYnJuYUE5T0ZhTEt4aWpodFhJdnZDcG1lRXR2TnpLWFVfQlF5cTJVQndJRUJaeVdxS0tNT3Q1UVhKMkhQSDRxSTZLdlNsdF9lUGN0YXhReVN4VmdRbmw5Ry1TVTltX3NSM1ptQ2hqTkpoXzFzbDRL?oc=5",
+      "publisher": "Seeking Alpha",
+      "sourceName": "Seeking Alpha",
+      "sourceId": "google-news:candidate-iren",
+      "discoveryProvider": "google-news",
+      "linkKind": "google-news-redirect",
+      "publishedAt": "2026-10-19T16:08:03+00:00",
+      "discoveredAt": null,
+      "collectedAt": "2026-10-19T17:29:47.012390+00:00",
+      "importance": "low",
+      "classification": {
+        "rule": "evidence-3.2:general",
+        "reason": "עדכון למעקב: עדיפות למחקר לפי סוג האירוע, לא תחזית לתנועת המניה. הבסיס הוא כותרת ומטא־נתונים בלבד, לכן אין דירוג גבוה גם כשנזכר אירוע מהותי."
+      },
+      "summary": "",
+      "summaryKind": "metadata-only",
+      "demo": false,
+      "documentId": "edd1b002a9d4deb310eda2b70fee2c89"
+    },
+    {
+      "id": "article:2f4d9e652debfc63573f7329cff49250",
+      "securityId": "candidate-sandisk",
+      "ticker": "SNDK",
+      "company": "SanDisk",
+      "headline": "Why Sandisk Stock Shot Higher Today - Yahoo Finance",
+      "originalTitle": "Why Sandisk Stock Shot Higher Today - Yahoo Finance",
+      "sourceUrl": "https://news.google.com/rss/articles/CBMimgFBVV95cUxNbEdvMjNVUnQ5bjNsNjB2cERLWjNRNTdlSEJiM0QzYnVxQWhLMDhQal9DMW9Ec2lYbHhXaG5PYmRnUUVhVFRYZGplMjc2RmRmUWY5cHFVRjF1b2QxZDJLbjc3TU1ET2sxNllROXV3T0dFcHVuZWRmLXJMYTBmVDdkaVV6N3M1M0N0ZEdCU3VlTGQ4ODI3MG5hcFJ3?oc=5",
+      "publisher": "Yahoo Finance",
+      "sourceName": "Yahoo Finance",
+      "sourceId": "google-news:candidate-sandisk",
+      "discoveryProvider": "google-news",
+      "linkKind": "google-news-redirect",
+      "publishedAt": "2026-10-19T15:48:38+00:00",
+      "discoveredAt": null,
+      "collectedAt": "2026-10-19T17:29:47.012390+00:00",
+      "importance": "low",
+      "classification": {
+        "rule": "evidence-3.2:general",
+        "reason": "עדכון למעקב: עדיפות למחקר לפי סוג האירוע, לא תחזית לתנועת המניה. הבסיס הוא כותרת ומטא־נתונים בלבד, לכן אין דירוג גבוה גם כשנזכר אירוע מהותי."
+      },
+      "summary": "",
+      "summaryKind": "metadata-only",
+      "demo": false,
+      "documentId": "2f4d9e652debfc63573f7329cff49250"
+    },
+    {
+      "id": "article:b7f6e10c5d03f0fc053f36d8ef2c94e7",
+      "securityId": "candidate-sandisk",
+      "ticker": "SNDK",
+      "company": "SanDisk",
+      "headline": "Sandisk Corporation (SNDK) Upgraded to Strong Buy: Here's What You Should Know - Yahoo Finance UK",
+      "originalTitle": "Sandisk Corporation (SNDK) Upgraded to Strong Buy: Here's What You Should Know - Yahoo Finance UK",
+      "sourceUrl": "https://news.google.com/rss/articles/CBMikwFBVV95cUxObFd6R1pEb0Rib0xQWGk0Z3RPRFh6RjRPM2VsUkVlZWw0LVJHMEUtZUQ3RXU1R0ZsVXhNRERCeXFTYW5zdmRxTzAtenlVLU95bG9LSGFpTlFVTVZENUVCZVloRlZaeUE0WkU5bzhRTTJjdVpuRE5vZWZIb2ZMdkc0cEdCTnVTbGc0bHNKcDJybG5qODg?oc=5",
+      "publisher": "Yahoo Finance UK",
+      "sourceName": "Yahoo Finance UK",
+      "sourceId": "google-news:candidate-sandisk",
+      "discoveryProvider": "google-news",
+      "linkKind": "google-news-redirect",
+      "publishedAt": "2026-10-19T15:00:02+00:00",
+      "discoveredAt": null,
+      "collectedAt": "2026-10-19T17:29:47.012390+00:00",
+      "importance": "low",
+      "classification": {
+        "rule": "evidence-3.2:general",
+        "reason": "עדכון למעקב: עדיפות למחקר לפי סוג האירוע, לא תחזית לתנועת המניה. הבסיס הוא כותרת ומטא־נתונים בלבד, לכן אין דירוג גבוה גם כשנזכר אירוע מהותי."
+      },
+      "summary": "",
+      "summaryKind": "metadata-only",
+      "demo": false,
+      "documentId": "b7f6e10c5d03f0fc053f36d8ef2c94e7"
+    },
+    {
+      "id": "article:453c1fc4709aa3babbccf4bd1c2aa6cd",
+      "securityId": "candidate-sandisk",
+      "ticker": "SNDK",
+      "company": "SanDisk",
+      "headline": "Memory Stocks Rally as Tech Selloff Unwinds: Micron Climbs 4%, Sandisk Jumps 7%, SK Hynix Rises 5% - 24/7 Wall St.",
+      "originalTitle": "Memory Stocks Rally as Tech Selloff Unwinds: Micron Climbs 4%, Sandisk Jumps 7%, SK Hynix Rises 5% - 24/7 Wall St.",
+      "sourceUrl": "https://news.google.com/rss/articles/CBMi0gFBVV95cUxQN19kYkI0VTV6ZVd3XzN2WnZTYTJFZmxnZExfYUU1eXJ1azRBYTV2eXd1NkVzWXNqaVplSVM3M0V6blJRaWJaYWdYUGY2Y2hYanRxT3FBNlgtdDFFelJ6UWlqV3MzUlcwYjdFYlE3Z2owNTN1dFlXaVVpeDdodEFHUXdVak5XQ21RR04zWWFCajZqTERScVZ2MTNHdEZBMFBoM0MyZE1PQTAtMkFwdmhIeXBoR1VUa3JpTVdfTWFkSFgxSmYzV0VEWGhIVHh5OWFQckE?oc=5",
+      "publisher": "24/7 Wall St.",
+      "sourceName": "24/7 Wall St.",
+      "sourceId": "google-news:candidate-sandisk",
+      "discoveryProvider": "google-news",
+      "linkKind": "google-news-redirect",
+      "publishedAt": "2026-10-19T14:59:00+00:00",
+      "discoveredAt": null,
+      "collectedAt": "2026-10-19T17:29:47.012390+00:00",
+      "importance": "low",
+      "classification": {
+        "rule": "evidence-3.2:general",
+        "reason": "עדכון למעקב: עדיפות למחקר לפי סוג האירוע, לא תחזית לתנועת המניה. הבסיס הוא כותרת ומטא־נתונים בלבד, לכן אין דירוג גבוה גם כשנזכר אירוע מהותי."
+      },
+      "summary": "",
+      "summaryKind": "metadata-only",
+      "demo": false,
+      "documentId": "453c1fc4709aa3babbccf4bd1c2aa6cd"
+    },
+    {
+      "id": "article:0557811b793147578e7fc9500b382fbd",
+      "securityId": "candidate-brainsway",
+      "ticker": "",
+      "company": "BrainsWay",
+      "headline": "Brainsway (NASDAQ:BWAY) Stock Rating Reaffirmed as \"Buy\" by HC Wainwright - MarketBeat",
+      "originalTitle": "Brainsway (NASDAQ:BWAY) Stock Rating Reaffirmed as \"Buy\" by HC Wainwright - MarketBeat",
+      "sourceUrl": "https://news.google.com/rss/articles/CBMiywFBVV95cUxPcnZXMmRmY2RPNFFIZHVOX21VMEY3bGtCekhpQkNrXzhocG0ycVNSZHhJdk82RlB6clV0THFLWm1BUXoyNnRJblBhV2otbGoyY1J3c0F4Rjh2RWNqcGxSWVh5LTUwNGZGZU5KVFBleEMyeE5odUFBX2tXdlYwNXB3YkFaMlFQV3g4V0hESTFPMnRheVl6TEF1dmRTVFBPU0FfYTFzcXlOd2duRG1fcVptZ0VQZWVTQThJSUFQZlRwU3FBZTV0NEtfWktQZw?oc=5",
+      "publisher": "MarketBeat",
+      "sourceName": "MarketBeat",
+      "sourceId": "google-news:candidate-brainsway",
+      "discoveryProvider": "google-news",
+      "linkKind": "google-news-redirect",
+      "publishedAt": "2026-10-19T14:53:19+00:00",
+      "discoveredAt": null,
+      "collectedAt": "2026-10-19T17:29:47.012390+00:00",
+      "importance": "low",
+      "classification": {
+        "rule": "evidence-3.2:general",
+        "reason": "עדכון למעקב: עדיפות למחקר לפי סוג האירוע, לא תחזית לתנועת המניה. הבסיס הוא כותרת ומטא־נתונים בלבד, לכן אין דירוג גבוה גם כשנזכר אירוע מהותי."
+      },
+      "summary": "",
+      "summaryKind": "metadata-only",
+      "demo": false,
+      "documentId": "0557811b793147578e7fc9500b382fbd"
+    },
+    {
+      "id": "article:5e0ada2aeb796f376c2fc60f62df51b0",
+      "securityId": "candidate-nebius",
+      "ticker": "NBIS",
+      "company": "Nebius Group",
+      "headline": "Nebius is Your New AI Sentiment Gauge For AI Debt and GPU Risks - Yahoo Finance",
+      "originalTitle": "Nebius is Your New AI Sentiment Gauge For AI Debt and GPU Risks - Yahoo Finance",
+      "sourceUrl": "https://news.google.com/rss/articles/CBMimAFBVV95cUxQV0dlWF91bkZwYjFUUG1ya1JlSWRTODNsaHVZRXlRTDhBZ1JzeVdDLWl0eHlHRk82TGxJclBXNXdWYWFoYXZxdjQwazIxRE1rU0JDYWJseV9STmxlSl9PZE5haTFYb3NKNjRlTXpma2ZHSEFkRDlibk96cV9GOFZ4RXlGaGF5U3FjaXU4T1J3LWYxUTMwN2FyNw?oc=5",
+      "publisher": "Yahoo Finance",
+      "sourceName": "Yahoo Finance",
+      "sourceId": "google-news:candidate-nebius",
+      "discoveryProvider": "google-news",
+      "linkKind": "google-news-redirect",
+      "publishedAt": "2026-10-19T14:45:58+00:00",
+      "discoveredAt": null,
+      "collectedAt": "2026-10-19T17:29:47.012390+00:00",
+      "importance": "low",
+      "classification": {
+        "rule": "evidence-3.2:general",
+        "reason": "עדכון למעקב: עדיפות למחקר לפי סוג האירוע, לא תחזית לתנועת המניה. הבסיס הוא כותרת ומטא־נתונים בלבד, לכן אין דירוג גבוה גם כשנזכר אירוע מהותי."
+      },
+      "summary": "",
+      "summaryKind": "metadata-only",
+      "demo": false,
+      "documentId": "5e0ada2aeb796f376c2fc60f62df51b0"
+    },
+    {
+      "id": "article:8e95e063da18e646c3c20426af565cfb",
+      "securityId": "candidate-brainsway",
+      "ticker": "",
+      "company": "BrainsWay",
+      "headline": "HC Wainwright & Co. reiterates Buy rating on BrainsWay, $19 price target - TradingView",
+      "originalTitle": "HC Wainwright & Co. reiterates Buy rating on BrainsWay, $19 price target - TradingView",
+      "sourceUrl": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxPTVVQM0Jid3JRUDNYcGhIUldpR1R5cVNsbFMyWFIwWlR4REpuNklwX19wYU9URlhrRWRWMjU0RlZrd0Y1TlMzNW1VVURTZlZJMUEyc3ZTelFkbGQtMUJFTnQ4ak5rMDBpY21HUEo3TUd2NEZvWmkwdEhXNVRmXzVtdDlxbllLNTlVX2NlakFaNkRIel9yM1B3V0ZxcEEtam5EdG51NXQwM2drNVJmU0tQTEVTWGNPWjV5RXpsaXRZOUlwVGRmaUdWaQ?oc=5",
+      "publisher": "TradingView",
+      "sourceName": "TradingView",
+      "sourceId": "google-news:candidate-brainsway",
+      "discoveryProvider": "google-news",
+      "linkKind": "google-news-redirect",
+      "publishedAt": "2026-10-19T14:28:05+00:00",
+      "discoveredAt": null,
+      "collectedAt": "2026-10-19T17:29:47.012390+00:00",
+      "importance": "low",
+      "classification": {
+        "rule": "evidence-3.2:opinion",
+        "reason": "דעה או יעד מחיר: עדיפות למחקר לפי סוג האירוע, לא תחזית לתנועת המניה. הבסיס הוא כותרת ומטא־נתונים בלבד, לכן אין דירוג גבוה גם כשנזכר אירוע מהותי. יעד מחיר או דעה אינם ראיה לאירוע מהותי."
+      },
+      "summary": "",
+      "summaryKind": "metadata-only",
+      "demo": false,
+      "documentId": "8e95e063da18e646c3c20426af565cfb"
+    },
     {
       "id": "article:def3f389563ecca1aea9eee033ca732c",
       "securityId": "us-meta-nasdaq-a",
@@ -6894,8 +7102,8 @@
         }
       ]
     },
-    "lastAttemptAt": "2026-10-19T14:22:56.848182+00:00",
-    "lastSuccessfulAt": "2026-10-19T14:22:56.848182+00:00",
+    "lastAttemptAt": "2026-10-19T17:29:47.012390+00:00",
+    "lastSuccessfulAt": "2026-10-19T17:29:47.012390+00:00",
     "status": "complete",
     "sources": [
       {
@@ -6903,22 +7111,22 @@
         "securityId": "candidate-nebius",
         "name": "Nebius Group",
         "queryUrl": "https://news.google.com/rss/search?q=%28%22Nebius%22+OR+%22%D7%A0%D7%91%D7%99%D7%95%D7%A1%22%29+%28AI+OR+cloud+OR+stock+OR+%D7%A2%D7%A0%D7%9F%29+when%3A30d&hl=en-US&gl=US&ceid=US%3Aen",
-        "lastAttemptAt": "2026-10-19T14:22:56.848182+00:00",
-        "lastSuccessfulAt": "2026-10-19T14:22:56.848182+00:00",
+        "lastAttemptAt": "2026-10-19T17:29:47.012390+00:00",
+        "lastSuccessfulAt": "2026-10-19T17:29:47.012390+00:00",
         "status": "results",
         "error": null,
         "count": 20,
-        "newCount": 1,
-        "rejectedCount": 3,
+        "newCount": 2,
+        "rejectedCount": 2,
         "rejectedExamples": [
-          {
-            "title": "Birmingham data center representatives to hand over real estate records, judge says - AL.com",
-            "publisher": "AL.com",
-            "reason": "לא עמד בכללי שם והקשר של החברה; לא צורף לפיד. זו פסילה שמרנית, לא קביעה שנקראה הכתבה."
-          },
           {
             "title": "CoreWeave's 15% Bond Yield Is Not a Neocloud Problem. Here's Why I'm Buying Neocloud Stock Dips. - Yahoo Finance",
             "publisher": "Yahoo Finance",
+            "reason": "לא עמד בכללי שם והקשר של החברה; לא צורף לפיד. זו פסילה שמרנית, לא קביעה שנקראה הכתבה."
+          },
+          {
+            "title": "Nvidia and 3 AI Infrastructure Stocks Retail Investors Are Watching Now - Simply Wall Street",
+            "publisher": "Simply Wall Street",
             "reason": "לא עמד בכללי שם והקשר של החברה; לא צורף לפיד. זו פסילה שמרנית, לא קביעה שנקראה הכתבה."
           }
         ]
@@ -6928,13 +7136,13 @@
         "securityId": "us-meta-nasdaq-a",
         "name": "Meta Platforms",
         "queryUrl": "https://news.google.com/rss/search?q=%28%22Meta+Platforms%22+OR+%22Facebook%22+OR+%22%D7%9E%D7%98%D7%90%22%29+%28Zuckerberg+OR+Instagram+OR+stock+OR+%D7%9E%D7%A0%D7%99%D7%94+OR+%D7%A6%D7%95%D7%A7%D7%A8%D7%91%D7%A8%D7%92%29+when%3A30d&hl=en-US&gl=US&ceid=US%3Aen",
-        "lastAttemptAt": "2026-10-19T14:22:56.848182+00:00",
-        "lastSuccessfulAt": "2026-10-19T14:22:56.848182+00:00",
+        "lastAttemptAt": "2026-10-19T17:29:47.012390+00:00",
+        "lastSuccessfulAt": "2026-10-19T17:29:47.012390+00:00",
         "status": "results",
         "error": null,
         "count": 20,
-        "newCount": 1,
-        "rejectedCount": 10,
+        "newCount": 0,
+        "rejectedCount": 11,
         "rejectedExamples": [
           {
             "title": "Mikey Madison and Frances Haugen Talk 'The Social Reckoning' and Mark Zuckerberg - Time Magazine",
@@ -6953,11 +7161,11 @@
         "securityId": "us-dlo-nasdaq-a",
         "name": "dLocal",
         "queryUrl": "https://news.google.com/rss/search?q=%28%22dLocal%22+OR+%22%D7%93%D7%99%D7%9C%D7%95%D7%A7%D7%9C%22+OR+%22%D7%93%D7%99+%D7%9C%D7%95%D7%A7%D7%90%D7%9C%22%29+%28payments+OR+stock+OR+%D7%AA%D7%A9%D7%9C%D7%95%D7%9E%D7%99%D7%9D%29+when%3A30d&hl=en-US&gl=US&ceid=US%3Aen",
-        "lastAttemptAt": "2026-10-19T14:22:56.848182+00:00",
-        "lastSuccessfulAt": "2026-10-19T14:22:56.848182+00:00",
+        "lastAttemptAt": "2026-10-19T17:29:47.012390+00:00",
+        "lastSuccessfulAt": "2026-10-19T17:29:47.012390+00:00",
         "status": "results",
         "error": null,
-        "count": 16,
+        "count": 18,
         "newCount": 0,
         "rejectedCount": 0,
         "rejectedExamples": []
@@ -6967,8 +7175,8 @@
         "securityId": "candidate-ftai",
         "name": "FTAI Aviation",
         "queryUrl": "https://news.google.com/rss/search?q=%28%22FTAI+Aviation%22+OR+%22%D7%90%D7%A4%D7%98%D7%99%D7%90%D7%99%D7%99%22%29+%28aviation+OR+engines+OR+stock+OR+%D7%AA%D7%A2%D7%95%D7%A4%D7%94%29+when%3A30d&hl=en-US&gl=US&ceid=US%3Aen",
-        "lastAttemptAt": "2026-10-19T14:22:56.848182+00:00",
-        "lastSuccessfulAt": "2026-10-19T14:22:56.848182+00:00",
+        "lastAttemptAt": "2026-10-19T17:29:47.012390+00:00",
+        "lastSuccessfulAt": "2026-10-19T17:29:47.012390+00:00",
         "status": "results",
         "error": null,
         "count": 20,
@@ -6992,8 +7200,8 @@
         "securityId": "us-lmnd-nyse-common",
         "name": "Lemonade",
         "queryUrl": "https://news.google.com/rss/search?q=%28%22Lemonade%22+OR+%22%D7%9C%D7%9E%D7%95%D7%A0%D7%99%D7%99%D7%93%22%29+%28insurance+OR+insurer+OR+LMND+OR+%D7%91%D7%99%D7%98%D7%95%D7%97%29+when%3A30d&hl=en-US&gl=US&ceid=US%3Aen",
-        "lastAttemptAt": "2026-10-19T14:22:56.848182+00:00",
-        "lastSuccessfulAt": "2026-10-19T14:22:56.848182+00:00",
+        "lastAttemptAt": "2026-10-19T17:29:47.012390+00:00",
+        "lastSuccessfulAt": "2026-10-19T17:29:47.012390+00:00",
         "status": "results",
         "error": null,
         "count": 20,
@@ -7017,12 +7225,12 @@
         "securityId": "candidate-sandisk",
         "name": "SanDisk",
         "queryUrl": "https://news.google.com/rss/search?q=%28%22SanDisk%22+OR+%22%D7%A1%D7%A0%D7%93%D7%99%D7%A1%D7%A7%22%29+%28flash+OR+memory+OR+stock+OR+%D7%96%D7%99%D7%9B%D7%A8%D7%95%D7%9F%29+when%3A30d&hl=en-US&gl=US&ceid=US%3Aen",
-        "lastAttemptAt": "2026-10-19T14:22:56.848182+00:00",
-        "lastSuccessfulAt": "2026-10-19T14:22:56.848182+00:00",
+        "lastAttemptAt": "2026-10-19T17:29:47.012390+00:00",
+        "lastSuccessfulAt": "2026-10-19T17:29:47.012390+00:00",
         "status": "results",
         "error": null,
         "count": 20,
-        "newCount": 2,
+        "newCount": 3,
         "rejectedCount": 4,
         "rejectedExamples": [
           {
@@ -7042,13 +7250,13 @@
         "securityId": "candidate-iren",
         "name": "IREN",
         "queryUrl": "https://news.google.com/rss/search?q=%28%22IREN%22+OR+%22Iris+Energy%22+OR+%22%D7%90%D7%99%D7%99%D7%A8%D7%9F%22%29+%28AI+OR+cloud+OR+bitcoin+OR+mining+OR+%D7%93%D7%90%D7%98%D7%94%29+-%22Iren+SpA%22+-%22Iren+Energia%22+when%3A30d&hl=en-US&gl=US&ceid=US%3Aen",
-        "lastAttemptAt": "2026-10-19T14:22:56.848182+00:00",
-        "lastSuccessfulAt": "2026-10-19T14:22:56.848182+00:00",
+        "lastAttemptAt": "2026-10-19T17:29:47.012390+00:00",
+        "lastSuccessfulAt": "2026-10-19T17:29:47.012390+00:00",
         "status": "results",
         "error": null,
         "count": 20,
-        "newCount": 0,
-        "rejectedCount": 29,
+        "newCount": 1,
+        "rejectedCount": 30,
         "rejectedExamples": [
           {
             "title": "IREN (IREN) Lands Anthropic Deal, Is The Pullback A Chance Or Is It Pricey? - Yahoo Finance",
@@ -7067,8 +7275,8 @@
         "securityId": "candidate-next-vision",
         "name": "Next Vision",
         "queryUrl": "https://news.google.com/rss/search?q=%28%22NextVision%22+OR+%22Next+Vision%22+OR+%22%D7%A0%D7%A7%D7%A1%D7%98+%D7%95%D7%99%D7%96%D7%9F%22%29+%28camera+OR+stabilized+OR+defense+OR+%D7%9E%D7%A6%D7%9C%D7%9E%D7%95%D7%AA+OR+%D7%9E%D7%A0%D7%99%D7%94%29+when%3A30d&hl=en-US&gl=US&ceid=US%3Aen",
-        "lastAttemptAt": "2026-10-19T14:22:56.848182+00:00",
-        "lastSuccessfulAt": "2026-10-19T14:22:56.848182+00:00",
+        "lastAttemptAt": "2026-10-19T17:29:47.012390+00:00",
+        "lastSuccessfulAt": "2026-10-19T17:29:47.012390+00:00",
         "status": "results",
         "error": null,
         "count": 5,
@@ -7092,8 +7300,8 @@
         "securityId": "candidate-enlight",
         "name": "Enlight Renewable Energy",
         "queryUrl": "https://news.google.com/rss/search?q=%28%22Enlight+Renewable+Energy%22+OR+%22%D7%90%D7%A0%D7%9C%D7%99%D7%99%D7%98%22%29+%28energy+OR+solar+OR+%D7%90%D7%A0%D7%A8%D7%92%D7%99%D7%94+OR+%D7%9E%D7%A0%D7%99%D7%94%29+when%3A30d&hl=en-US&gl=US&ceid=US%3Aen",
-        "lastAttemptAt": "2026-10-19T14:22:56.848182+00:00",
-        "lastSuccessfulAt": "2026-10-19T14:22:56.848182+00:00",
+        "lastAttemptAt": "2026-10-19T17:29:47.012390+00:00",
+        "lastSuccessfulAt": "2026-10-19T17:29:47.012390+00:00",
         "status": "results",
         "error": null,
         "count": 20,
@@ -7106,12 +7314,12 @@
         "securityId": "candidate-brainsway",
         "name": "BrainsWay",
         "queryUrl": "https://news.google.com/rss/search?q=%28%22BrainsWay%22+OR+%22%D7%91%D7%A8%D7%99%D7%99%D7%A0%D7%A1%D7%95%D7%95%D7%99%D7%99%22+OR+%22%D7%91%D7%A8%D7%99%D7%99%D7%A0%D7%A1%D7%95%D7%95%D7%99%22%29+%28TMS+OR+medical+OR+stock+OR+%D7%9E%D7%95%D7%97%29+when%3A30d&hl=en-US&gl=US&ceid=US%3Aen",
-        "lastAttemptAt": "2026-10-19T14:22:56.848182+00:00",
-        "lastSuccessfulAt": "2026-10-19T14:22:56.848182+00:00",
+        "lastAttemptAt": "2026-10-19T17:29:47.012390+00:00",
+        "lastSuccessfulAt": "2026-10-19T17:29:47.012390+00:00",
         "status": "results",
         "error": null,
-        "count": 7,
-        "newCount": 0,
+        "count": 9,
+        "newCount": 2,
         "rejectedCount": 1,
         "rejectedExamples": [
           {
@@ -7126,8 +7334,8 @@
         "securityId": "candidate-gilat-telecom",
         "name": "Gilat Telecom",
         "queryUrl": "https://news.google.com/rss/search?q=%28%22Gilat+Telecom%22+OR+%22%D7%92%D7%99%D7%9C%D7%AA+%D7%98%D7%9C%D7%A7%D7%95%D7%9D%22%29+-%22Gilat+Satellite+Networks%22+-%22%D7%92%D7%99%D7%9C%D7%AA+%D7%A8%D7%A9%D7%AA%D7%95%D7%AA%22+when%3A30d&hl=en-US&gl=US&ceid=US%3Aen",
-        "lastAttemptAt": "2026-10-19T14:22:56.848182+00:00",
-        "lastSuccessfulAt": "2026-10-19T14:22:56.848182+00:00",
+        "lastAttemptAt": "2026-10-19T17:29:47.012390+00:00",
+        "lastSuccessfulAt": "2026-10-19T17:29:47.012390+00:00",
         "status": "zero-results",
         "error": null,
         "count": 0,
@@ -7136,13 +7344,14 @@
         "rejectedExamples": []
       }
     ],
-    "newCount": 4,
+    "newCount": 8,
     "noNewItems": false,
     "seenIds": [
       "article:037c74d6ead7ec3addcab4c1385f5292",
       "article:0406bf1ddddb23ecf31a51d9c1d70198",
       "article:0442c4a5d08616ab9715853f64c9b902",
       "article:054b0c9f103367174c35bb7549d14654",
+      "article:0557811b793147578e7fc9500b382fbd",
       "article:05e4ddaa56fb3dece336acb3d5cf763a",
       "article:0693aec550a13ea0f2b9cea4a9bf9ab4",
       "article:0701b83a0e4be797ed9df4e3194610ad",
@@ -7181,9 +7390,11 @@
       "article:2cd8684e310516173980ae1b19cb5ee0",
       "article:2d1bed2b478ec29ef9d89400315e6b19",
       "article:2e59694ef7e42dde693a4baa27b774cc",
+      "article:2f4d9e652debfc63573f7329cff49250",
       "article:2fb4b7eb5919666e681c6177d25a9c48",
       "article:2ff2cb7b2ddf19b608ba8eec6a50a228",
       "article:344e44544cf0e5bef48d08afcc9d18da",
+      "article:358f6e460c8bbf83a082aaf3d8a3787e",
       "article:3619fb9fda4426c13b87193cf4842108",
       "article:38eca7da75e82949d37b4cbf3c21a062",
       "article:39a5698b947cf40f654dd5f7b819a8e3",
@@ -7202,6 +7413,7 @@
       "article:43b9d6fa3b7da7190ef602515d85f844",
       "article:4495a2432562c66e43e14bbe1d956b40",
       "article:450dbe968c0448694a56a55a663f80b1",
+      "article:453c1fc4709aa3babbccf4bd1c2aa6cd",
       "article:4657f43f1dbd36b78c68f2f01671929c",
       "article:4986ad944359389f4ad453feb16482b9",
       "article:4994c2e1706185e0f12d97838c4f53b4",
@@ -7223,6 +7435,7 @@
       "article:5bb490d2dde5ae2f0c33906d8c968395",
       "article:5ce1878c0b9b56f02983fdfb53602573",
       "article:5d6846739b5aaef489bd112e953f905f",
+      "article:5e0ada2aeb796f376c2fc60f62df51b0",
       "article:5fec05b293a54b13b8ad7b063318b207",
       "article:60741905ed24a50a1973a8716955421c",
       "article:6389144555934b5a42daa940ba4beac8",
@@ -7268,6 +7481,7 @@
       "article:8c105f39acdcbb98a33a117a81904483",
       "article:8c26774ee74dcb5e3d2136ec2232b20c",
       "article:8e91096ccddf62b262ad8ef540a649ad",
+      "article:8e95e063da18e646c3c20426af565cfb",
       "article:8f9c80d2fce3f088a6c18049a651c33b",
       "article:913c0599a24871cafeff310056a901ac",
       "article:92017d87ea7993ec388da14e17444596",
@@ -7299,6 +7513,7 @@
       "article:b65043dfda56070f0e4d18fa99632024",
       "article:b77fca416bc4db64a1f434379be37b88",
       "article:b7affdbbcfc915d8b1f27cb5ab025ecc",
+      "article:b7f6e10c5d03f0fc053f36d8ef2c94e7",
       "article:b82e676b3da25a035709ccbcc9291dc2",
       "article:ba8741ce33e481bfac47e87d501aefc6",
       "article:bb3df2a35398c6ad424665ddabc29579",
@@ -7353,6 +7568,7 @@
       "article:ec527d1ed73af41885c72f582a741ae8",
       "article:ec7f40d5cf5d0179d7ad8e49c0630eaf",
       "article:edbdfa0019da8b4e3016ffa462b33de4",
+      "article:edd1b002a9d4deb310eda2b70fee2c89",
       "article:ef0763e811f783983e47eba03b6257fb",
       "article:ef67f3095ccd9e0f8e3dbc6a985998ed",
       "article:f01c76fea393f723ce53372236a4b98b",
@@ -7375,13 +7591,21 @@
     "briefings": [
       {
         "id": "2026-10-19:evening",
-        "generatedAt": "2026-10-19T14:22:56.848182+00:00",
+        "generatedAt": "2026-10-19T17:29:47.012390+00:00",
         "timezone": "Asia/Jerusalem",
         "itemIds": [
           "article:76fdef612b36eb5fe5f515f2971b4e86",
           "article:def3f389563ecca1aea9eee033ca732c",
           "article:b4c772868b717a3c5115b61a75e74e43",
-          "article:65f4292a7fbe19553765e8b0ed58dd21"
+          "article:65f4292a7fbe19553765e8b0ed58dd21",
+          "article:358f6e460c8bbf83a082aaf3d8a3787e",
+          "article:5e0ada2aeb796f376c2fc60f62df51b0",
+          "article:2f4d9e652debfc63573f7329cff49250",
+          "article:b7f6e10c5d03f0fc053f36d8ef2c94e7",
+          "article:453c1fc4709aa3babbccf4bd1c2aa6cd",
+          "article:edd1b002a9d4deb310eda2b70fee2c89",
+          "article:0557811b793147578e7fc9500b382fbd",
+          "article:8e95e063da18e646c3c20426af565cfb"
         ],
         "questions": [
           "האם הכותרת מגובה בפרסום המקורי?",
@@ -7657,9 +7881,161 @@
   },
   "intelligence": {
     "version": 1,
-    "generatedAt": "2026-10-19T14:23:37.434490+00:00",
+    "generatedAt": "2026-10-19T17:30:27.792784+00:00",
     "ratingVersion": "evidence-3.2",
     "ratings": {
+      "article:358f6e460c8bbf83a082aaf3d8a3787e": {
+        "version": "evidence-3.2",
+        "eventKind": "general",
+        "eventLabel": "עדכון למעקב",
+        "eventScore": 25,
+        "potentialMateriality": 25,
+        "level": "low",
+        "sourceAuthority": "attributed-unverified",
+        "sourceReliability": "ייחוס הספק בלבד; אמינות התוכן טרם אומתה",
+        "companyRelevance": "direct",
+        "confidence": "medium",
+        "basis": "headline-only",
+        "verifiedOfficial": false,
+        "independentConfirmations": 0,
+        "why": "עדכון למעקב: עדיפות למחקר לפי סוג האירוע, לא תחזית לתנועת המניה. הבסיס הוא כותרת ומטא־נתונים בלבד, לכן אין דירוג גבוה גם כשנזכר אירוע מהותי.",
+        "evidenceUrls": [
+          "https://news.google.com/rss/articles/CBMixAFBVV95cUxNN0xTb0JYeWExN3ExcHZfQmRxZWVfOGFGSmZpWmxkdlhiWmZlTmMxQml2aXZMZFl6M0hPYjF2ZEtlRlRHYmE3Skg0T05XZDZCTXluZGdMYnJuYUE5T0ZhTEt4aWpodFhJdnZDcG1lRXR2TnpLWFVfQlF5cTJVQndJRUJaeVdxS0tNT3Q1UVhKMkhQSDRxSTZLdlNsdF9lUGN0YXhReVN4VmdRbmw5Ry1TVTltX3NSM1ptQ2hqTkpoXzFzbDRL?oc=5"
+        ]
+      },
+      "article:edd1b002a9d4deb310eda2b70fee2c89": {
+        "version": "evidence-3.2",
+        "eventKind": "general",
+        "eventLabel": "עדכון למעקב",
+        "eventScore": 25,
+        "potentialMateriality": 25,
+        "level": "low",
+        "sourceAuthority": "attributed-unverified",
+        "sourceReliability": "ייחוס הספק בלבד; אמינות התוכן טרם אומתה",
+        "companyRelevance": "context",
+        "confidence": "low",
+        "basis": "headline-only",
+        "verifiedOfficial": false,
+        "independentConfirmations": 0,
+        "why": "עדכון למעקב: עדיפות למחקר לפי סוג האירוע, לא תחזית לתנועת המניה. הבסיס הוא כותרת ומטא־נתונים בלבד, לכן אין דירוג גבוה גם כשנזכר אירוע מהותי.",
+        "evidenceUrls": [
+          "https://news.google.com/rss/articles/CBMixAFBVV95cUxNN0xTb0JYeWExN3ExcHZfQmRxZWVfOGFGSmZpWmxkdlhiWmZlTmMxQml2aXZMZFl6M0hPYjF2ZEtlRlRHYmE3Skg0T05XZDZCTXluZGdMYnJuYUE5T0ZhTEt4aWpodFhJdnZDcG1lRXR2TnpLWFVfQlF5cTJVQndJRUJaeVdxS0tNT3Q1UVhKMkhQSDRxSTZLdlNsdF9lUGN0YXhReVN4VmdRbmw5Ry1TVTltX3NSM1ptQ2hqTkpoXzFzbDRL?oc=5"
+        ]
+      },
+      "article:2f4d9e652debfc63573f7329cff49250": {
+        "version": "evidence-3.2",
+        "eventKind": "general",
+        "eventLabel": "עדכון למעקב",
+        "eventScore": 25,
+        "potentialMateriality": 25,
+        "level": "low",
+        "sourceAuthority": "attributed-unverified",
+        "sourceReliability": "ייחוס הספק בלבד; אמינות התוכן טרם אומתה",
+        "companyRelevance": "direct",
+        "confidence": "medium",
+        "basis": "headline-only",
+        "verifiedOfficial": false,
+        "independentConfirmations": 0,
+        "why": "עדכון למעקב: עדיפות למחקר לפי סוג האירוע, לא תחזית לתנועת המניה. הבסיס הוא כותרת ומטא־נתונים בלבד, לכן אין דירוג גבוה גם כשנזכר אירוע מהותי.",
+        "evidenceUrls": [
+          "https://news.google.com/rss/articles/CBMimgFBVV95cUxNbEdvMjNVUnQ5bjNsNjB2cERLWjNRNTdlSEJiM0QzYnVxQWhLMDhQal9DMW9Ec2lYbHhXaG5PYmRnUUVhVFRYZGplMjc2RmRmUWY5cHFVRjF1b2QxZDJLbjc3TU1ET2sxNllROXV3T0dFcHVuZWRmLXJMYTBmVDdkaVV6N3M1M0N0ZEdCU3VlTGQ4ODI3MG5hcFJ3?oc=5"
+        ]
+      },
+      "article:b7f6e10c5d03f0fc053f36d8ef2c94e7": {
+        "version": "evidence-3.2",
+        "eventKind": "general",
+        "eventLabel": "עדכון למעקב",
+        "eventScore": 25,
+        "potentialMateriality": 25,
+        "level": "low",
+        "sourceAuthority": "attributed-unverified",
+        "sourceReliability": "ייחוס הספק בלבד; אמינות התוכן טרם אומתה",
+        "companyRelevance": "direct",
+        "confidence": "medium",
+        "basis": "headline-only",
+        "verifiedOfficial": false,
+        "independentConfirmations": 0,
+        "why": "עדכון למעקב: עדיפות למחקר לפי סוג האירוע, לא תחזית לתנועת המניה. הבסיס הוא כותרת ומטא־נתונים בלבד, לכן אין דירוג גבוה גם כשנזכר אירוע מהותי.",
+        "evidenceUrls": [
+          "https://news.google.com/rss/articles/CBMikwFBVV95cUxObFd6R1pEb0Rib0xQWGk0Z3RPRFh6RjRPM2VsUkVlZWw0LVJHMEUtZUQ3RXU1R0ZsVXhNRERCeXFTYW5zdmRxTzAtenlVLU95bG9LSGFpTlFVTVZENUVCZVloRlZaeUE0WkU5bzhRTTJjdVpuRE5vZWZIb2ZMdkc0cEdCTnVTbGc0bHNKcDJybG5qODg?oc=5"
+        ]
+      },
+      "article:453c1fc4709aa3babbccf4bd1c2aa6cd": {
+        "version": "evidence-3.2",
+        "eventKind": "general",
+        "eventLabel": "עדכון למעקב",
+        "eventScore": 25,
+        "potentialMateriality": 25,
+        "level": "low",
+        "sourceAuthority": "attributed-unverified",
+        "sourceReliability": "ייחוס הספק בלבד; אמינות התוכן טרם אומתה",
+        "companyRelevance": "direct",
+        "confidence": "medium",
+        "basis": "headline-only",
+        "verifiedOfficial": false,
+        "independentConfirmations": 0,
+        "why": "עדכון למעקב: עדיפות למחקר לפי סוג האירוע, לא תחזית לתנועת המניה. הבסיס הוא כותרת ומטא־נתונים בלבד, לכן אין דירוג גבוה גם כשנזכר אירוע מהותי.",
+        "evidenceUrls": [
+          "https://news.google.com/rss/articles/CBMi0gFBVV95cUxQN19kYkI0VTV6ZVd3XzN2WnZTYTJFZmxnZExfYUU1eXJ1azRBYTV2eXd1NkVzWXNqaVplSVM3M0V6blJRaWJaYWdYUGY2Y2hYanRxT3FBNlgtdDFFelJ6UWlqV3MzUlcwYjdFYlE3Z2owNTN1dFlXaVVpeDdodEFHUXdVak5XQ21RR04zWWFCajZqTERScVZ2MTNHdEZBMFBoM0MyZE1PQTAtMkFwdmhIeXBoR1VUa3JpTVdfTWFkSFgxSmYzV0VEWGhIVHh5OWFQckE?oc=5"
+        ]
+      },
+      "article:0557811b793147578e7fc9500b382fbd": {
+        "version": "evidence-3.2",
+        "eventKind": "general",
+        "eventLabel": "עדכון למעקב",
+        "eventScore": 25,
+        "potentialMateriality": 25,
+        "level": "low",
+        "sourceAuthority": "attributed-unverified",
+        "sourceReliability": "ייחוס הספק בלבד; אמינות התוכן טרם אומתה",
+        "companyRelevance": "direct",
+        "confidence": "medium",
+        "basis": "headline-only",
+        "verifiedOfficial": false,
+        "independentConfirmations": 0,
+        "why": "עדכון למעקב: עדיפות למחקר לפי סוג האירוע, לא תחזית לתנועת המניה. הבסיס הוא כותרת ומטא־נתונים בלבד, לכן אין דירוג גבוה גם כשנזכר אירוע מהותי.",
+        "evidenceUrls": [
+          "https://news.google.com/rss/articles/CBMiywFBVV95cUxPcnZXMmRmY2RPNFFIZHVOX21VMEY3bGtCekhpQkNrXzhocG0ycVNSZHhJdk82RlB6clV0THFLWm1BUXoyNnRJblBhV2otbGoyY1J3c0F4Rjh2RWNqcGxSWVh5LTUwNGZGZU5KVFBleEMyeE5odUFBX2tXdlYwNXB3YkFaMlFQV3g4V0hESTFPMnRheVl6TEF1dmRTVFBPU0FfYTFzcXlOd2duRG1fcVptZ0VQZWVTQThJSUFQZlRwU3FBZTV0NEtfWktQZw?oc=5"
+        ]
+      },
+      "article:5e0ada2aeb796f376c2fc60f62df51b0": {
+        "version": "evidence-3.2",
+        "eventKind": "general",
+        "eventLabel": "עדכון למעקב",
+        "eventScore": 25,
+        "potentialMateriality": 25,
+        "level": "low",
+        "sourceAuthority": "attributed-unverified",
+        "sourceReliability": "ייחוס הספק בלבד; אמינות התוכן טרם אומתה",
+        "companyRelevance": "direct",
+        "confidence": "medium",
+        "basis": "headline-only",
+        "verifiedOfficial": false,
+        "independentConfirmations": 0,
+        "why": "עדכון למעקב: עדיפות למחקר לפי סוג האירוע, לא תחזית לתנועת המניה. הבסיס הוא כותרת ומטא־נתונים בלבד, לכן אין דירוג גבוה גם כשנזכר אירוע מהותי.",
+        "evidenceUrls": [
+          "https://news.google.com/rss/articles/CBMimAFBVV95cUxQV0dlWF91bkZwYjFUUG1ya1JlSWRTODNsaHVZRXlRTDhBZ1JzeVdDLWl0eHlHRk82TGxJclBXNXdWYWFoYXZxdjQwazIxRE1rU0JDYWJseV9STmxlSl9PZE5haTFYb3NKNjRlTXpma2ZHSEFkRDlibk96cV9GOFZ4RXlGaGF5U3FjaXU4T1J3LWYxUTMwN2FyNw?oc=5"
+        ]
+      },
+      "article:8e95e063da18e646c3c20426af565cfb": {
+        "version": "evidence-3.2",
+        "eventKind": "opinion",
+        "eventLabel": "דעה או יעד מחיר",
+        "eventScore": 15,
+        "potentialMateriality": 15,
+        "level": "low",
+        "sourceAuthority": "attributed-unverified",
+        "sourceReliability": "ייחוס הספק בלבד; אמינות התוכן טרם אומתה",
+        "companyRelevance": "direct",
+        "confidence": "medium",
+        "basis": "headline-only",
+        "verifiedOfficial": false,
+        "independentConfirmations": 0,
+        "why": "דעה או יעד מחיר: עדיפות למחקר לפי סוג האירוע, לא תחזית לתנועת המניה. הבסיס הוא כותרת ומטא־נתונים בלבד, לכן אין דירוג גבוה גם כשנזכר אירוע מהותי. יעד מחיר או דעה אינם ראיה לאירוע מהותי.",
+        "evidenceUrls": [
+          "https://news.google.com/rss/articles/CBMiyAFBVV95cUxPTVVQM0Jid3JRUDNYcGhIUldpR1R5cVNsbFMyWFIwWlR4REpuNklwX19wYU9URlhrRWRWMjU0RlZrd0Y1TlMzNW1VVURTZlZJMUEyc3ZTelFkbGQtMUJFTnQ4ak5rMDBpY21HUEo3TUd2NEZvWmkwdEhXNVRmXzVtdDlxbllLNTlVX2NlakFaNkRIel9yM1B3V0ZxcEEtam5EdG51NXQwM2drNVJmU0tQTEVTWGNPWjV5RXpsaXRZOUlwVGRmaUdWaQ?oc=5"
+        ]
+      },
       "article:def3f389563ecca1aea9eee033ca732c": {
         "version": "evidence-3.2",
         "eventKind": "general",
@@ -12071,6 +12447,94 @@
     },
     "eventGroups": [
       {
+        "id": "event:048bd55cdb12a7f74b050de1",
+        "securityId": "candidate-nebius",
+        "eventKind": "general",
+        "publicationDay": "2026-10-19",
+        "itemIds": [
+          "article:358f6e460c8bbf83a082aaf3d8a3787e"
+        ],
+        "independentConfirmations": 0,
+        "groupingBasis": "near-identical-headlines-not-independent-confirmations"
+      },
+      {
+        "id": "event:449657487c45c1df8ee326d3",
+        "securityId": "candidate-iren",
+        "eventKind": "general",
+        "publicationDay": "2026-10-19",
+        "itemIds": [
+          "article:edd1b002a9d4deb310eda2b70fee2c89"
+        ],
+        "independentConfirmations": 0,
+        "groupingBasis": "near-identical-headlines-not-independent-confirmations"
+      },
+      {
+        "id": "event:f6418de54d33e5e20e0844a0",
+        "securityId": "candidate-sandisk",
+        "eventKind": "general",
+        "publicationDay": "2026-10-19",
+        "itemIds": [
+          "article:2f4d9e652debfc63573f7329cff49250"
+        ],
+        "independentConfirmations": 0,
+        "groupingBasis": "near-identical-headlines-not-independent-confirmations"
+      },
+      {
+        "id": "event:1db7ab88ea028f4411c2ba4b",
+        "securityId": "candidate-sandisk",
+        "eventKind": "general",
+        "publicationDay": "2026-10-19",
+        "itemIds": [
+          "article:b7f6e10c5d03f0fc053f36d8ef2c94e7"
+        ],
+        "independentConfirmations": 0,
+        "groupingBasis": "near-identical-headlines-not-independent-confirmations"
+      },
+      {
+        "id": "event:7fc1b2bed68ce328af9033a9",
+        "securityId": "candidate-sandisk",
+        "eventKind": "general",
+        "publicationDay": "2026-10-19",
+        "itemIds": [
+          "article:453c1fc4709aa3babbccf4bd1c2aa6cd"
+        ],
+        "independentConfirmations": 0,
+        "groupingBasis": "near-identical-headlines-not-independent-confirmations"
+      },
+      {
+        "id": "event:81a1b680d184aeb44b3f8971",
+        "securityId": "candidate-brainsway",
+        "eventKind": "general",
+        "publicationDay": "2026-10-19",
+        "itemIds": [
+          "article:0557811b793147578e7fc9500b382fbd"
+        ],
+        "independentConfirmations": 0,
+        "groupingBasis": "near-identical-headlines-not-independent-confirmations"
+      },
+      {
+        "id": "event:aedf2372aabf959abd7b2fa9",
+        "securityId": "candidate-nebius",
+        "eventKind": "general",
+        "publicationDay": "2026-10-19",
+        "itemIds": [
+          "article:5e0ada2aeb796f376c2fc60f62df51b0"
+        ],
+        "independentConfirmations": 0,
+        "groupingBasis": "near-identical-headlines-not-independent-confirmations"
+      },
+      {
+        "id": "event:12a39356597faa90665ee1c5",
+        "securityId": "candidate-brainsway",
+        "eventKind": "opinion",
+        "publicationDay": "2026-10-19",
+        "itemIds": [
+          "article:8e95e063da18e646c3c20426af565cfb"
+        ],
+        "independentConfirmations": 0,
+        "groupingBasis": "near-identical-headlines-not-independent-confirmations"
+      },
+      {
         "id": "event:e221d4349701b12dce302995",
         "securityId": "us-meta-nasdaq-a",
         "eventKind": "general",
@@ -14626,6 +15090,106 @@
     "industries": {
       "items": [
         {
+          "id": "industry:f035664dc75190c7d8dacdd415b0a4a6",
+          "industryId": "ai-cloud",
+          "headline": "Data center Project Jupiter air quality permit hearing set for early December - Source New Mexico",
+          "publisher": "Source New Mexico",
+          "sourceUrl": "https://news.google.com/rss/articles/CBMirwFBVV95cUxNdS1JQ3JrYnV4bHdWampMejJIeTNxMDFVYWlXdEY2M0tYWmoxb1Q1cDZQam54d2FmQ2JLRWlMTWRROXpjcmNMbnFpYlNJZl9TekFYZlhuWGZuMTFmTGZubnk1dzlEZ0Y4SU4tNnRmVnV3Vy05ajFFRU5KTG95bVVNMWl3aEpIeHU1X0UtRU1RYmQ4ZGJ1R0dEaTEzal9VM0lQZXU4empoa2J6RTd1SHlB?oc=5",
+          "linkKind": "google-news-redirect",
+          "publishedAt": "2026-10-19T17:08:56+00:00",
+          "collectedAt": "2026-10-19T17:30:27.792784+00:00"
+        },
+        {
+          "id": "industry:abeafbb6e1c131dcf5bdca2e6511df50",
+          "industryId": "renewable-energy",
+          "headline": "Clean Power Alliance Closes $1.4 Billion Prepay Bond for Renewable Energy Savings - News and Statistics - IndexBox",
+          "publisher": "IndexBox",
+          "sourceUrl": "https://news.google.com/rss/articles/CBMipwFBVV95cUxPQWRGdUR6R1hIazNhM3BGWlZ3NEFlOVdLeDF0d3RPN040cHdLRWxQcGMwRUVPeDFtUmZBNDBTOU0wYzJ3OUpUd1pwVW9WTnByU2IyajdCQVpERVpzUEhKMmo3WEtXUWN5aGV2aEV5WWZOd3VqUXJYWEVuVVpTaVA5MGhxWWpIc3hrbXh6TGRYV3RYRHI1dEp1MHVfeG10bW9uT0taTFM1dw?oc=5",
+          "linkKind": "google-news-redirect",
+          "publishedAt": "2026-10-19T16:40:48+00:00",
+          "collectedAt": "2026-10-19T17:30:27.792784+00:00"
+        },
+        {
+          "id": "industry:9fcc446fd776a48d4a25333af4bad340",
+          "industryId": "insurance",
+          "headline": "JazzCash wins silver award for innovation in InsurTech - | Associated Press Of Pakistan",
+          "publisher": "| Associated Press Of Pakistan",
+          "sourceUrl": "https://news.google.com/rss/articles/CBMikAFBVV95cUxQZ3llS0ZqNHJRZkJfRGtKSFE4NTVfQWdhSk1WejJTNzIxSUktV0FOanY4VEIyaGE2czFzWU1wQVZGdzFqcUVobWp6dzRFTmNoTDE5SHVnWWNWSWZZNVEweDNnSmJQUXNuT2FfOV85b3lIcVRHUERzaS1OQ3FVRWZ6Sm1DcmFBcWZQaVFDa1diTE4?oc=5",
+          "linkKind": "google-news-redirect",
+          "publishedAt": "2026-10-19T16:37:55+00:00",
+          "collectedAt": "2026-10-19T17:30:27.792784+00:00"
+        },
+        {
+          "id": "industry:cb0ca2f8a44f4c54f2a0f07994100518",
+          "industryId": "ai-cloud",
+          "headline": "Concord faces decision on novel micro data center - Concord Monitor",
+          "publisher": "Concord Monitor",
+          "sourceUrl": "https://news.google.com/rss/articles/CBMinwFBVV95cUxQV3Uyam83bWpZMEJpdlJwcGdZak5hTWVSZEI5eGhNMURQbWYxWUhIRjRSUG1nemI1UFprR1o3WFM4VXZubENncFZ6blVmbi14SHF3X2JvRlRCcVU0NHIzUEpoNDZwM19tdDJtLThQTURQVHRBTlFmZ0F3WE9sQkg3VkZxUERvMWVoVUxSMmI3aWtRdGxCY09Xa1hJQUdzSFk?oc=5",
+          "linkKind": "google-news-redirect",
+          "publishedAt": "2026-10-19T16:30:38+00:00",
+          "collectedAt": "2026-10-19T17:30:27.792784+00:00"
+        },
+        {
+          "id": "industry:2871316fccb51b066505dea402377874",
+          "industryId": "renewable-energy",
+          "headline": "Clean Power Alliance Secures $1.4 Billion Prepay Bond, Locking in $91.1 Million in Renewable Energy Cost Savings - PR Newswire",
+          "publisher": "PR Newswire",
+          "sourceUrl": "https://news.google.com/rss/articles/CBMi-AFBVV95cUxOelFTZFJ3VmN6d2lQOWRkRzhuaWdhRlZ3WkF3clBNSmVXbnFsLVJTeHhHRTJjWWtodk1YVlc3VUY2dXo3enlzbzRRZ3ZEMFpKVXNNT0U1U2p6UVRtS0wzQnJ5VVFFRUQ4RHotUnhoNUJBN2JEWTJRSnY1MFpOZWdSdjBndVltZ3RfZjc1X3NNZGtVSnRXQkEwNjdaZVhQQmk3c1JUdjkwOWM2QjdFaGVOSU5QU1pBQ2dPeDYtb29vR09oT2NiVEh3MkhtUkhNTWE3QjQ1WVhLLUFSbWo2M3kxRVllR0VuQVBFWUxrd0VzRGhEZDhIRWdTUA?oc=5",
+          "linkKind": "google-news-redirect",
+          "publishedAt": "2026-10-19T16:30:00+00:00",
+          "collectedAt": "2026-10-19T17:30:27.792784+00:00"
+        },
+        {
+          "id": "industry:be71534b81c1b9e2cc4c5d25ac4a870d",
+          "industryId": "renewable-energy",
+          "headline": "Battery Storage Enters the Balancing Market to Strengthen Grid Stability: Ignitis and emsys VPP Expand Partnership - EIN Presswire",
+          "publisher": "EIN Presswire",
+          "sourceUrl": "https://news.google.com/rss/articles/CBMi8gFBVV95cUxPN1gwN1NoSlRWSjhCS2ZOZ1JGYlEyWWhDeXlXOFNxczVfcVFYSF9paHotRUFRZnZOdnhwSl9sSDc3RDY3X2RSUl9obXZ4NV8wNXZtd1RCNWh1Vm84QzBRTTA2U29kbXZCMnByZWNHYVNIbmNkcjQtRVlfVGlLZDVGZk9uZXNRS20tbzdBTC1iYURVUDFsbHFkbFNsMlVWclpKVHdhMkZLa3gyLXdvLXZhNUtCN293SDF4X0hTakF1OGJiZGFGWXhIVnVyU3B4ek03cTQ1NGdGMHZaMDBRSmdpZFFkOUZLVDk3MXJoRWVOTy1Ldw?oc=5",
+          "linkKind": "google-news-redirect",
+          "publishedAt": "2026-10-19T15:15:00+00:00",
+          "collectedAt": "2026-10-19T17:30:27.792784+00:00"
+        },
+        {
+          "id": "industry:e64ddb601efcb7183cf0128a323cf1f6",
+          "industryId": "connectivity",
+          "headline": "Vodafone and Orange Join Forces with Deutsche Telekom and Telefónica to Expand Satellite Connectivity Across Europe - بوابة التكنولوجيا المالية",
+          "publisher": "بوابة التكنولوجيا المالية",
+          "sourceUrl": "https://news.google.com/rss/articles/CBMiREFVX3lxTE16ZUZwcUJINl9YZ2lWZ1FHVW1Za19BSENPbjNOb2tQT3RWOFBYdjhZaHJGYXlZVEVFYS1MTnJIVlowbjVZ?oc=5",
+          "linkKind": "google-news-redirect",
+          "publishedAt": "2026-10-19T15:09:49+00:00",
+          "collectedAt": "2026-10-19T17:30:27.792784+00:00"
+        },
+        {
+          "id": "industry:49b8fdd403323e68a46d6fccfd5b56b9",
+          "industryId": "renewable-energy",
+          "headline": "PurposeEnergy Commissions $40 Million Renewable Energy Facility in Minster, Ohio - citybiz",
+          "publisher": "citybiz",
+          "sourceUrl": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxQT1JJdkhBNURqdTViVld4WTFCSlZlOWdzUmljZHZySk1rb0lIVkFSU3ZNcmw2aGV0NWlGdklOY2lzWExCemJLR1FMOWh4M2hsaVBOVTdVYXBCeTVuU0hTUkYySXY1ejhwNGJkaXBXUEJYZFRVSEUwTVNuOTZWSXFnN2h2UTFHTTFSQ2ZQekNNbExUR2E4RTQtdEpTUVZhc3RTMGhoRnRyNXh0R2poSWxQSUt6NXNmQVFY?oc=5",
+          "linkKind": "google-news-redirect",
+          "publishedAt": "2026-10-19T14:55:43+00:00",
+          "collectedAt": "2026-10-19T17:30:27.792784+00:00"
+        },
+        {
+          "id": "industry:5c395aa275915647b7fccc8a9a1f9c80",
+          "industryId": "insurance",
+          "headline": "Moody's: AI moving into core insurance operations - PropertyCasualty360",
+          "publisher": "PropertyCasualty360",
+          "sourceUrl": "https://news.google.com/rss/articles/CBMimwFBVV95cUxNZWpjcXFRaGpjVmhuaG1LNTVMZVEtTmdoZHQxamZYVS1YdUJlSDhUeUZoSmhiUFl4Nmw2NXFtQUhMZkFBSXprdmdhX0sxeDUxNkItQkdiVnhyRnEzMkNOV3hYa3BpRzlJZ0FfNlBoUXByeGF6WWJjVURnY1F1WV9ZOG11NGtoTjJoTlhsekF3XzlqOGdzem9MTmtBWQ?oc=5",
+          "linkKind": "google-news-redirect",
+          "publishedAt": "2026-10-19T14:53:05+00:00",
+          "collectedAt": "2026-10-19T17:30:27.792784+00:00"
+        },
+        {
+          "id": "industry:390a53c160578e79e7838bcb41540804",
+          "industryId": "renewable-energy",
+          "headline": "Guest opinion: Battery storage a critical piece of Ulster County’s future - Daily Freeman",
+          "publisher": "Daily Freeman",
+          "sourceUrl": "https://news.google.com/rss/articles/CBMisgFBVV95cUxNZks0M0UzLXA3eHFhNVNjNEZ2bjhzMnQ0MXhVeXFiUGltV0c3WmE3ODR5RXRBOUdJZXAzdjUyb0V0bG5jdEFxQUgtcGVxOXlQNEdIcVJHSVJwTE1XUFJWRmg5WHFzWnA1ZU9ENk9hZ3ZrVVlFTlEwUUdvZnE3ZmVXYnZHTmJaalRfMmpvY2VsNXM3WDRSZTMyRXpidk9adnhYU3RxSEJldmJsTDRyYjZGOWxn?oc=5",
+          "linkKind": "google-news-redirect",
+          "publishedAt": "2026-10-19T14:32:51+00:00",
+          "collectedAt": "2026-10-19T17:30:27.792784+00:00"
+        },
+        {
           "id": "industry:6cec97d8ce5f487dc9ab888ff924318f",
           "industryId": "flash-memory",
           "headline": "PS6 over $1,000? Leak puts RAM and NAND alone at $680 - Pasquale Pillitteri",
@@ -14644,6 +15208,26 @@
           "linkKind": "google-news-redirect",
           "publishedAt": "2026-10-19T14:06:00+00:00",
           "collectedAt": "2026-10-19T14:23:37.434490+00:00"
+        },
+        {
+          "id": "industry:096b720ca8ca5470eb27e3cf15b14136",
+          "industryId": "ai-cloud",
+          "headline": "ANSI Roundtable: Stakeholders Call for Greater Coordination of Data Center Standards - PR Newswire",
+          "publisher": "PR Newswire",
+          "sourceUrl": "https://news.google.com/rss/articles/CBMi1gFBVV95cUxOR0FYaTRNRkpWTEVVLTBUbFhDWHRNalFzcFk0NFoxVnBkQTdqUE1qWll4RDJ3dGtEXzBoMkxvd3RoaS1HZ1NaZlRxMXlyekFSQ01Gd2xKcHlsLWZyNnY4U1E0WWNpNndPV014MnR1amYxZWVYeEhRN2tpcnpDcFJMNHREd0ZzZUpnQkFwbEdHOWdNSDh0Rk1EdHdEWGc3bUNrWTNjUUxPVmlSZXpXUVJWdUViS243UkVKRXU5d3dvYTJOTE5pX1FIQ0tsc0l0b09pN0lid1N3?oc=5",
+          "linkKind": "google-news-redirect",
+          "publishedAt": "2026-10-19T14:05:00+00:00",
+          "collectedAt": "2026-10-19T17:30:27.792784+00:00"
+        },
+        {
+          "id": "industry:5fc08171f8cb8387cc50b19cab260756",
+          "industryId": "ai-cloud",
+          "headline": "Ark has been running a data center for more than a decade in Akron - Spectrum News",
+          "publisher": "Spectrum News",
+          "sourceUrl": "https://news.google.com/rss/articles/CBMikgFBVV95cUxNRjJkX0tEOGFTc1p2dTkzOEx1WkxUbmZBdkUzMjBhTzRKTm9qNTVHek9BanpmVDNla3RUVml3MVF6ZWVpbkMteFhVV1p4cUpoSnBCS3dOclpERml1QllFVG4wQ0RBdThTcmVqS3ZmeDJabDRQZTVhSUplQ3N2ZS1KRy00dlZHQmwyNEFYT1Bialh4Zw?oc=5",
+          "linkKind": "google-news-redirect",
+          "publishedAt": "2026-10-19T13:25:00+00:00",
+          "collectedAt": "2026-10-19T17:30:27.792784+00:00"
         },
         {
           "id": "industry:5d432c7b01904584e198260adc4030eb",
@@ -14696,6 +15280,16 @@
           "collectedAt": "2026-10-19T13:25:24.320543+00:00"
         },
         {
+          "id": "industry:212f52779f610e1795bae05fdabda9c8",
+          "industryId": "insurance",
+          "headline": "Insurtech provider unveils 'Travel 360' tackling holiday travel disruptions - Daily Tribune",
+          "publisher": "Daily Tribune",
+          "sourceUrl": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxOU0swaHRYUGU2MkZqM0hfc3Z5VzlxQjBxUkFfb1gtdEpQeXlzT1ViLTR5dFRIby1ia2JQMlRzYXEzRTU3Nl9MaDExaE5LRll6R1MyQmJycWx2eWd2RmhySzB0YW1WdzI3Ri1GQVUxRTVEcEZkaTNqR3ZlT0NKbUFOZ1Z3dVltemxTbEgtTTVlREFUYTVWUUF2bjRlNU01YldfRXdXR2pFNGluUXdnNmpucW1KR2NmVVFy?oc=5",
+          "linkKind": "google-news-redirect",
+          "publishedAt": "2026-10-19T12:52:10+00:00",
+          "collectedAt": "2026-10-19T17:30:27.792784+00:00"
+        },
+        {
           "id": "industry:43680190648560c7fc085416bb252d08",
           "industryId": "aviation",
           "headline": "Uzbekistan, US-based GE Aerospace to expand aviation training cooperation - Trend News Agency",
@@ -14734,6 +15328,16 @@
           "linkKind": "google-news-redirect",
           "publishedAt": "2026-10-19T12:00:42+00:00",
           "collectedAt": "2026-10-19T14:23:37.434490+00:00"
+        },
+        {
+          "id": "industry:85192502745a2954dac4c2374ffdfd34",
+          "industryId": "flash-memory",
+          "headline": "SK hynix Subsidiary Solidigm’s U.S. NAND Plant And Overseas Equipment Export Plans For China Could Go Up In Smoke As Korean Authorities Sprout Regulatory Hurdles - Wccftech",
+          "publisher": "Wccftech",
+          "sourceUrl": "https://news.google.com/rss/articles/CBMioAFBVV95cUxNM2ZIblV6a3hWVkhzYXNQLVhWdW0tNDlxaEJGdHVaOHRZb192ODZyd1hQTEo5UjJvbXNTWVhvQ0diTW5MQklHdVRkQ3RNX0E5Q2dVMTk1OWFiUGFMbHZEd3FuVUhKOXZJeFEtWjFOMnloUlk0S0tBTW5seHBTTkw5elR3bmlZRWNuZ0RhenY2aG5DdF9Zcl9nYWxDZW8wem5D0gGmAUFVX3lxTE9TYmRZRWU4QmhRcFlJRV8xRzF6VC1Yb19ndTBrbktOM2ZwemJvakNWRDRzNEdGZzRJZkFoRWFXN3ZZdkN2VzNHU2dxYnJraEZOX180aWItN3hTcEttMzBlbWp0cEptYVV1M0lOSDhjcEktdmNkcGRYWE9vbVhfYjJUMl9xTDl6ODNXaldOXy1sd3VDZ3VOaDBBZlhDRXNUd0dpc2pCWXc?oc=5",
+          "linkKind": "google-news-redirect",
+          "publishedAt": "2026-10-19T11:55:53+00:00",
+          "collectedAt": "2026-10-19T17:30:27.792784+00:00"
         },
         {
           "id": "industry:79a46b4a62f5621a7a26d3c719e0d87b",
@@ -14906,6 +15510,16 @@
           "collectedAt": "2026-10-19T11:16:31.831017+00:00"
         },
         {
+          "id": "industry:04593b3312a54720a420912a62dc579d",
+          "industryId": "ai-cloud",
+          "headline": "Get Involved: Hospital costs, Harrington data center ban, solar in Sussex, more - Spotlight Delaware",
+          "publisher": "Spotlight Delaware",
+          "sourceUrl": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxQamRKcWRpWHNxTFZraHA1VXNWWXRLYkhwTW9YNVExNUt5dlYzMWRVdTRpZEl1bDNNOTlrNk0xT2ZLcWNZd2pQYTViQ2VqNlJJMFVidThiTHZTZDA5U2t4SGpxQWM1OHR4Rjd3S3RrYm1wd05OZ3J3SDY5YmhPSndhNTRIYmZCeTk2WGRtY2VYYzBpZkExdUlzTGlvaGdJMlRwZFhwd1dZazU?oc=5",
+          "linkKind": "google-news-redirect",
+          "publishedAt": "2026-10-19T10:00:00+00:00",
+          "collectedAt": "2026-10-19T17:30:27.792784+00:00"
+        },
+        {
           "id": "industry:e03213a6c7e689a689d269461435229b",
           "industryId": "renewable-energy",
           "headline": "Fortis Green, Zeitinger invest in GRIPS solar-storage expansion - Renewables Now",
@@ -14944,6 +15558,16 @@
           "linkKind": "google-news-redirect",
           "publishedAt": "2026-10-19T09:05:09+00:00",
           "collectedAt": "2026-10-19T13:25:24.320543+00:00"
+        },
+        {
+          "id": "industry:13484da12b33ca27df5b283c311c04eb",
+          "industryId": "ai-cloud",
+          "headline": "Optical PCIe Extends the Reach of AI Rack Design - Data Center Knowledge",
+          "publisher": "Data Center Knowledge",
+          "sourceUrl": "https://news.google.com/rss/articles/CBMiogFBVV95cUxNOWVRQnR2STJleFVNNTUzZlZudG5NUzgzai1rbkpBNkFweU9qaEoyWTVTMHpXU1pzSUMxXzNGTVJQYjZfRnA5MnhxZ1hUdWo0dTBzMHJvTm9SYWFwMngtRDZNZ3RHM0lEdUN2U3RVaTFRN2hMTWZNaGtDQW1TWDhYNGVjY3p3Mno2NzYweFlsX1EtZWZ0d09XWVE1eHg1Mk5XSkE?oc=5",
+          "linkKind": "google-news-redirect",
+          "publishedAt": "2026-10-19T09:01:47+00:00",
+          "collectedAt": "2026-10-19T17:30:27.792784+00:00"
         },
         {
           "id": "industry:4c60ae938a490b5efc1d66dce8690b0c",
@@ -16464,174 +17088,14 @@
           "linkKind": "google-news-redirect",
           "publishedAt": "2026-10-15T15:44:14+00:00",
           "collectedAt": "2026-10-18T16:24:43.938795+00:00"
-        },
-        {
-          "id": "industry:14119f2360c0c12dd2bcf5ab634db0dc",
-          "industryId": "connectivity",
-          "headline": "Southwest Overhauls Rapid Rewards Program with New Platinum Tier, Airport Lounges, and Starlink Satellite Connectivity - Aviación al Día",
-          "publisher": "Aviación al Día",
-          "sourceUrl": "https://news.google.com/rss/articles/CBMi9AFBVV95cUxPVEptWldob3JIWVFQd1J3TkZEcGZyMk9wcGQ3QzhkQWVuWUNqT05mVUlPSXI0ZHZvdEdOYXJvNGxCaFppd2tPbVM0b00zT0ItaTV0NzR5RTZvOEpGaU5jaGpLazVIWjFtWTV0bE9GQ25nbXNHMl9uMlBPUEhxdWx0eFZyT1VnZGR1ckgyTlN2RnBObDZEcm1Pb1Z3djg4QmpiaXZZazZJRWZiTjJUcmVCdmQ4RGdFQlpvOU0tOXRxMlU1U3A0RTFiWncta000cWxKbUp4ZmxaNmdNWjBIQU4tYVVSdkNxZ29JR3BROHpSOW9TNUNG0gH0AUFVX3lxTE9USm1aV2hvckhZUVB3UndORkRwZnIyT3BwZDdDOGRBZW5ZQ2pPTmZVSU9JcjRkdm90R05hcm80bEJoWml3a09tUzRvTTNPQi1pNXQ3NHlFNm84SkZpTmNoaktrNUhaMW1ZNXRsT0ZDbmdtc0cyX24yUE9QSHF1bHR4VnJPVWdkZHVySDJOU3ZGcE5sNkRybU9vVnd2ODhCamJpdllrNklFZmJOMlRyZUJ2ZDhEZ0VCWm85TS05dHEyVTVTcDRFMWJady1rTTRxbEptSnhmbFo2Z01aMEhBTi1hVVJ2Q3Fnb0lHcFE4elI5b1M1Q0Y?oc=5",
-          "linkKind": "google-news-redirect",
-          "publishedAt": "2026-10-15T15:30:42+00:00",
-          "collectedAt": "2026-10-18T16:24:43.938795+00:00"
-        },
-        {
-          "id": "industry:746edd435b3c86bbc7ab8c8af6f6e0a0",
-          "industryId": "digital-advertising",
-          "headline": "10-15-26 YMS HR3 Understanding inflation, Speaker Newt Gingrich on his new book and Supreme Court blockbuster case on digital advertising. - Your Morning Show With Michael DelGiorno - iHeart",
-          "publisher": "iHeart",
-          "sourceUrl": "https://news.google.com/rss/articles/CBMirwFBVV95cUxOZzlOT2JmOEFMZll5aThOT1FGaFo2czhVbWdfdmVRVXpZTW5KejZQbTBWbUJhTmxZRVlja1JpN3JVeUtmZnpLalpVQkhoZEd5cjFfNG5RanpsdDhNeEgxUUF4SHZROWo0TzdYVGt4b2pSZUVLYmlFVVYxcTdJb21nZjBlT3ZRakZkOF9ZTG5BQWFrQWlxZ2ZUSTc3YXAtU21EcjZ4S1VySXAxTEZPdlA4?oc=5",
-          "linkKind": "google-news-redirect",
-          "publishedAt": "2026-10-15T15:01:05+00:00",
-          "collectedAt": "2026-10-18T16:24:43.938795+00:00"
-        },
-        {
-          "id": "industry:88f94939ec77700e914bff86136a6936",
-          "industryId": "digital-advertising",
-          "headline": "Kenya Outpaces Global Markets in Digital Advertising Growth - KenyanVibe",
-          "publisher": "KenyanVibe",
-          "sourceUrl": "https://news.google.com/rss/articles/CBMikAFBVV95cUxNM2t3cXFoMmpEQjA3X0hXM19xenh3ZXVQaDVkVGZIbWV0bHgtd1lMZEIwRkpSMElwbGlyc2tma2xNNEkyVUxmS3N1WUlqTS1RZVJ2RTE0WnNORHlITURwdkphYWo5Yk8wMVJzOURnRHRwdWhEQ1FaX0Q1S0FNUHdHVTZhdlJHZUFWUkUza2Y1ZEk?oc=5",
-          "linkKind": "google-news-redirect",
-          "publishedAt": "2026-10-15T14:03:21+00:00",
-          "collectedAt": "2026-10-18T16:24:43.938795+00:00"
-        },
-        {
-          "id": "industry:0b74404602e2c4003afec4f8d6885ed5",
-          "industryId": "digital-advertising",
-          "headline": "Israeli digital advertising agency Discover-Tech accused of using online advertisements for tracking and access to devices - Informat.ro",
-          "publisher": "Informat.ro",
-          "sourceUrl": "https://news.google.com/rss/articles/CBMipgFBVV95cUxNNFFwaG9ka3RsN25HM01MR2oxeXk0a2l0YnkxR05VLS1MekRHZ1UzUnlIb19sb3E0dUFlV0NfVURjbEhQbUN6a19sZDZJRFlmTnM4d3BiSVczdWlPcjI2WmUzdk1LaWJzU1NXSG5UYk5SakxYV25tMWlIZVRDQ01LMklZYWV4emM0REVqSG5ObHJLN1hURU5ZMmE5RWxyT0FuOEdDZzhB?oc=5",
-          "linkKind": "google-news-redirect",
-          "publishedAt": "2026-10-15T12:12:34+00:00",
-          "collectedAt": "2026-10-18T16:24:43.938795+00:00"
-        },
-        {
-          "id": "industry:10d13cbbbdc2aaed85504dd857ecc0bc",
-          "industryId": "connectivity",
-          "headline": "Telstra Group Limited (ASX:TLS) Develops Direct-to-Handset Satellite Connectivity - Kalkine",
-          "publisher": "Kalkine",
-          "sourceUrl": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxPYWtrYnBDa3lIRkZZWFYxMm5BU2dlSWYyMEJwWGtacDhyVXVtUU9oTlRlb2JldmU4bjhGWFZEdEkxbk9ya0s2dDdEYXFRVmRuYU9JVXltZkRObmtpRGFHQXJjeEFSNm8tRDd1a0NOTmYyblZtZEIyN2JRc3JsS212Z3ZJb3EtVi15d01KNGh0eXNlR0NieXEzaC1LVFdKcXVoM3RiTEt0d3JhbUdMME1ZODBEeC1Va3Jq?oc=5",
-          "linkKind": "google-news-redirect",
-          "publishedAt": "2026-10-15T10:26:00+00:00",
-          "collectedAt": "2026-10-18T16:24:43.938795+00:00"
-        },
-        {
-          "id": "industry:d87f5b53a943891606920fe13c0c7325",
-          "industryId": "connectivity",
-          "headline": "Iridium and Altair integrate satellite connectivity into IoT chipsets - Manufacturing Today India",
-          "publisher": "Manufacturing Today India",
-          "sourceUrl": "https://news.google.com/rss/articles/CBMif0FVX3lxTE00VXltVlJjREFrMmRmS3ZuY0FvLUpqSUFqa3dNRzVKTVh6TmJ2WVRkSnhCbVNwemZXcGNyQnZ3SHRGLU5tekRhNEJqbVNDa25NMFdnVGhxTWkwMVRaZndZbWJFbC1sRF9ZNzgySEpWVGtJTDhYMU9haGNFX0c3Qlk?oc=5",
-          "linkKind": "google-news-redirect",
-          "publishedAt": "2026-10-15T09:46:40+00:00",
-          "collectedAt": "2026-10-18T18:08:14.138793+00:00"
-        },
-        {
-          "id": "industry:b2745f9da84f6b6d452c0cb4b4e73ffd",
-          "industryId": "digital-advertising",
-          "headline": "Political campaigns shift more ad dollars to social media in 2026 - Independent Mail",
-          "publisher": "Independent Mail",
-          "sourceUrl": "https://news.google.com/rss/articles/CBMi1wFBVV95cUxNZUJLM1I3TjAxcW4yUGg3VFRjbzR5bWM1TnFIVFFpU24tMmRnSnNQeFNmTWJRc29JZVNiLTFGWmN3Q09QUTdDLWRuT2l5RFhTOVIxanAxWnFHZER2RGhLU0JSQmRON2cyWVdISEkwZEtHX2doU2tGbkRJUml6QjBwT0JZLUdfUzkzemRRTWlXTVF6VzhUZmVCdnRjUndBNG9zRGZHakJKdWxtWXU0cHp2dDd5VjMtRENQcnNEN1VFbnVzSW5vNXFzNzd0Um1zel9FTEZQUmZfdw?oc=5",
-          "linkKind": "google-news-redirect",
-          "publishedAt": "2026-10-15T09:03:00+00:00",
-          "collectedAt": "2026-10-18T16:24:43.938795+00:00"
-        },
-        {
-          "id": "industry:7020b2b38620c3c86813d3c81d398102",
-          "industryId": "defense-imaging",
-          "headline": "Military Drones Market Is Going to Boom |• General Atomics • Northrop Grumman • Boeing - openPR.com",
-          "publisher": "openPR.com",
-          "sourceUrl": "https://news.google.com/rss/articles/CBMilgFBVV95cUxQZS1wLXQ4OG4xMEV4Vzk5bXlIUXh1a1hnaUpnWGJqb2F6eENWZ1FNUnJjM2VxQU9lYkt4NDlwcW5MUEtzN1I4QnExc0ZiSDJ0YVliYS1YNjN4UWN0SmJZZnNPTGFmN012YzFYVFRQUUNtLWx3MEJXZ29idmxzREVLWmwtQUM1cS1mRXBybDk0Z2Y1UnpCQVE?oc=5",
-          "linkKind": "google-news-redirect",
-          "publishedAt": "2026-10-15T08:00:00+00:00",
-          "collectedAt": "2026-10-18T16:24:43.938795+00:00"
-        },
-        {
-          "id": "industry:7629550b40da4e327c74c0eb8c0c26c5",
-          "industryId": "aviation",
-          "headline": "Air India CEO targets high A350 engine maintenance costs in broader cost-cutting drive - ET Infra",
-          "publisher": "ET Infra",
-          "sourceUrl": "https://news.google.com/rss/articles/CBMi6AFBVV95cUxQcjdSSTctSUF6R0lkMlFkc19lUG41M2xmazZlTGl3RERRRGpGVWVSaENVY1ZYT1YzT2UzemppXzFCWU9aNkYwbHpCLUM2aWdyLTdyaUVBYmVHei03TUtHckV5V1duY0ZlckgtdzVaNHdZdW4zSFlTVE5ucnZlRHdINmdkVHNHckJRajRQZlRkdHA0blZhcjFyRzEwN3FsdjZqQ3dwWGYyOGxKR3ZSdDFyaGN3ZDhhUzdOM0dZcV9VSFNqeWhrdlBNeVVmVjFoQjZlMFFmcEFwSGdKWnZaV2w4bTZMelhkeHRp0gHuAUFVX3lxTE1Ib2lHRmxseU52UGJQWi1VaEhrelRHeW41Qjc4MW1uaDdVdERtQzZNZE85a3otd1R4VWNqWTlPWFM2V3VHYUxwbFJmS1BjZjIzc0FfSndmdWQtRGd3UXNiN0ptNnFiT2VJME01VUJaOUJBUFJkVzlPQnl6RzdLZDFVMldTYnNfaTBjVHZJNzVYNTdlYUM4RTdLQS1ZUHFfbGo2Y0c2WmluRGdRWEFUX3Q2Vm9HRDU5b1plMnVzTElBdFR3b2c1alBjSTVxWFVpdnhEbDZHYm56RmF4SUxGbTZnTEhCSXhWSVlXM2syRFE?oc=5",
-          "linkKind": "google-news-redirect",
-          "publishedAt": "2026-10-15T07:33:34+00:00",
-          "collectedAt": "2026-10-18T16:24:43.938795+00:00"
-        },
-        {
-          "id": "industry:701cf2c6501dddf84734add77e23ef2c",
-          "industryId": "digital-advertising",
-          "headline": "oOh!media Limited (ASX:OML): Digital Advertising Network, Cash Flow and 2026 Priorities - Kalkine",
-          "publisher": "Kalkine",
-          "sourceUrl": "https://news.google.com/rss/articles/CBMiugFBVV95cUxOaWpFWFFWWmd0Sk9pelF3YVRrYzU1Q0NZbDhnS3psbVhvNFFveWdNQ1QzTTJ6d3dRZUNJYXZfR0FRcXpyR3VEMThObUhFOWJTaW1QRm9IZHVxR1pETWFtQTdhbWZoX2VvMHZJdlNDblRrdGdkdTVwRmV1ZUYtWmlxRWtCV1liX2tpclRHLTRpY0NJXzJFSmhicmk2OHlkc0NfUlFpbW45dEdhNUtqa0VWR0drYWFnYi1fZ2c?oc=5",
-          "linkKind": "google-news-redirect",
-          "publishedAt": "2026-10-15T04:58:00+00:00",
-          "collectedAt": "2026-10-18T16:24:43.938795+00:00"
-        },
-        {
-          "id": "industry:ab9dd47a7ffd019fff0892647c5f3305",
-          "industryId": "aviation",
-          "headline": "Air India seeks to cut A350 engine maintenance cost | Financial Express Mumbai - newspaper - Magzter",
-          "publisher": "Magzter",
-          "sourceUrl": "https://news.google.com/rss/articles/CBMiugFBVV95cUxQNTRKVVl2aTd4OXJ6UXMxa09BeWxpOW1RNGlPWFd5S3BDVldlRnhuQmFncE5vcGpSTmdWc2hjSktaSlFiSmF0ZVlQNW5RbE05aVAwYVd3RmtqZGI0Y2EtS1BVVTJwMTU1ak9aVnFtTUxjUkNPZ1dNaXptVjJfd0h6SGhxRUk4ZEZaRmI4c3dRUEM3VktNWUJaNkw1dUk5aFk5UjI0MEQwa3hBQXVZRTZtSzVlMVIzMEljWkE?oc=5",
-          "linkKind": "google-news-redirect",
-          "publishedAt": "2026-10-15T00:25:53+00:00",
-          "collectedAt": "2026-10-18T16:24:43.938795+00:00"
-        },
-        {
-          "id": "industry:573677b2db6907335b94f98ea1edd553",
-          "industryId": "defense-imaging",
-          "headline": "Ukraine accuses SpaceX of restricting Starlink access for military drones - Helsinki Times",
-          "publisher": "Helsinki Times",
-          "sourceUrl": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxNRURFVmNXYWFvYllVVjZsN1VnM243N1VuaFYzVFgyWGsxV1pVUml5MVdfN082WEVpdWlMNmRJMDUtNXlXUlB5QmxlY2gzYWxIR0xhdVdqQUM4ZVZDNXFHZFgtbVBZTHJOaENId3cxTWZoUHlNOEhrR0JlUnZzcnJIeW90Qkp5X2pVRVNscjR2czlSQ2dFbnp2czRBeENhWlNXT1pqTmpZZk5YaEdhWnhMYjlnQWFCTGN5NnF2ZkQ0VnM?oc=5",
-          "linkKind": "google-news-redirect",
-          "publishedAt": "2026-10-14T21:56:44+00:00",
-          "collectedAt": "2026-10-18T16:24:43.938795+00:00"
-        },
-        {
-          "id": "industry:f81bee9247c12f75b662cec8d380433e",
-          "industryId": "aviation",
-          "headline": "United Airlines (UAL) Signs Multi Year Engine Maintenance Agreement - Yahoo Finance",
-          "publisher": "Yahoo Finance",
-          "sourceUrl": "https://news.google.com/rss/articles/CBMinAFBVV95cUxQYWZkRFE5bThoWm5uS3ZxMmpob1ZZbGYwV1VmS29QbFVudVRFQWhGUG5wSHN0OUtyQlZwblB5clU3M2F0d296czZ5cjE5RURjWUlsaG1uSTRTOHRNc09MdE5yOGNZeHRYU2kwTlVXME1kYnpNRFhldk5jLVFfUTQ5bnp1N0RvODcybGNBTHRMOVFTQXlUTGpXOHFWQ0o?oc=5",
-          "linkKind": "google-news-redirect",
-          "publishedAt": "2026-10-14T21:15:46+00:00",
-          "collectedAt": "2026-10-18T18:08:14.138793+00:00"
-        },
-        {
-          "id": "industry:9e73584d25defb0f790ec6266130a1a2",
-          "industryId": "defense-imaging",
-          "headline": "Ukraine says SpaceX restrictions are disrupting military drones and air defences - Cyprus Inform",
-          "publisher": "Cyprus Inform",
-          "sourceUrl": "https://news.google.com/rss/articles/CBMitwFBVV95cUxNd2YxRXRhNXk3MzVoTzhsR19EWUNEVjhGX0tTUWNCMEtDUXl1UUxBRUhTNjNMaS1xTEVuUE5vb1RzbHAwMXdGLWI1SklkTUNKaGJzb1k1OFplVDJqT3N2X05sQ1VHMW1IZGpBcE1UOTUtMHZGbXV3azlEVmd3MGZiUVdIU19XN2hENnFnNmY1dkVlbmp6U3ZlOG5wcGZvdk5lcTF5RlhnY2xxN3NyelR6S0lnNF9mM2M?oc=5",
-          "linkKind": "google-news-redirect",
-          "publishedAt": "2026-10-14T18:24:39+00:00",
-          "collectedAt": "2026-10-18T16:24:43.938795+00:00"
-        },
-        {
-          "id": "industry:f488fd0066dfb648a1e6696a6439084a",
-          "industryId": "defense-imaging",
-          "headline": "Ukraine says Starlink is cutting out its military drones as Poland calls out Elon Musk - Teslarati",
-          "publisher": "Teslarati",
-          "sourceUrl": "https://news.google.com/rss/articles/CBMidEFVX3lxTE5FZjlmU2lwYWVXMXA2ZDZPUk9ZZ1A1WWYtc05feFNYb19sZGl5Yk1oZzlOc1ZlMWtPQklKY25JYlZUczRPZENEN3BwUFRkU2x1bk1FT0xRbDVweXQycnpfcjBoOU9sR081NTh5ZE01NkxsazI2?oc=5",
-          "linkKind": "google-news-redirect",
-          "publishedAt": "2026-10-14T16:26:04+00:00",
-          "collectedAt": "2026-10-18T16:24:43.938795+00:00"
-        },
-        {
-          "id": "industry:f091da73e57450a154b35823169955f3",
-          "industryId": "defense-imaging",
-          "headline": "SpaceX limits Starlink service for Ukraine’s high-speed military drones without prior warning — Ukrainian officials say limitation significantly complicates logistics and drone operations - Tom's Hardware",
-          "publisher": "Tom's Hardware",
-          "sourceUrl": "https://news.google.com/rss/articles/CBMi1AJBVV95cUxQYXpzWTA3cmpYcUNLekE3R0czd2lWSDRYQWhSdVMwMmJQa3N6QmNEd21RdnhySVRtV3ZfeXM2REd0UEpnb2lnZU1fclA0ejBPUy1aa0hxc3Z2LXh3SjM0ZUpsdXdBOTZVYUE3b2VKX0ZWeWZsV0x4TXIyckN3RkVCZ0NvUEZOd285MS1iM3dkcTliVXR6V0N1YmIwWTBSUG1CVzZKY1JONUEtZnl5RW1hV2duU3ZGXzdRZkd0bWx6T2V3dTNXM0pYbU9DczRHMHN1TnBHeFh0NGYyX0Z3eVlnVVV1ckpWb3FzdjNVLW9tWjNrckFqQWFyWkpkSkpmVEJuRXZNMkFkSXp3R2x2VlhZVmx0ajZQZ21lUWhuYi1ic0tDbldJX1UtbmMzWUZfYUphUjFoZ3pwd2xiUHVFWm9GbmZXNWlKeXB6a0x1d2Z5MnZBYS0t?oc=5",
-          "linkKind": "google-news-redirect",
-          "publishedAt": "2026-10-14T13:04:33+00:00",
-          "collectedAt": "2026-10-18T16:24:43.938795+00:00"
         }
       ],
       "sources": [
         {
           "industryId": "ai-cloud",
           "provider": "google-news",
-          "lastAttemptAt": "2026-10-19T14:23:37.434490+00:00",
-          "lastSuccessfulAt": "2026-10-19T14:23:37.434490+00:00",
+          "lastAttemptAt": "2026-10-19T17:30:27.792784+00:00",
+          "lastSuccessfulAt": "2026-10-19T17:30:27.792784+00:00",
           "status": "results",
           "count": 12,
           "error": null,
@@ -16640,8 +17104,8 @@
         {
           "industryId": "digital-advertising",
           "provider": "google-news",
-          "lastAttemptAt": "2026-10-19T14:23:37.434490+00:00",
-          "lastSuccessfulAt": "2026-10-19T14:23:37.434490+00:00",
+          "lastAttemptAt": "2026-10-19T17:30:27.792784+00:00",
+          "lastSuccessfulAt": "2026-10-19T17:30:27.792784+00:00",
           "status": "results",
           "count": 12,
           "error": null,
@@ -16650,8 +17114,8 @@
         {
           "industryId": "payments",
           "provider": "google-news",
-          "lastAttemptAt": "2026-10-19T14:23:37.434490+00:00",
-          "lastSuccessfulAt": "2026-10-19T14:23:37.434490+00:00",
+          "lastAttemptAt": "2026-10-19T17:30:27.792784+00:00",
+          "lastSuccessfulAt": "2026-10-19T17:30:27.792784+00:00",
           "status": "results",
           "count": 12,
           "error": null,
@@ -16660,8 +17124,8 @@
         {
           "industryId": "aviation",
           "provider": "google-news",
-          "lastAttemptAt": "2026-10-19T14:23:37.434490+00:00",
-          "lastSuccessfulAt": "2026-10-19T14:23:37.434490+00:00",
+          "lastAttemptAt": "2026-10-19T17:30:27.792784+00:00",
+          "lastSuccessfulAt": "2026-10-19T17:30:27.792784+00:00",
           "status": "results",
           "count": 12,
           "error": null,
@@ -16670,8 +17134,8 @@
         {
           "industryId": "insurance",
           "provider": "google-news",
-          "lastAttemptAt": "2026-10-19T14:23:37.434490+00:00",
-          "lastSuccessfulAt": "2026-10-19T14:23:37.434490+00:00",
+          "lastAttemptAt": "2026-10-19T17:30:27.792784+00:00",
+          "lastSuccessfulAt": "2026-10-19T17:30:27.792784+00:00",
           "status": "results",
           "count": 12,
           "error": null,
@@ -16680,8 +17144,8 @@
         {
           "industryId": "flash-memory",
           "provider": "google-news",
-          "lastAttemptAt": "2026-10-19T14:23:37.434490+00:00",
-          "lastSuccessfulAt": "2026-10-19T14:23:37.434490+00:00",
+          "lastAttemptAt": "2026-10-19T17:30:27.792784+00:00",
+          "lastSuccessfulAt": "2026-10-19T17:30:27.792784+00:00",
           "status": "results",
           "count": 12,
           "error": null,
@@ -16690,8 +17154,8 @@
         {
           "industryId": "defense-imaging",
           "provider": "google-news",
-          "lastAttemptAt": "2026-10-19T14:23:37.434490+00:00",
-          "lastSuccessfulAt": "2026-10-19T14:23:37.434490+00:00",
+          "lastAttemptAt": "2026-10-19T17:30:27.792784+00:00",
+          "lastSuccessfulAt": "2026-10-19T17:30:27.792784+00:00",
           "status": "results",
           "count": 12,
           "error": null,
@@ -16700,8 +17164,8 @@
         {
           "industryId": "renewable-energy",
           "provider": "google-news",
-          "lastAttemptAt": "2026-10-19T14:23:37.434490+00:00",
-          "lastSuccessfulAt": "2026-10-19T14:23:37.434490+00:00",
+          "lastAttemptAt": "2026-10-19T17:30:27.792784+00:00",
+          "lastSuccessfulAt": "2026-10-19T17:30:27.792784+00:00",
           "status": "results",
           "count": 12,
           "error": null,
@@ -16710,18 +17174,18 @@
         {
           "industryId": "neuromodulation",
           "provider": "google-news",
-          "lastAttemptAt": "2026-10-19T14:23:37.434490+00:00",
-          "lastSuccessfulAt": "2026-10-19T14:23:37.434490+00:00",
+          "lastAttemptAt": "2026-10-19T17:30:27.792784+00:00",
+          "lastSuccessfulAt": "2026-10-19T17:30:27.792784+00:00",
           "status": "results",
-          "count": 7,
+          "count": 8,
           "error": null,
           "queryUrl": "https://news.google.com/rss/search?q=%28%22transcranial+magnetic+stimulation%22+OR+%22Deep+TMS%22+OR+%22%D7%92%D7%99%D7%A8%D7%95%D7%99+%D7%9E%D7%92%D7%A0%D7%98%D7%99+%D7%9E%D7%95%D7%97%D7%99%22%29+when%3A7d&hl=en-US&gl=US&ceid=US%3Aen"
         },
         {
           "industryId": "connectivity",
           "provider": "google-news",
-          "lastAttemptAt": "2026-10-19T14:23:37.434490+00:00",
-          "lastSuccessfulAt": "2026-10-19T14:23:37.434490+00:00",
+          "lastAttemptAt": "2026-10-19T17:30:27.792784+00:00",
+          "lastSuccessfulAt": "2026-10-19T17:30:27.792784+00:00",
           "status": "results",
           "count": 12,
           "error": null,
@@ -17095,23 +17559,23 @@
       "sources": [
         {
           "securityId": "candidate-nebius",
-          "lastAttemptAt": "2026-10-19T14:23:37.434490+00:00",
-          "lastSuccessfulAt": "2026-10-19T14:23:37.434490+00:00",
+          "lastAttemptAt": "2026-10-19T17:30:27.792784+00:00",
+          "lastSuccessfulAt": "2026-10-19T17:30:27.792784+00:00",
           "status": "ok",
           "error": null,
           "url": "https://nebius.com/newsroom"
         },
         {
           "securityId": "us-meta-nasdaq-a",
-          "lastAttemptAt": "2026-10-19T14:23:37.434490+00:00",
-          "lastSuccessfulAt": "2026-10-19T14:23:37.434490+00:00",
+          "lastAttemptAt": "2026-10-19T17:30:27.792784+00:00",
+          "lastSuccessfulAt": "2026-10-19T17:30:27.792784+00:00",
           "status": "ok",
           "error": null,
           "url": "https://investor.atmeta.com/investor-news/default.aspx"
         },
         {
           "securityId": "us-dlo-nasdaq-a",
-          "lastAttemptAt": "2026-10-19T14:23:37.434490+00:00",
+          "lastAttemptAt": "2026-10-19T17:30:27.792784+00:00",
           "lastSuccessfulAt": null,
           "status": "failed",
           "error": "HTTP Error 403: Forbidden",
@@ -17119,7 +17583,7 @@
         },
         {
           "securityId": "candidate-ftai",
-          "lastAttemptAt": "2026-10-19T14:23:37.434490+00:00",
+          "lastAttemptAt": "2026-10-19T17:30:27.792784+00:00",
           "lastSuccessfulAt": null,
           "status": "failed",
           "error": "HTTP Error 403: Forbidden",
@@ -17127,15 +17591,15 @@
         },
         {
           "securityId": "us-lmnd-nyse-common",
-          "lastAttemptAt": "2026-10-19T14:23:37.434490+00:00",
-          "lastSuccessfulAt": "2026-10-19T14:23:37.434490+00:00",
+          "lastAttemptAt": "2026-10-19T17:30:27.792784+00:00",
+          "lastSuccessfulAt": "2026-10-19T17:30:27.792784+00:00",
           "status": "ok",
           "error": null,
           "url": "https://www.lemonade.com/investor/news"
         },
         {
           "securityId": "candidate-sandisk",
-          "lastAttemptAt": "2026-10-19T14:23:37.434490+00:00",
+          "lastAttemptAt": "2026-10-19T17:30:27.792784+00:00",
           "lastSuccessfulAt": null,
           "status": "failed",
           "error": "HTTP Error 403: Forbidden",
@@ -17143,7 +17607,7 @@
         },
         {
           "securityId": "candidate-iren",
-          "lastAttemptAt": "2026-10-19T14:23:37.434490+00:00",
+          "lastAttemptAt": "2026-10-19T17:30:27.792784+00:00",
           "lastSuccessfulAt": null,
           "status": "failed",
           "error": "HTTP Error 403: Forbidden",
@@ -17151,23 +17615,23 @@
         },
         {
           "securityId": "candidate-next-vision",
-          "lastAttemptAt": "2026-10-19T14:23:37.434490+00:00",
-          "lastSuccessfulAt": "2026-10-19T14:23:37.434490+00:00",
+          "lastAttemptAt": "2026-10-19T17:30:27.792784+00:00",
+          "lastSuccessfulAt": "2026-10-19T17:30:27.792784+00:00",
           "status": "ok",
           "error": null,
           "url": "https://investor-relations.nextvision-sys.com/"
         },
         {
           "securityId": "candidate-enlight",
-          "lastAttemptAt": "2026-10-19T14:23:37.434490+00:00",
-          "lastSuccessfulAt": "2026-10-19T14:23:37.434490+00:00",
+          "lastAttemptAt": "2026-10-19T17:30:27.792784+00:00",
+          "lastSuccessfulAt": "2026-10-19T17:30:27.792784+00:00",
           "status": "ok",
           "error": null,
           "url": "https://enlightenergy.com/data/events-presentations/"
         },
         {
           "securityId": "candidate-brainsway",
-          "lastAttemptAt": "2026-10-19T14:23:37.434490+00:00",
+          "lastAttemptAt": "2026-10-19T17:30:27.792784+00:00",
           "lastSuccessfulAt": null,
           "status": "failed",
           "error": "HTTP Error 403: Forbidden",
@@ -17175,7 +17639,7 @@
         },
         {
           "securityId": "candidate-gilat-telecom",
-          "lastAttemptAt": "2026-10-19T14:23:37.434490+00:00",
+          "lastAttemptAt": "2026-10-19T17:30:27.792784+00:00",
           "lastSuccessfulAt": null,
           "status": "no-source",
           "error": null,
@@ -17196,7 +17660,7 @@
           "id": "results:2287adbca6ffcf8c52d2f60b"
         }
       ],
-      "lastAttemptAt": "2026-10-19T14:23:37.434490+00:00"
+      "lastAttemptAt": "2026-10-19T17:30:27.792784+00:00"
     },
     "summary": {
       "status": "quality-rejected",
