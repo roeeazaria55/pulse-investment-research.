@@ -37,7 +37,7 @@ def visible_date(value):
 GENERIC=re.compile(r'^(?:(?:eng|heb|en|he|pdf|download|view file|view|read more|להורדה|הורדה|עברית|אנגלית|קובץ|›|»|\W)+)$',re.I)
 def useful(value):
     value=clean(value)
-    return bool(len(value)>=8 and value.casefold() not in ('financials','financial information','news','press releases','investor relations','reports','מצגות','דוחות') and not GENERIC.fullmatch(value))
+    return bool(len(value)>=8 and value.casefold() not in ('financials','financial information','news','press releases','investor relations','reports','earning release','earnings release','investor presentation','annual report','מצגות','דוחות') and not GENERIC.fullmatch(value))
 
 def language(label,url):
     text=clean(label)

@@ -49,3 +49,7 @@ class MetadataTests(unittest.TestCase):
             self.assertEqual(n['documentPeriod'],period);self.assertEqual(n['periodBasis'],'filename-hint')
             self.assertNotIn('publishedDate',n)
         self.assertIsNone(describe(C,'https://example.org/uploads/2026/05/HEB_clean_isa.pdf','HEB')['documentPeriod'])
+    def test_section_only_heading_cannot_hide_report_filename(self):
+        n=describe(C,'https://example.org/ENG_Q3_2025_isa.pdf','Q3',{'heading':'Earning Release'})
+        self.assertIn('ENG Q3 2025',n['title']);self.assertEqual(n['titleBasis'],'filename')
+        self.assertEqual(n['documentPeriod'],'Q3 2025');self.assertEqual(n['periodBasis'],'filename-hint')

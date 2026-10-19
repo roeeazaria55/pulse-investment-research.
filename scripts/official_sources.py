@@ -66,7 +66,7 @@ def collect(config,previous,now,getter=get_official_page):
                 navigation_urls-=content_urls
                 # Remove previously misclassified menu documents only after a
                 # successful read proves that the same URL is navigation-only.
-                items={ident:item for ident,item in items.items() if not (item['companyId']==company['id'] and item['url'] in navigation_urls)}
+                items={ident:item for ident,item in items.items() if not (item['companyId']==company['id'] and item.get('sourceId')==source['id'] and item['url'] in navigation_urls)}
                 for href,title in page.links:
                     url=canonical(urllib.parse.urljoin(source['url'],href))
                     context=getattr(page,'link_contexts',{}).get(href,{})

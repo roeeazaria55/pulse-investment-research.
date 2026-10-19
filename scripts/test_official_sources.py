@@ -105,3 +105,12 @@ class NavigationTests(unittest.TestCase):
         for wrapper in ('<div role="navigation">','<div class="elementor-nav-menu">'):
             p=OfficialPage();p.feed(wrapper+'<a href="/a.pdf">Menu PDF</a></div>')
             self.assertTrue(p.link_contexts['/a.pdf']['navigationOnly'])
+    def test_navigation_cleanup_is_scoped_to_the_source_that_collected_it(self):
+        from official_metadata import OfficialPage
+        c={'id':'issuer','ticker':'','name':'Issuer','allowedHosts':['example.org'],'documentPaths':['/uploads/'],'sources':[{'id':'body','url':'https://example.org/body','label':'Reports'},{'id':'menu','url':'https://example.org/menu','label':'Other'}]}
+        def getter(url,*_):
+            p=OfficialPage();tag='main' if url.endswith('/body') else 'nav'
+            p.feed(f'<{tag}><a href="/uploads/report.pdf">Annual report 2025</a></{tag}>');return p
+        result=collect({'companies':[c]}, {},NOW,getter)
+        self.assertEqual(len(result['items']),1);self.assertEqual(result['items'][0]['sourceId'],'body')
+        self.assertEqual(result['sources'][1]['status'],'failed')

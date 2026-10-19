@@ -81,3 +81,14 @@ not repository files and are never modified by these collector changes.
   passed. Regression examples include actual NextVision filename forms.
 - Rollback: revert `Clarify generic report titles and Hebrew period hints`.
   No personal notes, research or stored document contents are changed.
+
+## Night 3 — section-only headings and source-scoped cleanup
+
+- Follow-up inspection found NextVision links labeled Q1/Q2 under a heading
+  containing only `Earning Release`. Treat such category-only headings as generic
+  too, preserving a meaningful file fallback and its period provenance.
+- Limit navigation cleanup to records collected by that same source, so a second
+  index cannot remove a document legitimately linked in the first index's body.
+- Validation: 57 Python tests passed, including both observed heading forms and
+  a two-source shared-document fixture. JavaScript/UI code is unchanged.
+- Rollback: revert `Handle generic section headings and scope navigation cleanup`.
