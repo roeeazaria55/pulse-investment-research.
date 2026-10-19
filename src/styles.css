@@ -1653,14 +1653,11 @@ summary { cursor: pointer; min-height: 44px; padding-block: .55rem; line-height:
 @media(max-width:600px){.official-statuses,.official-grid{grid-template-columns:1fr}.official-panel{padding:1rem}.official-heading>button,.official-pack>button{width:100%}}
 .research-exchange details{margin:1rem 0}.research-exchange summary{cursor:pointer;padding:.6rem 0;font-weight:600}.exchange-row{display:flex;gap:1rem;flex-wrap:wrap;align-items:end}.exchange-row>div,.exchange-row>.field{flex:1;min-width:0}.exchange-row>div{min-width:180px;overflow-wrap:anywhere}.research-exchange .field{margin:.8rem 0}.research-exchange input[type=file]{max-width:100%;white-space:normal}.research-import-info{background:#142238;border-radius:12px;padding:1rem}.research-import-info a{display:block;overflow-wrap:anywhere}.analysis-field-preview{border-bottom:1px solid #29384f;padding:.7rem 0}.analysis-field-preview p{white-space:pre-wrap;max-height:14rem;overflow:auto}.analysis-field-preview label{display:flex;gap:.5rem;align-items:center}.research-exchange textarea{width:100%;min-width:0}.research-exchange .analysis-preview{padding:1rem;background:#132331;border-radius:12px}@media(max-width:600px){.exchange-row>div,.exchange-row>.field{flex-basis:100%;min-width:0}.research-exchange input[type=file]{font-size:.85rem}}
 
-/* Published baseline prose must reflow inside nested mobile cards at 200% text. */
+/* Long report prose and source-status labels must reflow at enlarged text. */
 .research-import-info { min-width: 0; overflow-wrap: anywhere; }
 .research-import-info details, .research-import-info p, .research-import-info h4 { min-width: 0; max-width: 100%; }
 .research-toolbar select { min-width: 0; max-width: 100%; }
-@media (max-width: 760px) {
-  .bottom-nav { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); width: 100%; max-width: 100%; }
-  .bottom-nav button, .bottom-nav button span { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
-}
-@media (max-width: 760px) {
-  .bottom-nav { left: auto; right: 0; width: 100dvw; max-width: 100dvw; min-width: 0; }
+.official-statuses > div { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 600px) {
+  .official-statuses, .official-grid { grid-template-columns: minmax(0, 1fr); }
 }

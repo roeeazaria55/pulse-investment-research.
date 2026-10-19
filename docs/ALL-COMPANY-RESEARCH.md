@@ -64,11 +64,14 @@ notification, API service or paid-data behavior changes in this work.
 
 ## Mobile follow-up
 
-The first CI pass found DLO horizontal overflow at 320px with 200% font size.
-Published baseline prose now permits wrapping inside nested cards; select width
-is bounded without clipping content. The mobile test retains the assertion and
-reports overflowing elements/saves a screenshot if a later regression occurs.
-The overflow diagnostic identified the fixed bottom navigation, not the research
-prose, on the repeated 200% company-switch check. Its five columns now have
-explicit zero-minimum grid tracks and a viewport-bounded width; text can wrap.
-The full repeated-company assertions remain enabled.
+Expanded company-switch checks exposed a pre-existing source-status card overflow
+at 320px/200% text. The single-column grid used an automatic content minimum,
+allowing a long source label/error to expand the page. Its mobile track is now
+minmax(0, 1fr), cards have min-width:0 and text wraps without clipping. Detailed
+scroll-width diagnostics remain in the test. Speculative navigation overrides
+were removed after isolating the actual grid cause locally.
+
+Final local validation: 61 Python tests, 70 JavaScript tests and production build
+passed. After the grid fix, actual local headless Chromium 140/Playwright 1.55
+passed all eleven full-baseline opens at 320/390/430px and 200% text plus the
+PDF/import/save/reload/restore flow. No horizontal overflow or page errors.
