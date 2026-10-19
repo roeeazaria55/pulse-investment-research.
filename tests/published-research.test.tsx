@@ -35,15 +35,17 @@ it('never treats lastSeen/collection as publication and deduplicates matching UR
  const p=publishedFor('candidate-nebius')!.analysis;
  const ref={companyId:p.companyId,collectedAt:'2099-01-01T00:00:00Z',lastSeenAt:'2099-01-01T00:00:00Z'};
  const items=[
-  {...ref,id:'read',url:p.sourceUrls[0].split('?')[0]+'?other=1',publishedDate:null},
+  {...ref,id:'read',url:p.sourceUrls[0].split('?')[0]+'?cache-buster=1',publishedDate:null},
   {...ref,id:'old',url:'https://nebius.com/newsroom/old',publishedDate:'2026-01-01'},
   {...ref,id:'unknown',url:'https://nebius.com/newsroom/unknown',publishedDate:null},
-  {...ref,id:'duplicate',url:'https://nebius.com/newsroom/unknown?tracking=1',publishedDate:null},
+  {...ref,id:'duplicate',url:'https://nebius.com/newsroom/unknown?utm_source=test',publishedDate:null},
   {...ref,id:'new',url:'https://nebius.com/newsroom/new',publishedDate:'2026-10-20'},
   {...ref,id:'other',companyId:'candidate-iren',url:'https://iren.com/new',publishedDate:'2026-10-20'},
  ] as OfficialItem[];
  expect(pendingResearchSources(p,items).map(x=>x.id)).toEqual(['old','unknown','new']);
  expect(researchAge(p.asOf,new Date('2027-01-20T00:00:00Z'))).toBeGreaterThan(90);
+ const distinct=[{...items[2],id:'a',url:'https://nebius.com/newsroom/document?id=1'},{...items[2],id:'b',url:'https://nebius.com/newsroom/document?id=2'}];
+ expect(pendingResearchSources(p,distinct)).toHaveLength(2);
 });
 it('each company renders its own baseline and no render/preview changes personal research',()=>{
  vi.stubGlobal('fetch',vi.fn().mockResolvedValue({ok:false}));

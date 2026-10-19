@@ -14,7 +14,12 @@ export function researchAge(asOf:string,now=new Date()):number|null{
  const time=Date.parse(asOf+'T00:00:00Z');
  return Number.isFinite(time)&&Number.isFinite(now.getTime())?Math.max(0,Math.floor((now.getTime()-time)/86400000)):null;
 }
-function sourceKey(raw:string){const u=new URL(raw);let path=u.pathname;try{path=decodeURI(path);}catch{/* Keep malformed escapes literal. */}return u.origin+path.replace(/\/$/,'');}
+function sourceKey(raw:string){
+ const u=new URL(raw);let path=u.pathname;try{path=decodeURI(path);}catch{/* Keep malformed escapes literal. */}
+ for(const key of [...u.searchParams.keys()])if(key==='cache-buster'||key==='fbclid'||key==='gclid'||key.startsWith('utm_'))u.searchParams.delete(key);
+ u.searchParams.sort();const query=u.searchParams.toString();
+ return u.origin+path.replace(/\/$/,'')+(query?'?'+query:'');
+}
 export function pendingResearchSources(pack:AnalysisImport,items:OfficialItem[]){
  const read=new Set(pack.sourceUrls.map(sourceKey));
  const seen=new Set<string>();
