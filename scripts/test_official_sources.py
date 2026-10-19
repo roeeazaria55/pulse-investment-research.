@@ -79,3 +79,29 @@ class IssuerDistributionTests(unittest.TestCase):
             p=OfficialPage();p.feed('<a href="/news-release/wrong">IREN mentioned in a third-party release</a>');return p
         result=collect(config,{},NOW,getter)
         self.assertEqual(result['items'],[]);self.assertEqual(result['sources'][0]['status'],'failed')
+
+class NavigationTests(unittest.TestCase):
+    def test_navigation_cannot_starve_reports_or_survive_successful_refresh(self):
+        from official_metadata import OfficialPage
+        c={'id':'gilat','ticker':'','name':'Gilat Telecom','allowedHosts':['example.org'],'documentPaths':['/uploads/'],'sources':[{'id':'financials','url':'https://example.org/financials','label':'Reports'}]}
+        config={'companies':[c]}
+        nav=''.join(f'<a href="/uploads/policy{i}.pdf">Policy {i}</a>' for i in range(12))
+        def page(html):
+            p=OfficialPage();p.feed(html);return p
+        polluted=collect(config,{},NOW,lambda *_:page(nav))
+        self.assertEqual(len(polluted['items']),8)
+        html=f'<header><nav>{nav}</nav></header><main><article><h3>Q2 2026 financial report</h3><a href="/uploads/q2.pdf">Download</a></article></main><footer>{nav}</footer>'
+        fixed=collect(config,polluted,NOW,lambda *_:page(html))
+        self.assertEqual([x['url'] for x in fixed['items']],['https://example.org/uploads/q2.pdf'])
+        self.assertEqual(fixed['sources'][0]['count'],1)
+        self.assertIsNone(fixed['items'][0]['publishedDate'])
+        def blocked(*_):raise ValueError('HTTP 403')
+        self.assertEqual(collect(config,polluted,NOW,blocked)['items'],polluted['items'])
+    def test_body_copy_overrides_menu_and_does_not_remove_other_company(self):
+        from official_metadata import OfficialPage
+        for html in ('<nav><a href="/a.pdf">Menu</a></nav><main><a href="/a.pdf">Report</a></main>', '<main><a href="/a.pdf">Report</a></main><footer><a href="/a.pdf">Menu</a></footer>'):
+            p=OfficialPage();p.feed(html)
+            self.assertFalse(p.link_contexts['/a.pdf']['navigationOnly'])
+        for wrapper in ('<div role="navigation">','<div class="elementor-nav-menu">'):
+            p=OfficialPage();p.feed(wrapper+'<a href="/a.pdf">Menu PDF</a></div>')
+            self.assertTrue(p.link_contexts['/a.pdf']['navigationOnly'])

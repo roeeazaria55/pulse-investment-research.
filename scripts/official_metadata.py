@@ -90,6 +90,12 @@ class OfficialPage(Page):
         super().__init__();self.stack=[];self.link_contexts={};self.publication_value=None;self.publication_basis=None;self.jsonld=None
     def handle_starttag(self,tag,attrs):
         attrs=dict(attrs);super().handle_starttag(tag,list(attrs.items()))
+        if tag=='a' and attrs.get('href'):
+            # Track each occurrence: a document also linked in the body remains
+            # eligible even if a repeated menu/footer link was seen first.
+            navigation=any(n['tag'] in ('nav','header','footer') or n['attrs'].get('role') in ('navigation','contentinfo','banner') or re.search(r'(?:^|[\s_-])(?:menu|navbar)(?:$|[\s_-])',n['attrs'].get('class',''),re.I) for n in self.stack)
+            context=self.link_contexts.setdefault(attrs['href'],{})
+            context['navigationOnly']=context.get('navigationOnly',True) and navigation
         prop=attrs.get('property') or attrs.get('name') or attrs.get('itemprop')
         if prop in ('article:published_time','datePublished') and iso_date(attrs.get('content')):
             self.publication_value=attrs['content'];self.publication_basis='page-published-metadata'

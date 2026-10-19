@@ -52,3 +52,18 @@ not repository files and are never modified by these collector changes.
   source collection and full browser checks run in GitHub Actions.
 - Rollback: revert `Accept single JSON answer blocks and verify research recovery`.
   Coverage commit: `63777de8375259bd8e952e9f09db5d505b34ad3f`.
+
+## Night 1 — prevent menu documents from replacing financial reports
+
+- Confirmed on 19 October 2026: all eight retained Gilat items were policy,
+  accessibility and pay-equality menu links, not the financial/immediate reports
+  present in the issuer pages. They exhausted the eight-link source limit.
+- Exclude navigation/header/footer and menu-role links before applying that limit.
+  A URL also linked in body content remains eligible. Remove an earlier menu-only
+  record only after a successful source read proves that classification; failed
+  sources still retain records. No publication date is inferred from a filename.
+- Validation: 53 Python tests passed, including polluted-snapshot refresh,
+  repeated body/menu links and blocked-source retention. Live collection and
+  browser checks run on the PR; their results are recorded in its description.
+- Rollback: revert `Exclude navigation documents before official source limits`.
+  No personal browser data or main-branch snapshots are changed by this commit.

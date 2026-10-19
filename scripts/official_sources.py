@@ -61,11 +61,17 @@ def collect(config,previous,now,getter=get_official_page):
                 # get_page uses the shared HTML parser. Only allowlisted document
                 # links are followed; scripts and response text are never executed.
                 links={}
+                navigation_urls={canonical(urllib.parse.urljoin(source['url'],href)) for href,context in getattr(page,'link_contexts',{}).items() if context.get('navigationOnly')}
+                content_urls={canonical(urllib.parse.urljoin(source['url'],href)) for href,context in getattr(page,'link_contexts',{}).items() if not context.get('navigationOnly')}
+                navigation_urls-=content_urls
+                # Remove previously misclassified menu documents only after a
+                # successful read proves that the same URL is navigation-only.
+                items={ident:item for ident,item in items.items() if not (item['companyId']==company['id'] and item['url'] in navigation_urls)}
                 for href,title in page.links:
                     url=canonical(urllib.parse.urljoin(source['url'],href))
                     context=getattr(page,'link_contexts',{}).get(href,{})
                     verified_publisher=source.get('kind')!='issuer-distributed' or context.get('publisherKey')==organization_key(source['url'])
-                    if verified_publisher and document_url(url,company) and 1<=len(clean(title))<=600:
+                    if url not in navigation_urls and verified_publisher and document_url(url,company) and 1<=len(clean(title))<=600:
                         if url not in links or len(title)>len(links[url]):links[url]=title
                 if not links:raise ValueError('No supported document links; page may require JavaScript or review')
                 for rank,(url,title) in enumerate(list(links.items())[:8]):
