@@ -69,18 +69,17 @@ with sync_playwright() as pw:
             page.evaluate("document.documentElement.style.fontSize='16px'")
         company_select.select_option('initial-0')
         exchange.get_by_role('heading',name='מחקר בסיס ל־NBIS',exact=True).wait_for()
-        exchange.get_by_text('NBIS · מחשבון תרחישים מספרי לסוף 2027',exact=True).click()
-        exchange.get_by_text('עריכת ההנחות · דוב',exact=True).click()
-        exchange.get_by_label('מחיר גיוס הון עתידי למניה ($)').first.fill('0')
+        exchange.get_by_text('NBIS · המודל שלנו ל־12 חודשים',exact=True).click()
+        exchange.get_by_label('הסתברות דוב (%)').fill('30')
         exchange.get_by_role('alert').wait_for()
-        exchange.get_by_role('button',name='איפוס הנחות',exact=True).first.click()
+        exchange.get_by_role('button',name='שחזור המודל המקורי',exact=True).first.click()
         assert exchange.get_by_role('alert').count()==0
         page.evaluate("document.activeElement?.blur(); document.documentElement.style.fontSize='32px'")
         page.evaluate("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))")
         assert page.evaluate('document.documentElement.scrollWidth')<=width+1,f'NBIS valuation 200% overflow at {width}'
         page.screenshot(path=f'work/mobile-{width}-valuation.png',full_page=False)
         page.evaluate("document.documentElement.style.fontSize='16px'")
-        exchange.get_by_text('NBIS · מחשבון תרחישים מספרי לסוף 2027',exact=True).click()
+        exchange.get_by_text('NBIS · המודל שלנו ל־12 חודשים',exact=True).click()
         exchange.locator('summary').filter(has_text='1. קריאת PDF').click()
         # Small in-memory PDF fixture tests the actual bundled PDF.js worker.
         content=b'BT /F1 12 Tf 40 150 Td (PULSE SOURCE TEST 2026) Tj ET'

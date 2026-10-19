@@ -144,3 +144,14 @@ not repository files and are never modified by these collector changes.
   temporary edits, excluded private-asset value and legal-conversion limitations.
 - Lazy-render the model only when opened. See NBIS-VALUATION.md for reproducible
   assumptions, preset outputs, validation requirements and rollback.
+
+## 2026-10-19 — Restore user's original NBIS 12-month model
+- Replace the active end-2027 model with recovered October 15 conversation
+  targets 115/235/360, probabilities 20/50/30 and weighted target 248.50.
+- Preserve original horizon through October 15, 2027, original-analysis reference
+  186.01 and 30% upside threshold. No discounting or live-quote claim.
+- Explicitly disclose that detailed underlying valuation assumptions have not
+  been fully recovered or independently revalidated. Label temporary edits;
+  reject probability totals other than 100%. Personal research remains separate.
+- Update baseline valuation/scenarios and mobile checks; preserve prior work in
+  version history. See NBIS-12-MONTH-MODEL.md for provenance and rollback.

@@ -13,9 +13,14 @@ it('bridges enterprise to diluted equity and discounts by the horizon',()=>{
 it('rejects zero shares, nonfinite and negative inputs',()=>{
  for(const invalid of [{shares:0},{debt:NaN},{revenue:Infinity},{cash:-1}])expect(valueScenario({...x,...invalid})).toBeNull();
 });
-it('clearing a field suppresses its price until repaired and reset restores it',()=>{
- render(<NbisValuation/>);fireEvent.click(screen.getByText('NBIS · מחשבון תרחישים מספרי לסוף 2027'));fireEvent.click(screen.getByText('עריכת ההנחות · דוב'));const inputs=screen.getAllByLabelText('מחיר גיוס הון עתידי למניה ($)');
- fireEvent.change(inputs[0],{target:{value:''}});expect(screen.getAllByRole('alert')).toHaveLength(1);
- fireEvent.click(screen.getAllByText('איפוס הנחות')[0]);expect(screen.queryByRole('alert')).toBeNull();
- expect(screen.getByText(/עריכה זמנית/)).toBeTruthy();
+it('restores the original model and never silently normalizes altered probabilities',()=>{
+ render(<NbisValuation/>);fireEvent.click(screen.getByText('NBIS · המודל שלנו ל־12 חודשים'));
+ expect(screen.getAllByText('$248.50')).toHaveLength(2);
+ fireEvent.change(screen.getByLabelText('הסתברות דוב (%)'),{target:{value:'30'}});
+ expect(screen.getByRole('alert')).toBeTruthy();
+ fireEvent.click(screen.getByText('שחזור המודל המקורי'));
+ expect(screen.queryByRole('alert')).toBeNull();
+ expect(screen.getAllByText('$248.50')).toHaveLength(2);
+ expect(screen.getAllByText(/שינויי המחשבון זמניים/).length).toBeGreaterThan(0);
+ expect(screen.queryByText(/92.04/)).toBeNull();
 });

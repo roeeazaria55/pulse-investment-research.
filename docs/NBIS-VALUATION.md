@@ -1,5 +1,8 @@
 # NBIS sourced, conditional valuation — 2026-10-19
 
+Historical alternate model, removed from active UI at the user’s request.
+The active model is documented in [NBIS-12-MONTH-MODEL.md](NBIS-12-MONTH-MODEL.md).
+
 The worksheet replaces illustrative fixed cash/debt/share seeds with an explicit
 June 30, 2026 → December 31, 2027 funding bridge and eight convertible series.
 All financial amounts are USD millions and share counts millions. It is a
