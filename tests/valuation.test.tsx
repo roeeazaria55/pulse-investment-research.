@@ -24,3 +24,12 @@ it('restores the original model and never silently normalizes altered probabilit
  expect(screen.getAllByText(/שינויי המחשבון זמניים/).length).toBeGreaterThan(0);
  expect(screen.queryByText(/92.04/)).toBeNull();
 });
+it('keeps the reverse audit blank until forecasts are explicitly entered',()=>{
+ render(<NbisValuation/>);fireEvent.click(screen.getByText('NBIS · המודל שלנו ל־12 חודשים'));
+ expect(screen.queryByText('מכפיל EBITDA נדרש:')).toBeNull();
+ const fields=[['מזומן חופשי במועד היעד','3000'],['חוב בכיר נוסף במועד היעד','5000'],['מניות נוספות עד היעד','20'],['שווי החזקות נוסף','1000'],['חלק מתוספת הפירעון המלאה (%)','50'],['הכנסה שנתית לצורך בדיקת המכפיל','11000'],['שיעור EBITDA מתואם (%)','40']];
+ for(const [label,value] of fields)fireEvent.change(screen.getByLabelText(label),{target:{value}});
+ expect(screen.getAllByText('מכפיל EBITDA נדרש:')).toHaveLength(3);
+ fireEvent.click(screen.getByText('ניקוי בדיקת ההיתכנות'));
+ expect(screen.queryByText('מכפיל EBITDA נדרש:')).toBeNull();
+});

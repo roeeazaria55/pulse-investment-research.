@@ -155,3 +155,11 @@ not repository files and are never modified by these collector changes.
   reject probability totals other than 100%. Personal research remains separate.
 - Update baseline valuation/scenarios and mobile checks; preserve prior work in
   version history. See NBIS-12-MONTH-MODEL.md for provenance and rollback.
+
+## 2026-10-19 — NBIS target feasibility audit
+
+Preserved original 12-month targets; clarified that the original conversation
+contained working judgments rather than a full financial valuation. Added a
+separate reverse enterprise-value/EBITDA worksheet with mandatory explicit
+forecast inputs, economic convertible dilution and primary-source limitations.
+See NBIS-12-MONTH-MODEL.md for provenance, outstanding work and rollback.

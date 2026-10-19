@@ -3,7 +3,7 @@ import json
 import time
 import urllib.request
 from pathlib import Path
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, expect
 
 URL='http://127.0.0.1:4173/pulse-investment-research./'
 for attempt in range(30):
@@ -70,6 +70,10 @@ with sync_playwright() as pw:
         company_select.select_option('initial-0')
         exchange.get_by_role('heading',name='מחקר בסיס ל־NBIS',exact=True).wait_for()
         exchange.get_by_text('NBIS · המודל שלנו ל־12 חודשים',exact=True).click()
+        exchange.get_by_text('בדיקת היתכנות היעדים המקוריים',exact=True).click()
+        for label,value in [('מזומן חופשי במועד היעד','3000'),('חוב בכיר נוסף במועד היעד','5000'),('מניות נוספות עד היעד','20'),('שווי החזקות נוסף','1000'),('חלק מתוספת הפירעון המלאה (%)','50'),('הכנסה שנתית לצורך בדיקת המכפיל','11000'),('שיעור EBITDA מתואם (%)','40')]:
+            exchange.get_by_label(label,exact=True).fill(value)
+        expect(exchange.get_by_text('מכפיל EBITDA נדרש:',exact=False)).to_have_count(3)
         exchange.get_by_label('הסתברות דוב (%)').fill('30')
         exchange.get_by_role('alert').wait_for()
         exchange.get_by_role('button',name='שחזור המודל המקורי',exact=True).first.click()
