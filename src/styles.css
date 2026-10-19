@@ -1661,3 +1661,6 @@ summary { cursor: pointer; min-height: 44px; padding-block: .55rem; line-height:
   .bottom-nav { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); width: 100%; max-width: 100%; }
   .bottom-nav button, .bottom-nav button span { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
 }
+@media (max-width: 760px) {
+  .bottom-nav { left: auto; right: 0; width: 100dvw; max-width: 100dvw; min-width: 0; }
+}
