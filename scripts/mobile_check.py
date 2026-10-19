@@ -57,7 +57,10 @@ with sync_playwright() as pw:
             exchange.get_by_text('קריאת המחקר המלא',exact=True).click()
             assert page.evaluate('document.documentElement.scrollWidth')<=width+1,f'Baseline {label} overflow at {width}'
             page.evaluate("document.documentElement.style.fontSize='32px'")
-            assert page.evaluate('document.documentElement.scrollWidth')<=width+1,f'Baseline {label} 200% overflow at {width}'
+            if page.evaluate('document.documentElement.scrollWidth')>width+1:
+                page.screenshot(path=f'work/mobile-{width}-baseline-overflow.png',full_page=False)
+                overflow=page.evaluate("""() => [...document.querySelectorAll('body *')].filter(e=>{const r=e.getBoundingClientRect();return r.width>0&&(r.left < -1||r.right>innerWidth+1)}).map(e=>({tag:e.tagName,cls:e.className,text:e.textContent.slice(0,100),rect:[e.getBoundingClientRect().left,e.getBoundingClientRect().right]})).slice(-20)""")
+                raise AssertionError(f'Baseline {label} 200% overflow at {width}: {overflow}')
             page.evaluate("document.documentElement.style.fontSize='16px'")
         company_select.select_option('initial-0')
         exchange.get_by_role('heading',name='מחקר בסיס ל־NBIS',exact=True).wait_for()

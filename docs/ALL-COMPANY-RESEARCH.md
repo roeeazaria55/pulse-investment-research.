@@ -61,3 +61,10 @@ Revert the per-company dataset commits and/or the integration commit. Removing a
 published baseline does not undo a user's earlier explicit local adoption; local
 research version history remains the recovery route. No collector, scheduling,
 notification, API service or paid-data behavior changes in this work.
+
+## Mobile follow-up
+
+The first CI pass found DLO horizontal overflow at 320px with 200% font size.
+Published baseline prose now permits wrapping inside nested cards; select width
+is bounded without clipping content. The mobile test retains the assertion and
+reports overflowing elements/saves a screenshot if a later regression occurs.
