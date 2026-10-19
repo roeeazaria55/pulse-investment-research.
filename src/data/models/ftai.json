@@ -1,0 +1,94 @@
+{
+  "version": 1,
+  "companyId": "candidate-ftai",
+  "ticker": "FTAI",
+  "analysisDate": "2026-10-19",
+  "horizonDate": "2027-10-19",
+  "earningsPeriod": "תחזית לשנה הקלנדרית 2027; אינה הכנסה שכבר הוכרה. מועד מחיר היעד הוא 19.10.2027.",
+  "quoteCurrency": "USD",
+  "reportCurrency": "USD",
+  "method": "earnings",
+  "driverLabel": "EBITDA מתואם שנתי של המגזרים",
+  "methodNote": "מתחילים ב־EBITDA מגזרי; מפחיתים מטה/התאמות, פחת, מימון, מס ודיבידנד בכורה. מכפיל רווח חל על הרווח המייצג לבעלי המניות הרגילות, לא על EBITDA.",
+  "facts": [
+    {
+      "text": "הנחיית הנהלה ל־2027: EBITDA מגזרי 2.3 מיליארד דולר (מוצרים 1.4, חשמל 0.45 והחכרה 0.45). Q2: מניות מדוללות משוקללות 104.044 מיליון. ההנחיה אינה רווח GAAP.",
+      "url": "https://ir.ftaiaviation.com/news-releases/news-release-details/ftai-aviation-ltd-reports-second-quarter-2026-results-increases"
+    }
+  ],
+  "checks": [
+    "מסירות חשמל ומוצרי תעופה מול הנחיית 2027",
+    "מלאי והמרת EBITDA למזומן",
+    "כלכלת SPV, מימון ודיבידנד בכורה"
+  ],
+  "limitations": [
+    "התחזיות, המכפילים וההסתברויות הם הנחות מחקר, לא תחזית הנהלה או קונצנזוס. המכפילים לא כוילו למחיר יעד קודם או לסף האפסייד.",
+    "זו גרסה כמותית ראשונית המבוססת על המקורות המפורטים; לא הושלמה סקירה ממצה של כל דיווח מאז המאזן או השוואת מכפילים לחברות מקבילות. יש לעדכן עם דוח מהותי חדש.",
+    "זו הערכת רווח מייצג ולא תחזית GAAP מפורטת: חלוקת מטה, תגמול, פחת ומימון היא הנחה. אין להוסיף שווי SPV בנפרד לרווח הכולל אותו. תזרים שלילי עקב מלאי מחייב בדיקה נפרדת."
+  ],
+  "reference": {
+    "price": 164.46,
+    "date": "2026-10-16",
+    "url": "https://stockanalysis.com/stocks/ftai/history/",
+    "label": "סגירה היסטורית מ־16.10.2026; לא שער חי"
+  },
+  "scenarios": [
+    {
+      "id": "bear",
+      "label": "דוב",
+      "probability": 20,
+      "inputs": {
+        "driver": 1700,
+        "margin": 100,
+        "corporate": 180,
+        "depreciation": 300,
+        "netFinance": -300,
+        "tax": 22,
+        "minority": 0,
+        "preferred": 30,
+        "shares": 108,
+        "multiple": 18,
+        "fx": 1
+      },
+      "rationale": "EBITDA כ־26% מתחת להנחיית 2027 בשל דחיית חשמל ותחזוקה; עלויות ופחת גבוהים. מכפיל 18 משקף סיכון ביצוע ומימון."
+    },
+    {
+      "id": "base",
+      "label": "בסיס",
+      "probability": 50,
+      "inputs": {
+        "driver": 2100,
+        "margin": 100,
+        "corporate": 160,
+        "depreciation": 280,
+        "netFinance": -270,
+        "tax": 20,
+        "minority": 0,
+        "preferred": 30,
+        "shares": 106,
+        "multiple": 24,
+        "fx": 1
+      },
+      "rationale": "EBITDA כ־9% מתחת להנחיה, בניכוי הוצאות מטה ותגמול שאינם במגזרים. מכפיל 24 דורש התקדמות למסירות ותזרים; בסיס המניות מעל Q2."
+    },
+    {
+      "id": "bull",
+      "label": "שור",
+      "probability": 30,
+      "inputs": {
+        "driver": 2500,
+        "margin": 100,
+        "corporate": 150,
+        "depreciation": 270,
+        "netFinance": -250,
+        "tax": 18,
+        "minority": 0,
+        "preferred": 30,
+        "shares": 105,
+        "multiple": 28,
+        "fx": 1
+      },
+      "rationale": "EBITDA כ־9% מעל ההנחיה, בהנחת מסירות ויעילות. מכפיל 28 דורש הוכחת איכות רווח והפחתת עוצמת ההון; אינו מייחס את כל חוזה החשמל להכנסה מיידית."
+    }
+  ]
+}

@@ -55,6 +55,17 @@ with sync_playwright() as pw:
             company_select.select_option(f'initial-{index}')
             exchange.get_by_role('heading',name=f'מחקר בסיס ל־{label}',exact=True).wait_for()
             exchange.get_by_text('קריאת המחקר המלא',exact=True).click()
+            model=exchange.locator('.company-valuation')
+            model.locator('summary').filter(has_text='תרחישים, חישוב ורגישויות').click()
+            model.get_by_test_id('weighted-model-target').wait_for()
+            for scenario in ['דוב','בסיס','שור']:
+                model.get_by_text(f'הנחות {scenario} וחישוב',exact=True).click()
+            model.get_by_label('משקל דוב במודל (%)',exact=True).fill('30')
+            model.get_by_role('alert').wait_for()
+            model.get_by_role('button',name='שחזור הנחות המודל המחושב',exact=True).click()
+            expect(model.get_by_role('alert')).to_have_count(0)
+            model.get_by_text('רגישות לשינוי בהנחות',exact=True).click()
+            model.get_by_text('עובדות מהמקורות ומגבלות המודל',exact=True).click()
             assert page.evaluate('document.documentElement.scrollWidth')<=width+1,f'Baseline {label} overflow at {width}'
             # Blur the native select/summary before resizing text. Let Chromium
             # finish RTL focus scrolling before measuring the stable layout.
@@ -67,6 +78,9 @@ with sync_playwright() as pw:
                 metrics=page.evaluate("() => ({inner:innerWidth,client:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth,x:scrollX,visual:visualViewport.width,navWidth:getComputedStyle(document.querySelector('.bottom-nav')).width})")
                 raise AssertionError(f'Baseline {label} 200% overflow at {width}: {metrics} {overflow}')
             page.evaluate("document.documentElement.style.fontSize='16px'")
+            if label in ['NBIS','גילת טלקום']:
+                model.locator('h4').first.scroll_into_view_if_needed()
+                page.screenshot(path=f'work/mobile-{width}-model-{index}.png',full_page=False)
         company_select.select_option('initial-0')
         exchange.get_by_role('heading',name='מחקר בסיס ל־NBIS',exact=True).wait_for()
         exchange.get_by_text('NBIS · המודל שלנו ל־12 חודשים',exact=True).click()

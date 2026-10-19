@@ -1672,3 +1672,11 @@ summary { cursor: pointer; min-height: 44px; padding-block: .55rem; line-height:
 .valuation-results dd { margin:0; font-weight:bold; }
 .valuation-table-scroll { overflow-x:auto; max-width:100%; }
 .valuation-table-scroll th,.valuation-table-scroll td { padding:8px; text-align:start; }
+
+.company-valuation { margin-block: 20px; padding: 16px; border: 1px solid #3c6077; border-radius: 14px; background: #102239; overflow-wrap: anywhere; min-width: 0; }
+.company-valuation summary, .model-overview summary { cursor: pointer; padding-block: 10px; font-weight: 700; }
+.company-valuation fieldset { min-width: 0; }
+.company-valuation input { width: 100%; min-width: 0; box-sizing: border-box; }
+.model-overview { margin-block: 16px; overflow-wrap: anywhere; }
+.model-overview-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,220px),1fr)); gap: 12px; }
+.model-date { white-space: nowrap; }
