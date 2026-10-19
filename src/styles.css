@@ -1666,3 +1666,9 @@ summary { cursor: pointer; min-height: 44px; padding-block: .55rem; line-height:
 .valuation-scenario { min-width:0; max-width:100%; padding:12px; border:1px solid #3c5068; border-radius:12px; }
 .valuation-scenario input { width:100%; min-width:0; }
 .nbis-valuation { margin-block:16px; overflow-wrap:anywhere; }
+.valuation-results { margin-block:16px; }
+.valuation-results > div { display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px; padding-block:8px; border-bottom:1px solid #2b4059; }
+.valuation-results dt { flex:1 1 150px; }
+.valuation-results dd { margin:0; font-weight:bold; }
+.valuation-table-scroll { overflow-x:auto; max-width:100%; }
+.valuation-table-scroll th,.valuation-table-scroll td { padding:8px; text-align:start; }

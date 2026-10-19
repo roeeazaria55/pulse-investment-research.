@@ -3,7 +3,7 @@ import {parseAnalysis,type AnalysisImport} from '../research/exchange';
 import {officialRegistry,type OfficialItem} from './official';
 export interface PublishedResearch {period:string;scope:string;analysis:AnalysisImport;}
 const datasets=import.meta.glob('./research/*.json',{eager:true,import:'default'}) as Record<string,PublishedResearch>;
-const rows=[{period:'Q2 2026 + selected updates through 01.10',scope:'דוחות ועדכוני חברה נבחרים',analysis:nbis},...Object.values(datasets)];
+const rows=[{period:'Q2 2026 + selected updates through 01.10',scope:'דוחות, גישור הון ותרחישי שווי מותנים לסוף 2027',analysis:nbis},...Object.values(datasets)];
 export const publishedResearch:PublishedResearch[]=rows.map(row=>{
  if(!officialRegistry.companies.some(c=>c.id===row.analysis.companyId))throw Error('Unknown published research identity');
  return {...row,analysis:parseAnalysis(JSON.stringify(row.analysis),row.analysis.companyId)};

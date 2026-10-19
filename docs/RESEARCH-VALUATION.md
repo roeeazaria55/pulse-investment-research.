@@ -1,5 +1,8 @@
 # Research completion and NBIS scenario worksheet — 2026-10-19
 
+NBIS worksheet description below records the first release; superseded by the
+sourced conditional funding/dilution model in [NBIS-VALUATION.md](NBIS-VALUATION.md).
+
 FTAI: read the 2026-06-30 SEC 10-Q (filed July 31), cash-flow statements
 pages 9–10 and debt note 6. Negative H1 operating cash flow is separated
 from equipment-sale receipts in investing. CFO less PPE is explicitly not

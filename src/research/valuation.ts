@@ -8,8 +8,3 @@ export function valueScenario(x:ValuationInputs) {
  const present=terminal/Math.pow(1+x.discount/100,x.years);
  return {enterprise,equity,terminal,present};
 }
-export const scenarioExamples = [
- {label:'דוב — דוגמה',revenue:3000,multiple:3,cash:2000,debt:15000,shares:350,discount:15,years:1.2},
- {label:'בסיס — דוגמה',revenue:6000,multiple:5,cash:3000,debt:15000,shares:325,discount:12,years:1.2},
- {label:'שור — דוגמה',revenue:9000,multiple:7,cash:4000,debt:15000,shares:300,discount:10,years:1.2},
-];

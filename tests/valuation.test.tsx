@@ -14,8 +14,8 @@ it('rejects zero shares, nonfinite and negative inputs',()=>{
  for(const invalid of [{shares:0},{debt:NaN},{revenue:Infinity},{cash:-1}])expect(valueScenario({...x,...invalid})).toBeNull();
 });
 it('clearing a field suppresses its price until repaired and reset restores it',()=>{
- render(<NbisValuation/>);const inputs=screen.getAllByLabelText('מניות לאחר דילול (מיליונים)');
+ render(<NbisValuation/>);fireEvent.click(screen.getByText('NBIS · מחשבון תרחישים מספרי לסוף 2027'));fireEvent.click(screen.getByText('עריכת ההנחות · דוב'));const inputs=screen.getAllByLabelText('מחיר גיוס הון עתידי למניה ($)');
  fireEvent.change(inputs[0],{target:{value:''}});expect(screen.getAllByRole('alert')).toHaveLength(1);
- fireEvent.click(screen.getAllByText('איפוס דוגמה')[0]);expect(screen.queryByRole('alert')).toBeNull();
+ fireEvent.click(screen.getAllByText('איפוס הנחות')[0]);expect(screen.queryByRole('alert')).toBeNull();
  expect(screen.getByText(/עריכה זמנית/)).toBeTruthy();
 });
