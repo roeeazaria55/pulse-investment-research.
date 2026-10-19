@@ -67,3 +67,17 @@ not repository files and are never modified by these collector changes.
   browser checks run on the PR; their results are recorded in its description.
 - Rollback: revert `Exclude navigation documents before official source limits`.
   No personal browser data or main-branch snapshots are changed by this commit.
+
+## Night 2 — meaningful report labels and Hebrew period hints
+
+- Generic `Earning Release`, `Earnings Release` and `Investor Presentation`
+  labels now include the containing heading or a clearly labeled company/file
+  fallback, rather than hiding the identifiable document behind a generic title.
+- Recognize explicit Hebrew quarter/annual periods and underscore-delimited
+  filenames. Filename-derived periods remain `filename-hint`; path years, file
+  dates and collection time never become publication dates. Opaque filenames
+  remain unknown. Previously retained records update when seen again.
+- Validation: 55 Python tests and 62 JavaScript tests passed; production build
+  passed. Regression examples include actual NextVision filename forms.
+- Rollback: revert `Clarify generic report titles and Hebrew period hints`.
+  No personal notes, research or stored document contents are changed.
