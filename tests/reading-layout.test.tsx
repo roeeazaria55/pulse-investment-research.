@@ -17,7 +17,7 @@ it('opens research with the selected company and overview, then switches tasks w
  fireEvent.click(screen.getByRole('tab',{name:'המחקר שלי'}));
  fireEvent.change(screen.getByRole('textbox',{name:labels.thesis}),{target:{value:'A draft stays with its company'}});
  fireEvent.click(screen.getByRole('tab',{name:'מודל שווי'}));
- expect(screen.getByRole('heading',{name:'NBIS · מודל מחושב ל־12 חודשים'})).toBeTruthy();
+ expect(screen.getByRole('heading',{name:'NBIS · מודל מהניתוח החדש'})).toBeTruthy();
  fireEvent.click(screen.getByRole('tab',{name:'המחקר שלי'}));
  expect((screen.getByRole('textbox',{name:labels.thesis}) as HTMLTextAreaElement).value).toBe('A draft stays with its company');
  fireEvent.click(screen.getByRole('button',{name:'שמירת מחקר'}));

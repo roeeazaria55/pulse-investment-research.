@@ -5,7 +5,7 @@ import {parseAnalysis,type AnalysisImport} from '../research/exchange';
 import {officialRegistry,type OfficialItem} from './official';
 export interface PublishedResearch {period:string;scope:string;analysis:AnalysisImport;}
 const datasets=import.meta.glob('./research/*.json',{eager:true,import:'default'}) as Record<string,PublishedResearch>;
-const rows=[{period:'Q2 2026 + selected updates through 01.10',scope:'דוחות חברה ושחזור המודל שלנו ל־12 חודשים מ־15.10.2026',analysis:nbis},...Object.values(datasets)];
+const rows=[{period:'Q2 2026; forecasts 2026–2030',scope:'הניתוח המלא בקובץ שסופק ב־20.10.2026',analysis:nbis},...Object.values(datasets)];
 export const publishedResearch:PublishedResearch[]=rows.map(row=>{
  if(!officialRegistry.companies.some(c=>c.id===row.analysis.companyId))throw Error('Unknown published research identity');
  const model=companyModelFor(row.analysis.companyId);

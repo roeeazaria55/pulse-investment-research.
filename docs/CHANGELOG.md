@@ -208,3 +208,9 @@ this layout PR; persisted personal research requires no conversion.
 - Opened full reading by default for both companies with six accessible chapters and a return link from valuation.
 - Recovered NBIS base/bull scenario reasoning; kept missing numerical assumptions explicit and separated supplemental research from conversation summaries.
 - Preserved historical corrections and version provenance without publishing personal portfolio allocations.
+
+## 2026-10-20 — Replace reconstructed research with supplied full PDFs
+- Imported all 12 NBIS and 13 Sandisk sections, including forecasts, financing, CAPEX, valuation, DCF limitations and updated NBM stress analysis.
+- Added unchanged source PDFs for download and checksum verification.
+- Used the new document models consistently across overview and valuation comparison; distinguished Sandisk FY2028 valuation from a twelve-month target.
+- Moved previous models into a closed archive and retained personal research without mutation.

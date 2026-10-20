@@ -1,38 +1,58 @@
 // @vitest-environment jsdom
 import {afterEach,it,expect,vi} from 'vitest';
-import {render,screen,fireEvent,cleanup,within} from '@testing-library/react';
+import {render,screen,fireEvent,cleanup} from '@testing-library/react';
 import {ResearchExchange} from '../src/components/ResearchExchange';
 import {FullCompanyResearch,hasFullResearch} from '../src/components/FullCompanyResearch';
+import {SuppliedValuation} from '../src/components/SuppliedResearch';
 import {publishedFor} from '../src/data/publishedResearch';
+import {suppliedResearch,suppliedValue,suppliedScenarioValue} from '../src/data/suppliedResearch';
+import {researchTarget} from '../src/research/researchTarget';
 import {blankResearch} from '../src/data/initial';
-import {researchFields} from '../src/types';
 afterEach(()=>{cleanup();vi.unstubAllGlobals();});
-it('includes every research field in the full reading, with recovered conversation and supplemental provenance',()=>{
- for(const id of ['candidate-nebius','candidate-sandisk']){
-  const pack=publishedFor(id)!.analysis;render(<FullCompanyResearch analysis={pack}/>);
-  for(const key of researchFields)expect(screen.getByText(pack.fields[key])).toBeTruthy();
-  expect(screen.getAllByText(/התמליל המלא/).length).toBeGreaterThan(0);
-  expect(screen.getByText(/מסגרת מעקב משלימה/)).toBeTruthy();
-  expect(screen.getAllByRole('heading',{level:4})).toHaveLength(6);
-  expect(screen.getAllByRole('link')).toHaveLength(pack.sourceUrls.length);
-  cleanup();
+it('includes all source-document sections, paragraphs, tables and source PDF links',()=>{
+ for(const report of suppliedResearch){
+  render(<FullCompanyResearch analysis={publishedFor(report.companyId)!.analysis}/>);
+  expect(screen.getAllByRole('heading',{level:4})).toHaveLength(report.sections.length+1);
+  expect(screen.getAllByRole('table')).toHaveLength(report.ticker==='NBIS'?6:9);
+  for(const section of report.sections){
+   expect(screen.getByRole('heading',{name:`${section.number}. ${section.title}`})).toBeTruthy();
+   for(const block of section.blocks)if(block.type==='paragraph')expect(screen.getByText(block.text)).toBeTruthy();
+  }
+  expect(screen.getByRole('link',{name:`פתיחת PDF המקור · ${report.ticker} ↗`}).getAttribute('href')).toContain(report.filename);
+  expect(screen.queryByText(/התמליל המלא/)).toBeNull();cleanup();
  }
  expect(hasFullResearch('us-meta-nasdaq-a')).toBe(false);
 });
-it('opens NBIS and Sandisk full analysis by default without changing personal research',()=>{
+it('uses unrounded Nebius scenario arithmetic and keeps Sandisk FY2028 distinct from a 12-month target',()=>{
+ const [nbis,sndk]=suppliedResearch;
+ expect(suppliedScenarioValue(nbis,nbis.scenarios[1])).toBeCloseTo(156.6666667);
+ expect(suppliedValue(nbis)).toBeCloseTo(182.3333333);
+ expect(suppliedValue(nbis)).not.toBeCloseTo(60*.2+157*.5+307*.3);
+ expect(suppliedValue(sndk)).toBe(1759.5);
+ expect(researchTarget(sndk.companyId)!.horizon).toBe('');
+ expect(researchTarget(sndk.companyId)!.horizonLabel).toContain('FY2028');
+ render(<SuppliedValuation companyId={sndk.companyId}/>);
+ expect(screen.getByTestId('supplied-weighted-target').textContent).toBe('$1,759.50');
+ expect(screen.getAllByText(/לא יעד קשיח ל־12 חודשים/).length).toBeGreaterThan(0);
+});
+it('opens uploaded analysis by default and keeps old models out of the active valuation',()=>{
  vi.stubGlobal('fetch',vi.fn().mockResolvedValue({ok:false}));
- for(const [id,label] of [['candidate-nebius','NBIS'],['candidate-sandisk','SNDK']]){
-  const change=vi.fn();render(<ResearchExchange company={{id,name:label,label}} current={blankResearch()} onChange={change} onPrepare={()=>{}}/>);
-  const details=screen.getByText('קריאת המחקר המלא').closest('details')!;
-  expect(details.open).toBe(true);
-  expect(within(details).getByRole('heading',{name:'1. ההסבר מהשיחות'})).toBeTruthy();
+ for(const report of suppliedResearch){
+  const change=vi.fn();const company={id:report.companyId,name:report.ticker,label:report.ticker};
+  const current=blankResearch();const {rerender}=render(<ResearchExchange company={company} current={current} onChange={change} onPrepare={()=>{}}/>);
+  expect(screen.getByText('קריאת המחקר המלא').closest('details')!.open).toBe(true);
+  expect(screen.getByRole('heading',{name:'1. העסק ומודל ההכנסות'})).toBeTruthy();
+  rerender(<ResearchExchange company={company} view="valuation" current={current} onChange={change} onPrepare={()=>{}}/>);
+  expect(screen.getByRole('region',{name:`מודל המסמך של ${report.ticker}`})).toBeTruthy();
+  expect(screen.getByText('ארכיון מודלים קודמים · אינו הניתוח הפעיל').closest('details')!.open).toBe(false);
+  expect(screen.getByRole('heading',{name:`${report.ticker} · מודל מחושב ל־12 חודשים`}).closest('details')!.open).toBe(false);
   expect(change).not.toHaveBeenCalled();cleanup();
  }
 });
-it('navigates chapters by focus without changing hash routing or resetting research',()=>{
+it('navigates chapters by focus without changing hash routing',()=>{
  const scroll=vi.fn();HTMLElement.prototype.scrollIntoView=scroll;
  render(<FullCompanyResearch analysis={publishedFor('candidate-nebius')!.analysis}/>);
- fireEvent.click(screen.getByRole('button',{name:'התרחישים והתמחור'}));
- expect(document.activeElement).toBe(screen.getByRole('heading',{name:'4. התרחישים והתמחור'}));
+ fireEvent.click(screen.getByRole('button',{name:'10. הערכת שווי ל־12 חודשים — מכפיל הכנסות'}));
+ expect(document.activeElement).toBe(screen.getByRole('heading',{name:'10. הערכת שווי ל־12 חודשים — מכפיל הכנסות'}));
  expect(location.hash).toBe('');expect(scroll).toHaveBeenCalled();
 });

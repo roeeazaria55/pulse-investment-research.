@@ -9,7 +9,7 @@ it('covers every company with a calculated weighted target and a fixed 12-month 
   expect(r.weighted).toBeCloseTo(r.results[0].target*.2+r.results[1].target*.5+r.results[2].target*.3,8);
   expect(r.results[0].target).toBeLessThanOrEqual(r.results[1].target);expect(r.results[1].target).toBeLessThanOrEqual(r.results[2].target);
   const published=publishedFor(m.companyId)!.analysis.fields.valuation;
-  if(['candidate-nebius','candidate-sandisk'].includes(m.companyId))expect(published).toContain('שחזור');
+  if(['candidate-nebius','candidate-sandisk'].includes(m.companyId))expect(published).toContain(m.companyId==='candidate-nebius'?'$182.3':'$1,759.5');
   else expect(published).toContain('יעד משוקלל:');
   expect(publishedFor(m.companyId)!.analysis.missing.some(s=>s.includes('אין מחיר יעד'))).toBe(false);
  }
@@ -52,5 +52,5 @@ it('rejects missing, nonfinite and inconsistent inputs instead of recycling a pr
 });
 it('keeps NBIS original targets separate and does not fit the new model to them',()=>{
  expect(modelValue(companyModelFor('candidate-nebius')!)!.weighted).not.toBeCloseTo(248.5);
- expect(publishedFor('candidate-nebius')!.analysis.fields.valuation).toContain('248.50');
+ expect(publishedFor('candidate-nebius')!.analysis.fields.valuation).toContain('182.3');
 });
