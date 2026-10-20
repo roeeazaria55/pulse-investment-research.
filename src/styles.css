@@ -1803,3 +1803,15 @@ summary { cursor: pointer; min-height: 44px; padding-block: .55rem; line-height:
 .research-table-scroll {max-width:100%;overflow-x:auto;margin-block:18px;border:1px solid var(--border,#263243);border-radius:10px;overscroll-behavior-x:contain}
 .research-data-table {width:100%;min-width:390px;border-collapse:collapse;font-size:.9rem;line-height:1.7}.research-data-table th,.research-data-table td {text-align:start;padding:10px;border-bottom:1px solid var(--border,#263243);vertical-align:top}.research-data-table thead {background:#172638}.research-data-table tbody th {font-weight:500}.research-data-table td {font-variant-numeric:tabular-nums}
 .supplied-origin {padding-block:12px;overflow-wrap:anywhere}.supplied-valuation {min-width:0;max-width:100%}.supplied-research .research-chapters button {font-size:.83rem}.prior-research-models {margin-block:24px;padding:12px;border:1px solid var(--border,#263243);border-radius:10px}
+
+/* Bounded thesis monitoring: six focused disclosure rows, no automatic health scores. */
+.valuation-context,.thesis-monitor {margin-block:20px;min-width:0;overflow-wrap:anywhere}
+.valuation-context-grid,.thesis-metric-points {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:0 0 14px}
+.valuation-context-grid>div,.thesis-metric-points>div {min-width:0;padding:14px;border:1px solid var(--border,#263243);border-radius:10px}
+.valuation-context dt,.thesis-metric dt {color:var(--muted,#a6b5c9);font-size:.82rem;margin-bottom:6px}
+.valuation-context dd,.thesis-metric dd {margin:0;line-height:1.8}.valuation-context small {display:block;line-height:1.7;margin-top:6px}
+.thesis-monitor-head {display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px}.thesis-monitor-head h4 {margin:0}.thesis-monitor-head small {color:var(--muted,#a6b5c9)}
+.thesis-metrics {display:grid;gap:8px;margin-block:16px}.thesis-metric {min-width:0;border:1px solid var(--border,#263243);border-radius:10px;padding:12px 14px}
+.thesis-metric summary {min-height:44px;line-height:1.7;cursor:pointer}.thesis-metric summary span {font-weight:600}.thesis-metric summary small {display:block;margin-inline-start:18px;color:var(--muted,#a6b5c9);font-weight:400}
+.thesis-metric[open] summary {margin-bottom:14px}.thesis-metric p {line-height:1.8}.thesis-source-actions {display:flex;flex-wrap:wrap;gap:8px}.thesis-monitor>small {display:block;line-height:1.8}.thesis-monitor>a {display:inline-block;margin-top:10px}
+@media(max-width:600px){.valuation-context-grid,.thesis-metric-points{grid-template-columns:minmax(0,1fr);gap:8px}.thesis-metric{padding:10px 12px}}
