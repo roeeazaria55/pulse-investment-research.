@@ -1,0 +1,32 @@
+{
+  "companyId": "candidate-sandisk",
+  "analysisDate": "2026-10-07",
+  "horizonMonths": 12,
+  "inferredHorizonDate": "2027-10-07",
+  "reportedWeightedTarget": 1900,
+  "approximate": true,
+  "referencePrice": 1660.46,
+  "referenceDate": "2026-10-07",
+  "scenarios": [
+    {
+      "id": "bear",
+      "label": "דוב",
+      "target": 1200,
+      "probability": null
+    },
+    {
+      "id": "base",
+      "label": "בסיס",
+      "target": 1900,
+      "probability": null
+    },
+    {
+      "id": "bull",
+      "label": "שור",
+      "target": 2300,
+      "probability": null
+    }
+  ],
+  "provenance": "שחזור מהשיחה מ־7.10.2026: תרחישים ל־12 חודשים, יעד משוקלל שנרשם כ־1,900 דולר. המשקולות וחישוב השווי המלא לא שוחזרו; אין חישוב משוקלל חדש. תאריך הסיום נגזר מ־12 חודשים ממועד השיחה, ולא שוחזר כתאריך מפורש.",
+  "thesis": "צמיחת אחסון ל־AI ולדאטה סנטר, לצד סיכון מחזור NAND והתכווצות מכפילים. היעדים אינם קונצנזוס אנליסטים ולא אומתו מחדש. מחיר הייחוס הוא הערך שנרשם בשיחה, ולא שער חי."
+}

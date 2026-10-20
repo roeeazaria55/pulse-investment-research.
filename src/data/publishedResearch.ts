@@ -10,10 +10,11 @@ export const publishedResearch:PublishedResearch[]=rows.map(row=>{
  if(!officialRegistry.companies.some(c=>c.id===row.analysis.companyId))throw Error('Unknown published research identity');
  const model=companyModelFor(row.analysis.companyId);
  if(!model)return {...row,analysis:parseAnalysis(JSON.stringify(row.analysis),row.analysis.companyId)};
+ if(['candidate-nebius','candidate-sandisk'].includes(row.analysis.companyId))return {...row,analysis:parseAnalysis(JSON.stringify(row.analysis),row.analysis.companyId)};
  const computed=modelValue(model)!;
  const scenarioText=model.scenarios.map((s,i)=>`${s.label}: ${modelMoney(computed.results[i].target,model.quoteCurrency)} (${s.probability}%)`).join('; ');
- const historical=model.companyId==='candidate-nebius'?' להשוואה בלבד: יעדי השיחה מ־15.10.2026 היו 115/235/360 דולר ומשוקלל 248.50 דולר עד 15.10.2027; הם נשמרו במחשבון ההיסטורי ולא כפו את החישוב החדש.':'';
- const analysis={...row.analysis,fields:{...row.analysis.fields,valuation:`מודל תרחישים ראשוני מ־${model.analysisDate}, מחיר יעד עד ${model.horizonDate}: ${scenarioText}. יעד משוקלל: ${modelMoney(computed.weighted,model.quoteCurrency)}. ${model.methodNote} ההנחות והמכפילים מוצגים במחשבון וטרם אומתו מול כל הדיווחים/חברות מקבילות.${historical}`},sourceUrls:[...new Set([...row.analysis.sourceUrls,...model.facts.map(f=>f.url),...(model.reference?[model.reference.url]:[])])],missing:[...row.analysis.missing.filter(m=>!m.includes('אין מחיר יעד')&&!m.includes('המודל מתייחס ל־12 חודשים')), ...model.limitations]};
+
+ const analysis={...row.analysis,fields:{...row.analysis.fields,valuation:`מודל תרחישים ראשוני מ־${model.analysisDate}, מחיר יעד עד ${model.horizonDate}: ${scenarioText}. יעד משוקלל: ${modelMoney(computed.weighted,model.quoteCurrency)}. ${model.methodNote} ההנחות והמכפילים מוצגים במחשבון וטרם אומתו מול כל הדיווחים/חברות מקבילות.`},sourceUrls:[...new Set([...row.analysis.sourceUrls,...model.facts.map(f=>f.url),...(model.reference?[model.reference.url]:[])])],missing:[...row.analysis.missing.filter(m=>!m.includes('אין מחיר יעד')&&!m.includes('המודל מתייחס ל־12 חודשים')), ...model.limitations]};
  for(const [i,key] of (['bear','base','bull'] as const).entries())analysis.fields[key]=`${model.scenarios[i].rationale} יעד: ${modelMoney(computed.results[i].target,model.quoteCurrency)}, משקל ${model.scenarios[i].probability}%, עד ${model.horizonDate}. תוצאת הנחות מחקר, לא תחזית חברה.`;
  return {...row,scope:row.scope+' + מודל תרחישים מחושב ל־19.10.2027',analysis:parseAnalysis(JSON.stringify(analysis),analysis.companyId)};
 });

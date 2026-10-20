@@ -1,3 +1,5 @@
+import {nextEarnings,dateLabel} from './research/earningsCalendar';
+import {MacroPanel,NextEarnings} from './components/MarketContext';
 import {compareNews} from './research/newsPresentation';
 import { useEffect, useRef, useState } from "react";
 import {
@@ -418,6 +420,7 @@ export default function App() {
               <button onClick={exportData}>ייצוא המידע המקורי</button>
             </div>
           )}
+          {tab==='home'&&<MacroPanel intel={feed?.version===2?feed.intelligence:undefined}/>}
           {feed?.version===2&&feed.intelligence&&tab==='home'&&<><DailyPanel intel={feed.intelligence} news={feed.news} date={new URLSearchParams(deepLink.slice(1)).get('briefing')||undefined}/><CalendarPanel intel={feed.intelligence} focus={new URLSearchParams(deepLink.slice(1)).get('results')||undefined}/><NotificationsPanel open={deepLink.includes('notifications=')}/></>}
           {feed?.version === 2 &&
             ["home", "watchlist"].includes(tab) && (
@@ -937,7 +940,7 @@ export default function App() {
                       >
                         {allSecurities.map((s) => (
                           <option key={s.id} value={s.id}>
-                            {nameOf(s)} — {s.name}
+                            {nameOf(s)} — {s.name} · {(()=>{const e=nextEarnings(officialCompany(s.ticker,s.name)?.id||s.id,feed?.version===2?feed.intelligence:undefined);return e?`${e.eventKind==='earnings-call'?'שיחה':'דוח'} ${dateLabel(e.date!)}`:'מועד טרם אומת';})()}
                           </option>
                         ))}
                       </select>
@@ -957,6 +960,7 @@ export default function App() {
                     </button>
                     {researchView==='sources'&&<WebNewsSearch name={security.name}/>}
                   </div>
+                  <NextEarnings companyId={officialCompany(security.ticker,security.name)?.id||security.id} intel={feed?.version===2?feed.intelligence:undefined}/>
                   <div className="research-view-tabs" role="tablist" aria-label="תצוגת מחקר" onKeyDown={e=>{const buttons=[...e.currentTarget.querySelectorAll<HTMLButtonElement>('[role=tab]')];const index=buttons.indexOf(document.activeElement as HTMLButtonElement);const next=e.key==='ArrowLeft'?(index+1)%buttons.length:e.key==='ArrowRight'?(index-1+buttons.length)%buttons.length:e.key==='Home'?0:e.key==='End'?buttons.length-1:-1;if(next>=0){e.preventDefault();buttons[next].click();buttons[next].focus();}}}>{([['overview','סקירה'],['valuation','מודל שווי'],['personal','המחקר שלי'],['sources','מקורות וכלים']] as const).map(([id,label])=><button role="tab" tabIndex={researchView===id?0:-1} aria-selected={researchView===id} aria-controls={`research-pane-${id}`} id={`research-tab-${id}`} key={id} onClick={()=>setResearchView(id)}>{label}</button>)}</div>
                   <div hidden={researchView!=='sources'} id="research-pane-sources" role="tabpanel" aria-labelledby="research-tab-sources">{officialCompany(security.ticker,security.name)?<OfficialSources ticker={security.ticker} name={security.name} onPrepare={setPrompt} compact/>:<p>טרם הוגדרו מקורות רשמיים לחברה זו. אפשר לצרף קישור או דוח בכלים שלהלן.</p>}</div>
                   <ResearchExchange key={researchKey} view={researchView} onNavigate={setResearchView} company={(()=>{const c=officialCompany(security.ticker,security.name);return c?{id:c.id,name:c.name,label:c.label}:{id:security.id,name:security.name,label:security.ticker||security.name};})()} current={draft} onChange={next=>{setDraft(next);setDirty(true);notify("המחקר נטען לטיוטה. בדוק ושמור את המחקר.");}} onPrepare={setPrompt}/>
