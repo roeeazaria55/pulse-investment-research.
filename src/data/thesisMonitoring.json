@@ -218,5 +218,330 @@
         "targetSection": 5
       }
     ]
+  },
+  {
+    "companyId": "us-dlo-nasdaq-a",
+    "ticker": "DLO",
+    "asOf": "2026-10-20",
+    "metrics": [
+      {
+        "id": "tpv",
+        "title": "נפח תשלומים מול רווח",
+        "section": 2,
+        "targetSection": 9,
+        "baseline": "TPV Q2 2026: $17.69B",
+        "expectation": "מודל Q3 2026: $17.3B",
+        "why": "TPV אינו הכנסה או רווח; נפח צריך לייצר ערך למניה.",
+        "nextCheck": "TPV מול רווח גולמי ותפעולי באותו רבעון.",
+        "thesisRisk": "צמיחת נפח בלי צמיחה מספקת ברווח.",
+        "observed": {
+          "value": 17.69,
+          "period": "Q2 2026",
+          "unit": "USD billion",
+          "basis": "TPV"
+        },
+        "target": {
+          "value": 17.3,
+          "period": "Q3 2026",
+          "unit": "USD billion",
+          "basis": "TPV"
+        }
+      },
+      {
+        "id": "gross-profit",
+        "title": "רווח גולמי",
+        "section": 2,
+        "targetSection": 9,
+        "baseline": "Q2 2026: $127.2M",
+        "expectation": "מודל Q3 2026: $132M",
+        "why": "זהו בסיס הערך שנותר אחרי עלויות השירות.",
+        "nextCheck": "רווח גולמי בפועל לעומת תחזית Q3.",
+        "thesisRisk": "האטה ברווח הגולמי למרות עלייה בנפח.",
+        "observed": {
+          "value": 127.2,
+          "period": "Q2 2026",
+          "unit": "USD million",
+          "basis": "gross profit"
+        },
+        "target": {
+          "value": 132,
+          "period": "Q3 2026",
+          "unit": "USD million",
+          "basis": "gross profit"
+        }
+      },
+      {
+        "id": "take-rate",
+        "title": "רווח גולמי לכל דולר TPV",
+        "section": 2,
+        "targetSection": 9,
+        "baseline": "GP/TPV Q2 2026: 0.72%",
+        "expectation": "מודל Q3 2026: 0.763%",
+        "why": "שחיקת הכלכלה לעסקה יכולה לגבור על צמיחת נפח.",
+        "nextCheck": "אותו יחס ובאותן יחידות; הפרדת שינוי תמהיל ותמחור.",
+        "thesisRisk": "שחיקה מעבר להנחת הבסיס.",
+        "observed": {
+          "value": 0.72,
+          "period": "Q2 2026",
+          "unit": "percent",
+          "basis": "GP / TPV"
+        },
+        "target": {
+          "value": 0.763,
+          "period": "Q3 2026",
+          "unit": "percent",
+          "basis": "GP / TPV"
+        }
+      },
+      {
+        "id": "opex",
+        "title": "הוצאות תפעול ומינוף",
+        "section": 9,
+        "targetSection": 9,
+        "baseline": "Q2 2026: כ־$63M",
+        "expectation": "מודל Q3 2026: $52M",
+        "why": "המודל מניח ירידת הוצאות ב־H2; זו הנחה מאתגרת.",
+        "nextCheck": "הוצאות בפועל ושינויים בהגדרה; לא להחליף תוצאה בתחזית.",
+        "thesisRisk": "ההוצאות אינן יורדות כפי שהמודל מניח.",
+        "observed": {
+          "value": 63,
+          "period": "Q2 2026",
+          "unit": "USD million",
+          "basis": "operating expenses"
+        },
+        "target": {
+          "value": 52,
+          "period": "Q3 2026",
+          "unit": "USD million",
+          "basis": "operating expenses"
+        }
+      },
+      {
+        "id": "cash",
+        "title": "תזרים תאגידי מול כספי סוחרים",
+        "section": 6,
+        "targetSection": 6,
+        "baseline": "המסמך אינו מספק FCF מדווח חדש",
+        "expectation": "Adjusted FCF בסיס 2027: $295M; לא תזרים IFRS",
+        "why": "כספי סוחרים אינם מזומן לבעלי מניות.",
+        "nextCheck": "תזרים מדווח, התאמות ומזומן תאגידי בנפרד.",
+        "thesisRisk": "פער גדל בין רווח למזומן לאחר התאמות אמיתיות.",
+        "observed": null,
+        "target": null
+      },
+      {
+        "id": "shares",
+        "title": "מניות, מס וריכוזיות",
+        "section": 1,
+        "targetSection": 7,
+        "baseline": "עשרת הגדולים כ־61% מהכנסות 2025 לפי המחקר הקודם; נדרש אימות",
+        "expectation": "בסיס 2027: 295M מניות; מס מודל 18%",
+        "why": "ריכוז לקוחות ודילול משפיעים על הרווח למניה.",
+        "nextCheck": "מניות מדוללות, מס אפקטיבי ולקוחות גדולים.",
+        "thesisRisk": "לחץ עמלות או שינוי דילול שמבטלים את המינוף.",
+        "observed": null,
+        "target": null
+      }
+    ]
+  },
+  {
+    "companyId": "candidate-brainsway",
+    "ticker": "BWAY",
+    "asOf": "2026-10-20",
+    "metrics": [
+      {
+        "id": "revenue",
+        "title": "הכנסות והתקדמות לתחזית",
+        "section": 1,
+        "targetSection": 9,
+        "baseline": "Q2 2026: $17.1M",
+        "expectation": "מודל Q3: $17.7M; שנת 2026: $69M",
+        "why": "גידול בבסיס מכשירים צריך להפוך להכנסה בפועל.",
+        "nextCheck": "הכנסה באותה תקופה מול תחזית עצמאית ומול הנהלה.",
+        "thesisRisk": "האטה בהכנסות בלי התאמת הוצאות.",
+        "observed": {
+          "value": 17.1,
+          "period": "Q2 2026",
+          "unit": "USD million",
+          "basis": "revenue"
+        },
+        "target": {
+          "value": 17.7,
+          "period": "Q3 2026",
+          "unit": "USD million",
+          "basis": "revenue"
+        }
+      },
+      {
+        "id": "devices",
+        "title": "מכשירים ושימוש בפועל",
+        "section": 5,
+        "targetSection": 13,
+        "baseline": "1,949 מותקנים בסוף Q2; נשלחו 125 ברבעון",
+        "expectation": "לא נקבע יעד מספרי לשימוש או להתקנות נטו",
+        "why": "משלוחים אינם בהכרח התקנות נטו או שימוש חוזר.",
+        "nextCheck": "בסיס מותקן, משלוחים, ניצול והכנסה חוזרת.",
+        "thesisRisk": "המכשירים שנשלחו אינם מייצרים שימוש והכנסה.",
+        "observed": null,
+        "target": null
+      },
+      {
+        "id": "rpo",
+        "title": "המרת RPO להכנסות ולגבייה",
+        "section": 6,
+        "targetSection": 13,
+        "baseline": "RPO בסוף Q2 2026: $80.4M",
+        "expectation": "אין להמיר אוטומטית את כל ה־RPO להכנסה שנתית",
+        "why": "תקופת החכירה, ביטולים וגבייה קובעים את איכות הצבר.",
+        "nextCheck": "מועדי הכרה, משך חוזים, ביטולים וגבייה.",
+        "thesisRisk": "צבר גדל בלי הכרה וגבייה תואמות.",
+        "observed": null,
+        "target": null
+      },
+      {
+        "id": "profit",
+        "title": "רווח תפעולי",
+        "section": 1,
+        "targetSection": 9,
+        "baseline": "Q2 2026: $2.4M",
+        "expectation": "מודל Q3 2026: $2.5M",
+        "why": "מינוף תפעולי צריך להישמר לצד השקעות מסחור ומחקר.",
+        "nextCheck": "רווח תפעולי והוצאות מכירה ומו״פ.",
+        "thesisRisk": "הוצאות צומחות מהר מההכנסה.",
+        "observed": {
+          "value": 2.4,
+          "period": "Q2 2026",
+          "unit": "USD million",
+          "basis": "operating income"
+        },
+        "target": {
+          "value": 2.5,
+          "period": "Q3 2026",
+          "unit": "USD million",
+          "basis": "operating income"
+        }
+      },
+      {
+        "id": "concentration",
+        "title": "ריכוזיות וכיסוי ביטוחי",
+        "section": 3,
+        "targetSection": 13,
+        "baseline": "לקוח A: 27% מהכנסות H1 2026; ארה״ב: 74%",
+        "expectation": "לא הונח יעד ירידה בריכוזיות",
+        "why": "תלות ברשת טיפול או בשוק אחד מגדילה רגישות לשינויים.",
+        "nextCheck": "נתוני ריכוזיות חדשים, כיסוי מבטחים ויישום SWIFT.",
+        "thesisRisk": "שינוי בלקוח גדול או בכיסוי פוגע בפעילות.",
+        "observed": null,
+        "target": null
+      },
+      {
+        "id": "capital",
+        "title": "מזומן, הקצאת הון ודילול",
+        "section": 7,
+        "targetSection": 11,
+        "baseline": "CFO Q2: $6.3M; מזומן כולל מוגבל $62.4M",
+        "expectation": "40M מניות/ADS כהנחת רגישות; לא מספר מאומת",
+        "why": "מזומן מוגבל אינו מזומן פנוי; השקעות בקליניקות עשויות לצרוך הון.",
+        "nextCheck": "מזומן חופשי, השקעות מיעוט ומניות מדוללות באותה יחידת מסחר.",
+        "thesisRisk": "תזרים חלש או דילול מעבר להנחות.",
+        "observed": null,
+        "target": null
+      }
+    ]
+  },
+  {
+    "companyId": "us-smci-nasdaq-common",
+    "ticker": "SMCI",
+    "asOf": "2026-10-20",
+    "metrics": [
+      {
+        "id": "revenue",
+        "title": "הכנסות מוכרות",
+        "section": 5,
+        "targetSection": 9,
+        "baseline": "FY2026: $39.1B",
+        "expectation": "בסיס FY2027: $68B; הנהלה במסמך: $65B–$72B",
+        "why": "הזמנות וביקוש AI צריכים להפוך לאספקה ולהכנסה.",
+        "nextCheck": "הכנסה בפועל והתקדמות לתחזית; להפריד הזמנות.",
+        "thesisRisk": "הזמנות אינן הופכות להכנסות.",
+        "observed": {
+          "value": 39.1,
+          "period": "FY2026",
+          "unit": "USD billion",
+          "basis": "revenue"
+        },
+        "target": {
+          "value": 68,
+          "period": "FY2027",
+          "unit": "USD billion",
+          "basis": "revenue"
+        }
+      },
+      {
+        "id": "margin",
+        "title": "מרווחים ואיכות הרווח",
+        "section": 5,
+        "targetSection": 9,
+        "baseline": "מרווח גולמי FY2026: 10.8%; Q4: כ־17.5%",
+        "expectation": "בסיס FY2027: רווח נקי 4.5%; אין יעד מרווח גולמי מפורש",
+        "why": "קפיצה רבעונית במרווח אינה הוכחה לרווחיות מייצגת.",
+        "nextCheck": "מרווח גולמי ותמהיל בכמה רבעונים; הפרדת גולמי ונקי.",
+        "thesisRisk": "רווחיות שיא נעלמת או מתבררת כחד־פעמית.",
+        "observed": null,
+        "target": null
+      },
+      {
+        "id": "cashflow",
+        "title": "המרת רווח למזומן",
+        "section": 6,
+        "targetSection": 11,
+        "baseline": "FY2026: CFO ‏−$6.81B מול רווח נקי +$2.23B",
+        "expectation": "תזרים חיובי לצד צמיחה; לא נקבע סף מספרי",
+        "why": "צריכת הון חוזר היא מוקד הסיכון הכלכלי.",
+        "nextCheck": "תזרים תפעולי מצטבר לעומת רווח נקי וצרכי מימון.",
+        "thesisRisk": "רווחים ממשיכים בלי התאוששות מזומן.",
+        "observed": null,
+        "target": null
+      },
+      {
+        "id": "working-capital",
+        "title": "מלאי וחייבים",
+        "section": 6,
+        "targetSection": 12,
+        "baseline": "סוף FY2026: מלאי $12.90B; חייבים $6.13B",
+        "expectation": "ירידה בימי מלאי וגבייה; אין סף שנקבע במודל",
+        "why": "מלאי יכול להתיישן כשדור GPU מתחלף; חייבים דוחים תזרים.",
+        "nextCheck": "ימי מלאי וגבייה, הפרשות והתיישנות.",
+        "thesisRisk": "מלאי וחייבים גדלים מהר מהאספקה וההכנסות.",
+        "observed": null,
+        "target": null
+      },
+      {
+        "id": "concentration",
+        "title": "לקוחות וספקים",
+        "section": 2,
+        "targetSection": 3,
+        "baseline": "לקוח גדול 28.1% מהכנסות; ספק בודד 63.1% מהרכישות FY2026",
+        "expectation": "אין יעד ריכוזיות מספרי; אין זיהוי לקוח או ספק שלא נמסר",
+        "why": "תלות בשני צדי העסק מגבילה כוח מיקוח.",
+        "nextCheck": "ריכוזיות חדשה ושינויים בחוזים ובאספקה.",
+        "thesisRisk": "אובדן לקוח גדול או תנאי ספק שמחלישים מרווח ומימון.",
+        "observed": null,
+        "target": null
+      },
+      {
+        "id": "controls",
+        "title": "בקרות, מימון ודילול",
+        "section": 8,
+        "targetSection": 10,
+        "baseline": "המחקר מציין חולשות בקרה, חקירות וחוב לצד מזומן",
+        "expectation": "בסיס FY2027: 780M מניות; מכפיל 11 כהנחת מחקר",
+        "why": "סיכון בקרה ומימון משפיע גם על רווח למניה וגם על המכפיל.",
+        "nextCheck": "גילויי SEC רשמיים, תיקון ליקויים, אג״ח והנפקות.",
+        "thesisRisk": "ליקויים לא תוקנו, מימון מתייקר או דילול גדל.",
+        "observed": null,
+        "target": null
+      }
+    ]
   }
 ]

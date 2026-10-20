@@ -7,7 +7,7 @@ it('retains the exact original PDFs and all financial tables by section',()=>{
   const bytes=readFileSync(new URL('../public/research/'+r.filename,import.meta.url));
   expect(bytes.subarray(0,4).toString()).toBe('%PDF');
   expect(createHash('sha256').update(bytes).digest('hex')).toBe(r.sha256);
-  expect(r.pages).toBe(5);expect(r.sections).toHaveLength(r.ticker==='NBIS'?12:13);
+  expect(r.pages).toBe(({NBIS:5,SNDK:5,DLO:4,BWAY:3,SMCI:5} as Record<string,number>)[r.ticker]);expect(r.sections).toHaveLength(({NBIS:12,SNDK:13,DLO:10,BWAY:16,SMCI:14} as Record<string,number>)[r.ticker]);
   expect(r.scenarios.map(s=>s.weight)).toEqual([20,50,30]);
  }
  expect(suppliedValue(suppliedResearch[0])).toBeCloseTo(182.333333333);

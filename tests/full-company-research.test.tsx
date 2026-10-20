@@ -6,6 +6,7 @@ import {FullCompanyResearch,hasFullResearch} from '../src/components/FullCompany
 import {SuppliedValuation} from '../src/components/SuppliedResearch';
 import {publishedFor} from '../src/data/publishedResearch';
 import {suppliedResearch,suppliedValue,suppliedScenarioValue} from '../src/data/suppliedResearch';
+import {companyModelFor} from '../src/data/companyModels';
 import {researchTarget} from '../src/research/researchTarget';
 import {blankResearch} from '../src/data/initial';
 afterEach(()=>{cleanup();vi.unstubAllGlobals();});
@@ -13,7 +14,7 @@ it('includes all source-document sections, paragraphs, tables and source PDF lin
  for(const report of suppliedResearch){
   render(<FullCompanyResearch analysis={publishedFor(report.companyId)!.analysis}/>);
   expect(screen.getAllByRole('heading',{level:4})).toHaveLength(report.sections.length+1);
-  expect(screen.getAllByRole('table')).toHaveLength(report.ticker==='NBIS'?6:9);
+  expect(screen.queryAllByRole('table')).toHaveLength(({NBIS:6,SNDK:9,DLO:5,BWAY:0,SMCI:5} as Record<string,number>)[report.ticker]);
   for(const section of report.sections){
    expect(screen.getByRole('heading',{name:`${section.number}. ${section.title}`})).toBeTruthy();
    for(const block of section.blocks)if(block.type==='paragraph')expect(screen.getByText(block.text)).toBeTruthy();
@@ -41,11 +42,11 @@ it('opens uploaded analysis by default and keeps old models out of the active va
   const change=vi.fn();const company={id:report.companyId,name:report.ticker,label:report.ticker};
   const current=blankResearch();const {rerender}=render(<ResearchExchange company={company} current={current} onChange={change} onPrepare={()=>{}}/>);
   expect(screen.getByText('קריאת המחקר המלא').closest('details')!.open).toBe(true);
-  expect(screen.getByRole('heading',{name:'1. העסק ומודל ההכנסות'})).toBeTruthy();
+  expect(screen.getByRole('heading',{name:`1. ${report.sections[0].title}`})).toBeTruthy();
   rerender(<ResearchExchange company={company} view="valuation" current={current} onChange={change} onPrepare={()=>{}}/>);
   expect(screen.getByRole('region',{name:`מודל המסמך של ${report.ticker}`})).toBeTruthy();
-  expect(screen.getByText('ארכיון מודלים קודמים · אינו הניתוח הפעיל').closest('details')!.open).toBe(false);
-  expect(screen.getByRole('heading',{name:`${report.ticker} · מודל מחושב ל־12 חודשים`}).closest('details')!.open).toBe(false);
+  if(companyModelFor(report.companyId)){expect(screen.getByText('ארכיון מודלים קודמים · אינו הניתוח הפעיל').closest('details')!.open).toBe(false);
+  expect(screen.getByRole('heading',{name:`${report.ticker} · מודל מחושב ל־12 חודשים`}).closest('details')!.open).toBe(false);}
   expect(change).not.toHaveBeenCalled();cleanup();
  }
 });

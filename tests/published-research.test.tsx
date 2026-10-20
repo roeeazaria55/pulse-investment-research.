@@ -11,8 +11,8 @@ import {validState} from '../src/state/storage';
 import {researchFields} from '../src/types';
 import snapshot from '../public/data/official-sources.json';
 afterEach(()=>{cleanup();vi.unstubAllGlobals();});
-it('has exactly one complete validated dated baseline for each of the eleven identities',()=>{
- expect(publishedResearch).toHaveLength(11);
+it('has exactly one complete validated dated baseline for each of the twelve identities',()=>{
+ expect(publishedResearch).toHaveLength(12);
  for(const c of officialRegistry.companies){
   const p=publishedFor(c.id)!;expect(p).toBeTruthy();
   const a=parseAnalysis(JSON.stringify(p.analysis),c.id);

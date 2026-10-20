@@ -19,6 +19,10 @@ jobs:
       - run: python3 -m unittest discover -s scripts -p 'test_*.py'
       - name: Check live official source metadata read-only
         run: python3 scripts/official_sources.py
+      - name: Read official report content without changing published research
+        run: |
+          python3 -m pip install --disable-pip-version-check -r scripts/requirements-report-intake.txt
+          python3 scripts/report_intake.py
       - run: npm test
       - run: npm run build
         env:

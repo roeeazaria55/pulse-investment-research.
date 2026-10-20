@@ -220,3 +220,10 @@ this layout PR; persisted personal research requires no conversion.
 - Added unchanged source PDFs for download and checksum verification.
 - Used the new document models consistently across overview and valuation comparison; distinguished Sandisk FY2028 valuation from a twelve-month target.
 - Moved previous models into a closed archive and retained personal research without mutation.
+
+## 2026-10-20 — Complete DLO/BWAY/SMCI research and official report content intake
+
+- Imported all 40 new numbered source chapters and ten source tables, with original PDFs and SHA-256 identity. Older DLO/BWAY snapshots and calculators remain archived.
+- Added SMCI to public research and official SEC discovery without changing an existing personal watchlist. Research values distinguish dates, earnings periods, rounded source targets and the BWAY USD ADS instrument from TASE prices.
+- Extended six business-specific thesis metrics to DLO, BWAY and SMCI.
+- Scheduled report intake reads issuer-allowlisted HTML/PDF documents and extracts reviewable financial table rows and supported inline XBRL facts. Revised bytes and failed refreshes remain explicit. It does not change analyst assumptions or price targets.

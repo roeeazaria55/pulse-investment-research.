@@ -62,8 +62,10 @@ with sync_playwright() as pw:
         # Every initial company has its own published baseline; opening it is read-only.
         company_select=page.get_by_label('חברה למחקר',exact=True)
         labels=['NBIS','META','DLO','FTAI','LMND','SNDK','IREN','נקסט ויזן','אנלייט','בריינסוויי','גילת טלקום']
-        for index,label in enumerate(labels):
-            company_select.select_option(f'initial-{index}')
+        selections=[(f'initial-{i}',label) for i,label in enumerate(labels)]+[('research-us-smci-nasdaq-common','SMCI')]
+        supplied={'NBIS':('NBIS',12,'$182.33'),'SNDK':('SNDK',13,'$1,759.50'),'DLO':('DLO',10,'$23.31'),'בריינסוויי':('BWAY',16,'$13.40'),'SMCI':('SMCI',14,'$50.92')}
+        for index,(option,label) in enumerate(selections):
+            company_select.select_option(option)
             page.get_by_role('tab',name='סקירה',exact=True).click()
             exchange.get_by_role('heading',name=f'מחקר בסיס ל־{label}',exact=True).wait_for()
             page.get_by_label('הדוח הבא',exact=True).wait_for()
@@ -71,8 +73,9 @@ with sync_playwright() as pw:
             if label=='SNDK':expect(exchange.locator('.research-target-summary strong')).to_have_text('≈$1,759.50')
             full_reading=exchange.get_by_text('קריאת המחקר המלא',exact=True)
             if full_reading.evaluate('(el)=>!el.parentElement.open'):full_reading.click()
-            if label in ['NBIS','SNDK']:
-                monitor=exchange.get_by_role('region',name=f'מעקב התזה של {label}',exact=True)
+            if label in supplied:
+                ticker,chapter_count,supplied_target=supplied[label]
+                monitor=exchange.get_by_role('region',name=f'מעקב התזה של {ticker}',exact=True)
                 expect(monitor.locator('details')).to_have_count(6)
                 assert monitor.locator('details[open]').count()==0
                 for summary in monitor.locator('summary').all():summary.click()
@@ -83,22 +86,39 @@ with sync_playwright() as pw:
                 page.evaluate("document.documentElement.style.fontSize='16px'")
                 monitor.locator('summary').first.scroll_into_view_if_needed()
                 page.screenshot(path=f'work/mobile-{width}-thesis-{label}.png',full_page=False)
-                monitor.get_by_role('button',name='לנתוני המקור · פרק 4',exact=True).first.click()
-                assert page.evaluate("document.activeElement.id").endswith('-pdf-section-4')
+                monitor.get_by_role('button',name='לנתוני המקור',exact=False).first.click()
+                assert '-pdf-section-' in page.evaluate("document.activeElement.id")
                 for summary in monitor.locator('summary').all():summary.click()
-                context_panel=exchange.get_by_role('region',name=f'אופק והנחות השווי של {label}',exact=True)
+                context_panel=exchange.get_by_role('region',name=f'אופק והנחות השווי של {ticker}',exact=True)
                 expect(context_panel).to_contain_text('אינו שער חי')
                 if label=='SNDK':expect(context_panel).to_contain_text('אין מועד יעד קשיח')
-                chapters=exchange.get_by_role('navigation',name=f'פרקי הניתוח של {label}')
-                expect(chapters.get_by_role('button')).to_have_count(12 if label=='NBIS' else 13)
-                chapters.get_by_role('button',name='10. הערכת שווי ל־12 חודשים — מכפיל הכנסות' if label=='NBIS' else '10. הערכת שווי לפי EPS מנורמל',exact=True).click()
+                chapters=exchange.get_by_role('navigation',name=f'פרקי הניתוח של {ticker}')
+                expect(chapters.get_by_role('button')).to_have_count(chapter_count)
+                chapters.get_by_role('button').nth(9).click()
+                intake=exchange.get_by_role('group',name='קליטת תוכן דוחות רשמיים')
+                if intake.count():
+                    intake.locator(':scope > summary').click()
+                    expect(intake).to_contain_text('המחקר ומחיר השווי אינם משתנים אוטומטית')
+                    document=intake.locator('.intake-document').first
+                    if document.count():
+                        document.locator(':scope > summary').click()
+                        table_details=document.get_by_text('שורות מטבלאות המקור · לבדיקת תקופה ויחידות',exact=True)
+                        if table_details.count():table_details.click()
+                    page.evaluate("document.activeElement?.blur();document.documentElement.style.fontSize='32px'")
+                    page.evaluate("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))")
+                    assert page.evaluate('document.documentElement.scrollWidth')<=width+1,f'Intake {label} 200% overflow at {width}'
+                    page.evaluate("document.documentElement.style.fontSize='16px'")
+                    intake.locator(':scope > summary').click()
             page.evaluate("document.activeElement?.blur();document.documentElement.style.fontSize='32px'")
             page.evaluate("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))")
             assert page.evaluate('document.documentElement.scrollWidth')<=width+1,f'Overview {label} overflow at {width}'
             page.evaluate("document.documentElement.style.fontSize='16px'")
             page.get_by_role('tab',name='מודל שווי',exact=True).click()
-            if label in ['NBIS','SNDK']:
-                expect(exchange.get_by_test_id('supplied-weighted-target')).to_have_text('$182.33' if label=='NBIS' else '$1,759.50')
+            if label in supplied:
+                expect(exchange.get_by_test_id('supplied-weighted-target')).to_have_text(supplied[label][2])
+                if label=='SMCI':
+                    assert exchange.locator('.prior-research-models').count()==0
+                    continue
                 archive=exchange.get_by_text('ארכיון מודלים קודמים · אינו הניתוח הפעיל',exact=True)
                 if archive.evaluate('(el)=>!el.parentElement.open'):archive.click()
             model=exchange.locator('.company-valuation')
@@ -166,6 +186,7 @@ with sync_playwright() as pw:
         exchange.get_by_role('textbox',name='ניתוח להחזרה',exact=True).fill('SIMULATED ChatGPT answer\n```json\n'+json.dumps(payload)+'\n```\nEnd of test answer')
         exchange.get_by_role('button',name='בדיקה ותצוגה מקדימה',exact=True).click()
         exchange.get_by_role('button',name='החלת השדות שבחרתי בטיוטה',exact=True).click()
+        page.get_by_role('tab',name='המחקר שלי',exact=True).click()
         page.get_by_role('button',name='שמירת מחקר',exact=True).click()
         assert page.evaluate("JSON.parse(localStorage.getItem('pulse.personal.v1')).research.NBIS.thesis")=='MOBILE TEST IMPORT ONLY'
         prior=page.evaluate("JSON.parse(localStorage.getItem('pulse.personal.v1')).research.NBIS.versions[0].fields.thesis")
@@ -175,6 +196,7 @@ with sync_playwright() as pw:
         exchange.locator('summary').filter(has_text='גרסאות מחקר קודמות').click()
         exchange.get_by_text('הצגת הגרסה',exact=True).first.click()
         exchange.get_by_role('button',name='טעינת גרסה זו לטיוטה',exact=True).first.click()
+        page.get_by_role('tab',name='המחקר שלי',exact=True).click()
         page.get_by_role('button',name='שמירת מחקר',exact=True).click()
         assert page.evaluate("JSON.parse(localStorage.getItem('pulse.personal.v1')).research.NBIS.thesis")==prior
         assert page.evaluate("JSON.parse(localStorage.getItem('pulse.personal.v1')).research.NBIS.versions[0].fields.thesis")=='MOBILE TEST IMPORT ONLY'
