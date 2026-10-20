@@ -8,7 +8,9 @@ import {metricComparison,thesisMonitorFor} from '../src/research/thesisMonitorin
 import {ThesisMonitor} from '../src/components/ThesisMonitor';
 const company='us-smci-nasdaq-common';
 const metric=thesisMonitorFor(company)!.metrics[0];
-const snapshot=()=>parseReportIntake(structuredClone(raw));
+// Collection refreshes the checked-in snapshot in CI. Tests control freshness independently
+// of today's network outcome; separate cases exercise failed refreshes and revisions.
+const snapshot=()=>{const data=parseReportIntake(structuredClone(raw));for(const d of data.documents){d.error=null;d.revised=false;}return data;};
 function future(){const data=snapshot();const d=data.documents.find(d=>d.companyId===company&&d.facts.length)!;d.facts=[{...d.facts.find(f=>f.concept.includes('revenue'))!,start:'2026-07-01',end:'2027-06-30',value:70e9}];data.documents=[d];return data;}
 afterEach(()=>{cleanup();vi.unstubAllGlobals();});
 it('maps actual issuer facts without turning historical revenue into a forecast-period miss',()=>{
