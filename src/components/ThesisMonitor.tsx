@@ -1,3 +1,5 @@
+import {useReportIntake} from '../hooks/useReportIntake';
+import {reportComparison} from '../research/reportComparison';
 import {suppliedFor,suppliedPdfUrl} from '../data/suppliedResearch';
 import {thesisMonitorFor,metricComparison} from '../research/thesisMonitoring';
 function openChapter(companyId:string,number:number){
@@ -6,18 +8,23 @@ function openChapter(companyId:string,number:number){
  heading?.focus({preventScroll:true});heading?.scrollIntoView({block:'start'});
 }
 export function ThesisMonitor({companyId}:{companyId:string}){
+ const {data,failed}=useReportIntake(companyId);
  const monitor=thesisMonitorFor(companyId),report=suppliedFor(companyId);if(!monitor||!report)return null;
  return <section className="thesis-monitor" aria-label={`מעקב התזה של ${monitor.ticker}`}>
   <div className="thesis-monitor-head"><h4>האם העסק מתקדם לפי הניתוח?</h4><small>6 מדדי מעקב · בסיס המחקר {monitor.asOf.split('-').reverse().join('.')}</small></div>
-  <p>נקודת הפתיחה היא הנתונים שבמחקר שסופק. טרם הוחל כאן עדכון של דוח נוסף. דוחות שנקראו אוטומטית מוצגים בנפרד בקליטת הדוחות. פער מחושב רק לאותה תקופה, יחידה והגדרה חשבונאית.</p>
+  <p>נקודת הפתיחה והתחזית נשמרות מהמחקר שסופק. נתון מובנה שמופה מדוח רשמי מוצג בנפרד וממתין לאימות. פער מחושב רק לאותה תקופה, יחידה והגדרה חשבונאית; אין בכך שינוי אוטומטי במחקר או בשווי.</p>
   <div className="thesis-metrics">{monitor.metrics.map(metric=>{
-   const result=metricComparison(metric.observed,metric.target);
+   const intake=data?reportComparison(data,companyId,metric):null;
+   const observation=intake?.observation;
+   const result=metricComparison(intake?.status==='mapped'?observation!.point:null,metric.target);
    return <details className="thesis-metric" key={metric.id}>
-    <summary><span>{metric.title}</span><small>{result.label}</small></summary>
+    <summary><span>{metric.title}</span><small>{intake?.status==='mapped'?result.label:intake?.label||(failed?'מצב קליטת הדוחות אינו זמין':'טוען נתוני דוחות…')}</small></summary>
     <dl className="thesis-metric-points"><div><dt>נקודת הפתיחה במחקר</dt><dd>{metric.baseline}</dd></div><div><dt>מה הניתוח מניח קדימה</dt><dd>{metric.expectation}</dd></div></dl>
-    {result.status==='period'&&<p className="muted">אין פער מספרי: {metric.observed!.period} ו־{metric.target!.period} הן תקופות שונות.</p>}
+    {observation&&<div className="mapped-observation"><p><b>נתון מהדוח · ממתין לאימות:</b> <bdi>{observation.point.value.toLocaleString('en-US',{maximumFractionDigits:3})} {observation.point.unit} · {observation.point.period}</bdi></p><p><a href={observation.document.finalUrl} target="_blank" rel="noopener noreferrer">למקור הרשמי ↗</a> · תקופת הנתון <bdi>{observation.start} – {observation.end}</bdi> · נקרא {new Date(observation.document.lastSuccessfulAt).toLocaleString('he-IL')}</p><p className="muted"><bdi>{observation.concept} · {observation.context}</bdi> · {observation.point.basis}</p><small>מזהה גרסת מקור SHA-256: <bdi>{observation.document.sha256}</bdi>. החילוץ והמיפוי אינם אימות חשבונאי.</small></div>}
+    {intake?.status==='review'&&<p role="status">{intake.label}. מוצג הנתון מהקריאה האחרונה שהצליחה; אין חישוב פער.</p>}
+    {result.status==='period'&&<p className="muted">אין פער מספרי: {observation!.point.period} ו־{metric.target!.period} הן תקופות שונות.</p>}
     {result.status==='definition'&&<p className="muted">אין פער מספרי: נדרשת התאמה בין הגדרות המדד.</p>}
-    {result.status==='comparable'&&<p>פער מההנחה: <bdi>{result.difference.toLocaleString('en-US',{maximumFractionDigits:2})}{result.percent!==null?` (${result.percent.toFixed(1)}%)`:''}</bdi>. הפער לבדו אינו קובע אם התזה התחזקה או נחלשה.</p>}
+    {result.status==='comparable'&&<p>פער אוטומטי מההנחה · ממתין לאימות: <bdi>{result.difference.toLocaleString('en-US',{maximumFractionDigits:2})}{result.percent!==null?` (${result.percent.toFixed(1)}%)`:''}</bdi>. הפער לבדו אינו קובע אם התזה התחזקה או נחלשה.</p>}
     <p><b>למה זה משנה לשווי:</b> {metric.why}</p><p><b>מה לבדוק בדוח הבא:</b> {metric.nextCheck}</p><p><b>מה ידרוש בחינה מחדש:</b> {metric.thesisRisk}</p>
     <div className="thesis-source-actions"><button type="button" className="text-button" onClick={()=>openChapter(companyId,metric.section)}>לנתוני המקור · פרק {metric.section}</button>{metric.targetSection!==metric.section&&<button type="button" className="text-button" onClick={()=>openChapter(companyId,metric.targetSection)}>להנחות · פרק {metric.targetSection}</button>}</div>
    </details>;

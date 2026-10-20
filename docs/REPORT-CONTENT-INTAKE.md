@@ -30,3 +30,27 @@ The source analysis PDFs of DLO (4 pages, 10 sections), BWAY (3 pages, 16 sectio
 2. Generate a versioned proposed research update with cited evidence. AI narrative analysis, if added, needs a separately configured service and budget; it is not enabled here.
 3. Review revised scenario assumptions and capital/funding bridges before replacing the active model. Automatic content intake does not mean automatic valuation approval.
 4. Expand report parsing beyond these five companies after testing their source formats.
+
+## Forecast comparison (October 2026)
+
+Thesis monitoring now reads the validated intake snapshot and shows separately mapped
+source observations alongside the unchanged source-research baseline and forecast.
+The numerical difference is provisional, explicitly pending verification; it never
+changes scenario assumptions, probabilities, valuation or personal portfolio data.
+
+`src/research/reportComparison.ts` contains explicit company/metric/concept mappings:
+SMCI revenue and operating cash flow, BWAY revenue and operating income. Only USD
+XBRL facts are accepted. SMCI annual periods must run July 1 to June 30; BWAY uses
+exact calendar quarters or calendar years. No annualization, YTD subtraction,
+52/53-week fiscal inference, adjusted/normalized EPS substitution or generic PDF
+column inference is performed. Other metrics show the missing mapping or definition.
+
+The forecast period is preferred when available, otherwise the latest supported
+actual period is displayed without a forecast gap. Conflicting same-period facts,
+revised source documents and failed-refresh documents block comparison. Identical
+duplicate facts are deduplicated semantically. Evidence includes the original source
+link, XBRL concept/context, start/end dates, retrieval time and source SHA-256.
+Snapshot fetch/validation failure is shown as unavailable, never as a zero result.
+
+Next coverage step: source-specific financial table adapters with explicit headers,
+units and periods, followed by reviewed bridges for non-GAAP and business metrics.

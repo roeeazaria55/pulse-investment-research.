@@ -1,13 +1,8 @@
-import {useEffect,useState} from 'react';
-import {parseReportIntake,type ReportIntakeSnapshot} from '../data/reportIntake';
+import {useReportIntake} from '../hooks/useReportIntake';
 import {ResearchTableView} from './SuppliedResearch';
 const statuses={ok:'הקריאה האחרונה הושלמה',partial:'הקריאה הושלמה חלקית',failed:'הקריאה האחרונה נכשלה',deferred:'ממתין לסבב איסוף נוסף','no-candidates':'לא נמצא קישור מתאים במאגר הנוכחי'};
 export function ReportIntake({companyId}:{companyId:string}){
- const [data,setData]=useState<ReportIntakeSnapshot|null>(null),[failed,setFailed]=useState(false);
- useEffect(()=>{const controller=new AbortController();setData(null);setFailed(false);
-  fetch(`${import.meta.env.BASE_URL}data/report-intake.json`,{cache:'no-cache',signal:controller.signal}).then(r=>{if(!r.ok)throw Error('unavailable');return r.json();}).then(parseReportIntake).then(x=>{if(!controller.signal.aborted)setData(x);}).catch(()=>{if(!controller.signal.aborted)setFailed(true);});
-  return ()=>controller.abort();
- },[companyId]);
+ const {data,failed}=useReportIntake(companyId);
  const source=data?.sources.find(s=>s.companyId===companyId),docs=data?.documents.filter(d=>d.companyId===companyId)||[];
  if(data&&!source&&!docs.length)return null;
  return <details className="report-intake" aria-label="קליטת תוכן דוחות רשמיים"><summary>קליטת דוחות אוטומטית{docs.length?` · ${docs.length} מסמכים נקראו`:''}</summary>

@@ -32,7 +32,7 @@ it('keeps the pilot source-bound, uses six business-specific metrics per company
   const region=screen.getByRole('region',{name:`מעקב התזה של ${monitor.ticker}`});
   const rows=region.querySelectorAll('details');expect(rows).toHaveLength(6);
   expect(Array.from(rows).every(row=>!row.open)).toBe(true);
-  expect(within(region).getByText(/טרם הוחל כאן עדכון של דוח נוסף/)).toBeTruthy();
+  expect(within(region).getByText(/נקודת הפתיחה והתחזית נשמרות מהמחקר שסופק/)).toBeTruthy();
   expect(within(region).getByRole('link',{name:`מקור מדדי המעקב · PDF ${monitor.ticker} ↗`}).getAttribute('href')).toContain(report.filename);
   expect(region.textContent).not.toContain('עומד לפי ההנחות');cleanup();
  }
