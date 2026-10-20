@@ -43,14 +43,14 @@ it('does not erase empty fields or notes and preserves a restorable prior versio
  expect(()=>applyAnalysis(current,p,['revenue'])).toThrow();
 });
 it('previews changes without applying until the explicit apply button',()=>{
- const changed=vi.fn();render(<ResearchExchange company={company} current={{...blankResearch(),thesis:'OLD THESIS'}} onChange={changed} onPrepare={()=>{}}/>);
+ const changed=vi.fn();render(<ResearchExchange view="sources" company={company} current={{...blankResearch(),thesis:'OLD THESIS'}} onChange={changed} onPrepare={()=>{}}/>);
  fireEvent.change(screen.getByRole('textbox',{name:'ניתוח להחזרה',hidden:true}),{target:{value:JSON.stringify(payload())}});
  fireEvent.click(screen.getByText('בדיקה ותצוגה מקדימה'));expect(changed).not.toHaveBeenCalled();
  expect(screen.getByText('OLD THESIS')).toBeTruthy();expect(screen.getByText('NEW THESIS')).toBeTruthy();
  fireEvent.click(screen.getByText('החלת השדות שבחרתי בטיוטה'));expect(changed).toHaveBeenCalledTimes(1);
 });
 it('prepares a local-text pack with identity and source limitations',()=>{
- const prepare=vi.fn();render(<ResearchExchange company={company} current={blankResearch()} onChange={()=>{}} onPrepare={prepare}/>);
+ const prepare=vi.fn();render(<ResearchExchange view="sources" company={company} current={blankResearch()} onChange={()=>{}} onPrepare={prepare}/>);
  fireEvent.change(screen.getByLabelText('טקסט המסמך'),{target:{value:'USER PROVIDED DOCUMENT TEXT'}});
  fireEvent.click(screen.getByText('הכנת ניתוח מהמסמך ל־NBIS'));
  const text=prepare.mock.calls[0][0];expect(text).toContain('USER PROVIDED DOCUMENT TEXT');expect(text).toContain('לא הוזן — אין להמציא מקור');expect(text).toContain(analysisContract(company.id));
@@ -67,7 +67,7 @@ it('accepts a complete answer with exactly one JSON block and rejects ambiguous 
 it('loads a saved prior version into the draft while preserving the imported version and notes',()=>{
  const old={...blankResearch(),thesis:'PRIOR THESIS',notes:[{id:'n',createdAt:'2026-10-17T12:00:00Z',text:'PERSONAL NOTE'}]};
  const imported=applyAnalysis(old,parseAnalysis(JSON.stringify(payload()),company.id),['thesis']);
- const changed=vi.fn();render(<ResearchExchange company={company} current={imported} onChange={changed} onPrepare={()=>{}}/>);
+ const changed=vi.fn();render(<ResearchExchange view="sources" company={company} current={imported} onChange={changed} onPrepare={()=>{}}/>);
  fireEvent.click(screen.getByText('טעינת גרסה זו לטיוטה'));
  const restored=changed.mock.calls[0][0];
  expect(restored.thesis).toBe('PRIOR THESIS');expect(restored.notes).toEqual(old.notes);
@@ -76,7 +76,7 @@ it('loads a saved prior version into the draft while preserving the imported ver
 });
 it('shows published NBIS research without overwriting personal fields and previews adoption',()=>{
  const onChange=vi.fn();const current={...blankResearch(),thesis:'My thesis',notes:[{id:'note',text:'Keep this',createdAt:'2026-10-19T08:00:00Z'}]};
- render(<ResearchExchange company={company} current={current} onChange={onChange} onPrepare={()=>{}}/>);
+ render(<ResearchExchange view="sources" company={company} current={current} onChange={onChange} onPrepare={()=>{}}/>);
  expect(screen.getByText('מחקר בסיס ל־NBIS')).toBeTruthy();expect(onChange).not.toHaveBeenCalled();
  fireEvent.click(screen.getByText('השוואת מחקר הבסיס למחקר שלי'));
  expect(screen.getByText('My thesis')).toBeTruthy();expect(onChange).not.toHaveBeenCalled();
@@ -84,7 +84,7 @@ it('shows published NBIS research without overwriting personal fields and previe
  const next=onChange.mock.calls[0][0];expect(next.notes).toEqual(current.notes);expect(next.versions[0].fields.thesis).toBe('My thesis');expect(next.importInfo.companyId).toBe(company.id);
 });
 it('does not offer NBIS baseline for another company',()=>{
- render(<ResearchExchange company={{id:'candidate-iren',name:'IREN',label:'IREN'}} current={blankResearch()} onChange={()=>{}} onPrepare={()=>{}}/>);
+ render(<ResearchExchange view="sources" company={{id:'candidate-iren',name:'IREN',label:'IREN'}} current={blankResearch()} onChange={()=>{}} onPrepare={()=>{}}/>);
  expect(screen.queryByText('מחקר בסיס ל־NBIS')).toBeNull();
  expect(screen.getByText('מחקר בסיס ל־IREN')).toBeTruthy();
 });

@@ -16,6 +16,7 @@ it('keeps read state local and filters it without altering portfolio storage',as
   render(React.createElement(App));await screen.findByText('מצב הדגמה');
   fireEvent.click(within(screen.getByRole('navigation',{name:'ניווט נייד'})).getByRole('button',{name:'חדשות',exact:true}));
   const first=screen.getAllByRole('article')[0];fireEvent.click(within(first).getByRole('button',{name:'סימון כנקרא'}));
+  fireEvent.click(screen.getByText('סינון נוסף'));
   fireEvent.change(screen.getByRole('combobox',{name:'מצב קריאה'}),{target:{value:'read'}});
   expect(screen.getAllByRole('article')).toHaveLength(1);expect(JSON.parse(localStorage.getItem('pulse-read-news-v1'))).toHaveLength(1);
 });

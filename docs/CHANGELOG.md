@@ -174,3 +174,24 @@ sensitivity analysis, a full-universe overview and provenance/limitations.
 Published research imports derive numeric targets from the same engine.
 Corrected Gilat Telecom Q2 operating profit against the visually reviewed
 Hebrew statement. See COMPANY-MODELS-2026-10-19.md for every input and source.
+
+## 2026-10-20 — Focused news and research screens
+
+News now starts with search and company selection, a compact source-status
+disclosure, and a single-column feed. Additional filters and per-item evidence
+are progressively disclosed; 12-item pagination, chronological/importance
+sorting, source links, local read/saved/report actions and notification deep
+links remain available. Exact repeated publisher suffixes are removed only from
+the reading title; original titles remain in source details.
+
+Research now starts with the company selector and four task views: overview,
+valuation, personal research, and sources/tools. The overview prioritizes the
+weighted target, thesis and next checks. Source packages, PDF/JSON workflows,
+full provenance, previous versions and the historical NBIS calculator remain
+available in their relevant views. Personal drafts stay mounted across views;
+no storage migration or financial-assumption changes. Tabs support keyboard
+navigation, and forms/readability are checked at 320/390/430px with 200% text.
+
+Validation includes pagination/search reset, task switching without draft loss,
+personal persistence and all existing model/PDF/import checks. Rollback: revert
+this layout PR; persisted personal research requires no conversion.

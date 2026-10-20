@@ -1,3 +1,4 @@
+import {compareNews} from './research/newsPresentation';
 import { useEffect, useRef, useState } from "react";
 import {
   Activity,
@@ -68,6 +69,10 @@ export default function App() {
   const [readIds,setReadIds]=useState<string[]>(()=>{try{const x=JSON.parse(localStorage.getItem('pulse-read-news-v1')||'[]');return Array.isArray(x)?x.filter(v=>typeof v==='string'):[];}catch{return [];}});
   const [deepLink,setDeepLink]=useState(()=>location.hash);
   const [newsScope, setNewsScope] = useState("all");
+  const [newsSort,setNewsSort]=useState('recent');
+  const [newsLimit,setNewsLimit]=useState(12);
+  const [researchView,setResearchView]=useState<'overview'|'valuation'|'personal'|'sources'>('overview');
+  useEffect(()=>setNewsLimit(12),[query,importance,companyFilter,industryFilter,periodFilter,readFilter,newsScope,newsSort]);
   const [category, setCategory] = useState("all");
   const [holdingEdit, setHoldingEdit] = useState<Holding | null | undefined>();
   const [watchEdit, setWatchEdit] = useState<Security | null | undefined>();
@@ -231,6 +236,12 @@ export default function App() {
         .toLowerCase()
         .includes(query.toLowerCase()),
   );
+  const orderedNews=[...news].sort((a,b)=>compareNews(a,b,newsSort));
+  const linkedNews=new URLSearchParams(deepLink.slice(1)).get('news');
+  const visibleNews=orderedNews.slice(0,Math.max(newsLimit,linkedNews?orderedNews.findIndex(n=>n.id===linkedNews)+1:0));
+  const activeNewsFilters=[importance,industryFilter,periodFilter,readFilter].filter(v=>v!=='all').length;
+  const compactPage=tab==='news'||tab==='research';
+  const StatusWrapper=compactPage?'details':'div';
   const allocation = state.holdings.reduce((sum, h) => sum + h.allocation, 0);
   const stale = isStale(feed, now);
   const related = [
@@ -329,17 +340,17 @@ export default function App() {
             <span className="profile">P</span>
           </div>
         </header>
-        <main id="main" className={feed?.version===2&&feed.intelligence?'phase3':undefined}>
+        <main id="main" className={[feed?.version===2&&feed.intelligence?'phase3':'',compactPage?'focused-page':''].join(' ')}>
           <div className="page-heading">
             <div>
-              <div className="eyebrow">היתרון שלך מתחיל במחקר טוב</div>
+              {!compactPage&&<div className="eyebrow">היתרון שלך מתחיל במחקר טוב</div>}
               <h1 ref={heading} tabIndex={-1}>
                 {
                   {
                     home: feed?.version===2&&feed.intelligence?"התדריך היומי.":"התמונה הגדולה.",
                     portfolio: "תיק ההשקעות שלי.",
-                    news: "מה חשוב לדעת.",
-                    research: "מעבר לכותרת.",
+                    news: "חדשות",
+                    research: "מחקר",
                     watchlist: "על הרדאר שלי.",
                   }[tab]
                 }
@@ -349,8 +360,8 @@ export default function App() {
                   {
                     home: "כל מה שחשוב להשקעות שלך, במקום אחד.",
                     portfolio: "התזה, ההקצאה והסיכון — תמונה אישית של ההחזקות.",
-                    news: "מקורות, הקשר ותובנות. בלי הרעש.",
-                    research: "מרחב עבודה לתזה הבאה שלך.",
+                    news: "העדכונים בחברות ובנושאים שמעניינים אותך.",
+                    research: "סקירה, מחיר יעד והמחקר האישי — לפי חברה.",
                     watchlist: "חברות מעניינות. הזדמנויות למחקר.",
                   }[tab]
                 }
@@ -365,6 +376,8 @@ export default function App() {
               {loading ? "טוען…" : "רענון מידע"}
             </button>
           </div>
+          <StatusWrapper className={compactPage?'compact-status':undefined}>
+          {compactPage&&<summary><span className="status-light"/>{stale?'נתוני האתר דורשים רענון':'נתונים ציבוריים'}<span>מצב המקורות והעדכון</span></summary>}
           <div className="data-status" role="status">
             <span className="status-light" />
             <span>
@@ -390,6 +403,8 @@ export default function App() {
                   : "הנתונים עודכנו ב־18 השעות האחרונות"}
             </span>
           </div>
+          {tab==='news'&&feed?.version===2&&<div className="collection-details"><DiscoveryPanel feed={feed}/><CoveragePanel feed={feed}/></div>}
+          </StatusWrapper>
           {!online && (
             <div className="alert">
               <WifiOff size={17} />
@@ -405,7 +420,7 @@ export default function App() {
           )}
           {feed?.version===2&&feed.intelligence&&tab==='home'&&<><DailyPanel intel={feed.intelligence} news={feed.news} date={new URLSearchParams(deepLink.slice(1)).get('briefing')||undefined}/><CalendarPanel intel={feed.intelligence} focus={new URLSearchParams(deepLink.slice(1)).get('results')||undefined}/><NotificationsPanel open={deepLink.includes('notifications=')}/></>}
           {feed?.version === 2 &&
-            ["home", "news", "watchlist"].includes(tab) && (
+            ["home", "watchlist"].includes(tab) && (
               <>{feed.intelligence?<details className="panel"><summary>מצב איסוף חדשות ומקורות</summary><DiscoveryPanel feed={feed}/><CoveragePanel feed={feed}/></details>:<><DiscoveryPanel feed={feed}/><CoveragePanel feed={feed}/></>}</>
             )}
           {tab === "home" && (
@@ -717,7 +732,7 @@ export default function App() {
           )}
           {tab === "news" && (
             <>
-              <div className="filters">
+              <div className="news-controls">
                 <label className="search-field">
                   <Search size={18} />
                   <input
@@ -727,6 +742,8 @@ export default function App() {
                     onChange={(e) => setQuery(e.target.value)}
                   />
                 </label>
+                {feed?.version===2&&<select aria-label="סינון לפי חברה" value={companyFilter} onChange={e=>setCompanyFilter(e.target.value)}><option value="all">כל החברות</option>{feed.discovery?.registry.companies.map(c=><option value={c.id} key={c.id}>{c.name}</option>)}</select>}
+                <details className="news-filter-details"><summary><ListFilter size={16}/>סינון נוסף{activeNewsFilters>0?` (${activeNewsFilters})`:''}</summary><div className="news-filter-grid">
                 <label className="select-field">
                   <ListFilter size={17} />
                   <select
@@ -740,7 +757,15 @@ export default function App() {
                     <option value="low">למעקב</option>
                   </select>
                 </label>
-                <select
+
+
+                {feed?.version===2&&feed.intelligence&&<select aria-label="סינון לפי תעשייה" value={industryFilter} onChange={e=>setIndustryFilter(e.target.value)}><option value="all">כל התעשיות</option>{feed.intelligence.industries.config.industries.map(i=><option value={i.id} key={i.id}>{i.name}</option>)}</select>}
+                <select aria-label="חלון זמן לחדשות" value={periodFilter} onChange={e=>setPeriodFilter(e.target.value)}><option value="all">כל הזמנים</option><option value="24h">24 שעות — לפי פרסום</option></select>
+                <select aria-label="מצב קריאה" value={readFilter} onChange={e=>setReadFilter(e.target.value)}><option value="all">נקרא ולא נקרא</option><option value="unread">לא נקרא</option><option value="read">נקרא</option></select>
+                <button className="text-button" onClick={()=>{setImportance('all');setIndustryFilter('all');setPeriodFilter('all');setReadFilter('all');}}>איפוס סינון נוסף</button>
+                </div></details>
+              </div>
+              <div className="news-feed-toolbar">                <select
                   aria-label="מקור הפריטים"
                   value={newsScope}
                   onChange={(e) => setNewsScope(e.target.value)}
@@ -749,23 +774,19 @@ export default function App() {
                   <option value="saved">שמורים למחקר</option>
                   <option value="watchlist">המעקב שלי — סינון מקומי</option>
                   <option value="portfolio">התיק שלי — סינון מקומי</option>
-                </select>
-                {feed?.version===2&&<select aria-label="סינון לפי חברה" value={companyFilter} onChange={e=>setCompanyFilter(e.target.value)}><option value="all">כל החברות</option>{feed.discovery?.registry.companies.map(c=><option value={c.id} key={c.id}>{c.name}</option>)}</select>}
-                {feed?.version===2&&feed.intelligence&&<select aria-label="סינון לפי תעשייה" value={industryFilter} onChange={e=>setIndustryFilter(e.target.value)}><option value="all">כל התעשיות</option>{feed.intelligence.industries.config.industries.map(i=><option value={i.id} key={i.id}>{i.name}</option>)}</select>}
-                <select aria-label="חלון זמן לחדשות" value={periodFilter} onChange={e=>setPeriodFilter(e.target.value)}><option value="all">כל הזמנים</option><option value="24h">24 שעות — לפי פרסום</option></select>
-                <select aria-label="מצב קריאה" value={readFilter} onChange={e=>setReadFilter(e.target.value)}><option value="all">נקרא ולא נקרא</option><option value="unread">לא נקרא</option><option value="read">נקרא</option></select>
-              </div>
-              <p className="muted small-note">
+                </select><label className="news-sort">מיון<select aria-label="מיון חדשות" value={newsSort} onChange={e=>setNewsSort(e.target.value)}><option value="recent">האחרונות קודם</option><option value="important">החשובות קודם</option></select></label></div>
+              <p className="news-count">
                 {news.length} פריטים •{" "}
                 {feed?.version === 2
-                  ? "כותרות ומקורות ציבוריים עם סיווג לפי כללים; לא המלצת השקעה ולא ניתוח AI."
+                  ? "כותרות ממקורות ציבוריים; פרטי המקור בתוך כל ידיעה."
                   : "פריטי הדגמה מסומנים ואינם חדשות אמיתיות."}
               </p>
-              <div className="news-grid">
-                {news.map((n) => (
+              <div className="news-feed">
+                {visibleNews.map((n) => (
                   <NewsCard
                     key={n.id}
                     item={n}
+                    compact
                     saved={state.savedNews.some((s) => s.id === n.id)}
                     onSave={() => saveNews(n)}
                     onResearch={() => openResearch(n.ticker || n.company)}
@@ -773,6 +794,7 @@ export default function App() {
                   />
                 ))}
               </div>
+              {visibleNews.length<news.length&&<button className="load-more" onClick={()=>{const next=orderedNews[visibleNews.length];setNewsLimit(visibleNews.length+12);requestAnimationFrame(()=>{const article=next?document.getElementById(`news-${next.id}`):null;article?.scrollIntoView?.({block:'start'});article?.querySelector<HTMLAnchorElement>('h3 a')?.focus({preventScroll:true});});}}>הצגת ידיעות נוספות <span>({visibleNews.length} מתוך {news.length})</span></button>}
               {!news.length && (
                 <Empty title="לא נמצאו פריטים">
                   נסו חיפוש אחר או שמרו פריטים למחקר מתוך הפיד.
@@ -896,14 +918,13 @@ export default function App() {
           )}
           {tab === "research" && (
             <>
-              <OfficialSources ticker={security?.ticker} name={security?.name} onPrepare={setPrompt} />
               {!security ? (
                 <Empty title="בחרו חברה למחקר">
                   הוסיפו חברה לתיק או לרשימת המעקב.
                 </Empty>
               ) : (
                 <>
-                  <div className="research-toolbar">
+                  <div className="research-toolbar focused-research-toolbar">
                     <label>
                       חברה למחקר
                       <select
@@ -930,14 +951,16 @@ export default function App() {
                             ? "מחקר ציבורי"
                             : "התחילו לבנות את התזה"}
                     </span>
-                    <button className="primary" onClick={persistResearch}>
+                    <button hidden={researchView!=='personal'&&!dirty} className="primary" onClick={persistResearch}>
                       <Check size={17} />
                       שמירת מחקר
                     </button>
-                    <WebNewsSearch name={security.name}/>
+                    {researchView==='sources'&&<WebNewsSearch name={security.name}/>}
                   </div>
-                  <ResearchExchange key={researchKey} company={(()=>{const c=officialCompany(security.ticker,security.name);return c?{id:c.id,name:c.name,label:c.label}:{id:security.id,name:security.name,label:security.ticker||security.name};})()} current={draft} onChange={next=>{setDraft(next);setDirty(true);notify("המחקר נטען לטיוטה. בדוק ושמור את המחקר.");}} onPrepare={setPrompt}/>
-                  <div className="research-layout">
+                  <div className="research-view-tabs" role="tablist" aria-label="תצוגת מחקר" onKeyDown={e=>{const buttons=[...e.currentTarget.querySelectorAll<HTMLButtonElement>('[role=tab]')];const index=buttons.indexOf(document.activeElement as HTMLButtonElement);const next=e.key==='ArrowLeft'?(index+1)%buttons.length:e.key==='ArrowRight'?(index-1+buttons.length)%buttons.length:e.key==='Home'?0:e.key==='End'?buttons.length-1:-1;if(next>=0){e.preventDefault();buttons[next].click();buttons[next].focus();}}}>{([['overview','סקירה'],['valuation','מודל שווי'],['personal','המחקר שלי'],['sources','מקורות וכלים']] as const).map(([id,label])=><button role="tab" tabIndex={researchView===id?0:-1} aria-selected={researchView===id} aria-controls={`research-pane-${id}`} id={`research-tab-${id}`} key={id} onClick={()=>setResearchView(id)}>{label}</button>)}</div>
+                  <div hidden={researchView!=='sources'} id="research-pane-sources" role="tabpanel" aria-labelledby="research-tab-sources">{officialCompany(security.ticker,security.name)?<OfficialSources ticker={security.ticker} name={security.name} onPrepare={setPrompt} compact/>:<p>טרם הוגדרו מקורות רשמיים לחברה זו. אפשר לצרף קישור או דוח בכלים שלהלן.</p>}</div>
+                  <ResearchExchange key={researchKey} view={researchView} onNavigate={setResearchView} company={(()=>{const c=officialCompany(security.ticker,security.name);return c?{id:c.id,name:c.name,label:c.label}:{id:security.id,name:security.name,label:security.ticker||security.name};})()} current={draft} onChange={next=>{setDraft(next);setDirty(true);notify("המחקר נטען לטיוטה. בדוק ושמור את המחקר.");}} onPrepare={setPrompt}/>
+                  <div className="research-layout" hidden={researchView!=='personal'} id="research-pane-personal" role="tabpanel" aria-labelledby="research-tab-personal">
                     <div>
                       <div className="research-fields">
                         {Object.entries(labels).map(([key, label]) => (
