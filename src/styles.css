@@ -1780,3 +1780,15 @@ summary { cursor: pointer; min-height: 44px; padding-block: .55rem; line-height:
 .research-view-tabs button { overflow-wrap: anywhere; }
 .research-target-summary strong { font-size: clamp(1.25rem,8vw,2rem); overflow-wrap: anywhere; }
 .news-card-compact h3 { font-weight: 500; }
+
+/* Dated market context and a bounded weekly calendar. */
+.macro-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.macro-country {min-width:0;border:1px solid var(--border,#263243);border-radius:14px;padding:18px}
+.macro-country h3 {margin:0 0 8px}.macro-headline {font-weight:600}
+.macro-metrics {display:grid;gap:12px;margin-block:20px}.macro-metrics>div {display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;border-bottom:1px solid var(--border,#263243);padding-bottom:10px}
+.macro-metrics dd {margin:0;font-size:1.3rem;font-weight:700}.macro-metrics small {grid-column:1/-1}
+.macro-country details,.weekly-event details {margin-top:12px}.macro-country small,.weekly-event small {display:block;line-height:1.7}
+.week-controls {display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-block:18px}.week-controls b {overflow-wrap:anywhere}
+.weekly-events {display:grid;gap:10px}.weekly-event {border-bottom:1px solid var(--border,#263243);padding-block:14px;min-width:0;overflow-wrap:anywhere}.weekly-event>div {display:flex;align-items:center;flex-wrap:wrap;gap:10px}.weekly-event p {margin-block:8px}
+.next-earnings {display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;margin-block:14px;padding:12px 16px;border:1px solid var(--border,#263243);border-radius:10px;overflow-wrap:anywhere}.next-earnings small {flex-basis:100%}
+@media(max-width:700px){.macro-grid{grid-template-columns:minmax(0,1fr)}.macro-country{padding:14px}.week-controls button{flex:1 1 40%}.week-controls b{flex-basis:100%;order:-1}}

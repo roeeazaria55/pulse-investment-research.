@@ -195,3 +195,10 @@ navigation, and forms/readability are checked at 320/390/430px with 200% text.
 Validation includes pagination/search reset, task switching without draft loss,
 personal persistence and all existing model/PDF/import checks. Rollback: revert
 this layout PR; persisted personal research requires no conversion.
+
+## 2026-10-20 — Original research, macro context and weekly earnings
+- Restored original NBIS and approximate Sandisk targets as the preferred research view; kept later calculated models separately and disclosed missing original assumptions/weights.
+- Updated business theses for capacity delivery and contract economics, including Sandisk's omitted Investor Day.
+- Added dated US/Israel macro analysis and separately collected official-source headline updates.
+- Added weekly earnings navigation and per-company next-event dates with confirmed/estimated/unknown status, source provenance and call/results distinction.
+- Corrected calendar revision precedence so a newer reviewed registry event supersedes an older persisted unknown date.

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "reviewedAt": "2026-10-18",
+  "reviewedAt": "2026-10-20",
   "policy": "Company IR pages and issuer-distributed public releases only; metadata extracted without republishing release bodies. No paywall or block bypass. Unknown dates are not inferred.",
   "companies": [
     {
@@ -135,21 +135,25 @@
       "indexUrl": "https://www.lemonade.com/investor/news",
       "identitySource": "https://www.lemonade.com/investor",
       "allowedHosts": [
-        "www.lemonade.com"
+        "www.lemonade.com",
+        "www.prnewswire.com"
       ],
-      "reviewedAt": "2026-10-18",
+      "reviewedAt": "2026-10-20",
       "event": {
-        "period": null,
-        "date": null,
+        "period": "Q3 2026",
+        "date": "2026-11-05",
         "time": null,
         "timeZone": null,
-        "timing": null,
-        "call": null,
-        "sourceUrl": null,
-        "status": "unannounced",
-        "eventKind": "unknown",
-        "verifiedAt": null,
-        "verificationMethod": "No reviewed future date; source errors do not imply no announcement."
+        "timing": "before-market-open",
+        "call": {
+          "time": "08:00",
+          "timeZone": "America/New_York"
+        },
+        "sourceUrl": "https://www.prnewswire.com/news-releases/lemonade-to-announce-third-quarter-2026-financial-results-302912804.html",
+        "status": "confirmed",
+        "eventKind": "results-date",
+        "verifiedAt": "2026-10-20",
+        "verificationMethod": "Manual review of issuer-distributed PRNewswire announcement dated 19 October 2026."
       }
     },
     {
@@ -250,21 +254,25 @@
       "indexUrl": "https://enlightenergy.com/data/events-presentations/",
       "identitySource": "https://enlightenergy.com/info/about/",
       "allowedHosts": [
-        "enlightenergy.com"
+        "enlightenergy.com",
+        "www.globenewswire.com"
       ],
-      "reviewedAt": "2026-10-18",
+      "reviewedAt": "2026-10-20",
       "event": {
-        "period": null,
-        "date": null,
+        "period": "Q3 2026",
+        "date": "2026-11-03",
         "time": null,
-        "timeZone": null,
-        "timing": null,
-        "call": null,
-        "sourceUrl": null,
-        "status": "unannounced",
-        "eventKind": "unknown",
-        "verifiedAt": null,
-        "verificationMethod": "No reviewed future date; source errors do not imply no announcement."
+        "timeZone": "Asia/Jerusalem",
+        "timing": "before-market-open",
+        "call": {
+          "time": "08:00",
+          "timeZone": "America/New_York"
+        },
+        "sourceUrl": "https://www.globenewswire.com/news-release/2026/10/13/3379602/0/en/enlight-to-report-third-quarter-2026-financial-results-on-tuesday-november-3-2026.html",
+        "status": "confirmed",
+        "eventKind": "results-date",
+        "verifiedAt": "2026-10-20",
+        "verificationMethod": "Manual review of issuer release and SEC 6-K dated 13 October 2026; before TASE open, not a results time inferred from a call."
       }
     },
     {

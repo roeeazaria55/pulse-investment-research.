@@ -120,6 +120,36 @@
         "לוויין",
         "סיבים"
       ]
+    },
+    {
+      "id": "macro-us",
+      "name": "מאקרו ארה״ב",
+      "query": "(site:federalreserve.gov OR site:bls.gov OR site:bea.gov) (inflation OR interest rate OR GDP OR employment)",
+      "terms": [
+        "inflation",
+        "rate",
+        "gdp",
+        "employment",
+        "prices",
+        "economic",
+        "payroll"
+      ]
+    },
+    {
+      "id": "macro-israel",
+      "name": "מאקרו ישראל",
+      "query": "(site:boi.org.il OR site:cbs.gov.il) (ריבית OR אינפלציה OR צמיחה OR inflation OR monetary)",
+      "terms": [
+        "ריבית",
+        "אינפלציה",
+        "צמיחה",
+        "מדד",
+        "תוצר",
+        "inflation",
+        "monetary",
+        "interest",
+        "gdp"
+      ]
     }
   ],
   "companyIndustries": {

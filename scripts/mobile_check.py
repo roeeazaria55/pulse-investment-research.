@@ -24,6 +24,15 @@ with sync_playwright() as pw:
         page.get_by_text('התראות לאנדרואיד • הגדרה חד־פעמית',exact=True).wait_for()
         assert page.locator('html').get_attribute('dir')=='rtl'
         assert page.evaluate('document.documentElement.scrollWidth')<=width+1,f'Horizontal overflow at {width}'
+        page.get_by_role('heading',name='תמונת המאקרו',exact=True).wait_for()
+        page.get_by_role('button',name='השבוע הבא',exact=True).click()
+        page.get_by_role('button',name='השבוע הנוכחי',exact=True).click()
+        page.evaluate("document.activeElement?.blur();document.documentElement.style.fontSize='32px'")
+        page.evaluate("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))")
+        assert page.evaluate('document.documentElement.scrollWidth')<=width+1,f'Macro and calendar 200% overflow at {width}'
+        page.get_by_role('heading',name='תמונת המאקרו',exact=True).scroll_into_view_if_needed()
+        page.screenshot(path=f'work/mobile-{width}-macro.png',full_page=False)
+        page.evaluate("document.documentElement.style.fontSize='16px'")
         nav=page.get_by_role('navigation',name='ניווט נייד')
         nav.get_by_role('button',name='חדשות',exact=True).click()
         page.get_by_role('textbox',name='חיפוש חדשות').fill('Nebius')
@@ -57,6 +66,9 @@ with sync_playwright() as pw:
             company_select.select_option(f'initial-{index}')
             page.get_by_role('tab',name='סקירה',exact=True).click()
             exchange.get_by_role('heading',name=f'מחקר בסיס ל־{label}',exact=True).wait_for()
+            page.get_by_label('הדוח הבא',exact=True).wait_for()
+            if label=='NBIS':expect(exchange.locator('.research-target-summary strong')).to_have_text('$248.50')
+            if label=='SNDK':expect(exchange.locator('.research-target-summary strong')).to_have_text('≈$1,900.00')
             exchange.get_by_text('קריאת המחקר המלא',exact=True).click()
             page.evaluate("document.activeElement?.blur();document.documentElement.style.fontSize='32px'")
             page.evaluate("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))")

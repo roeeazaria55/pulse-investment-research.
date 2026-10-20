@@ -104,6 +104,9 @@ def collect_calendar(registry,previous,now,getter=get_page,pause=time.sleep):
     seen_urls={r['sourceUrl'] for r in releases}
     for company in registry['companies']:
         sid=company['securityId'];event=copy.deepcopy(old.get(sid) or dict(company['event'],securityId=sid,name=company['name']))
+        # A newly reviewed registry entry must supersede an older persisted event.
+        if (company['event'].get('verifiedAt') or '') > (event.get('verifiedAt') or ''):
+            event.update(copy.deepcopy(company['event']))
         status={'securityId':sid,'lastAttemptAt':now,'lastSuccessfulAt':next((s['lastSuccessfulAt'] for s in previous.get('sources',[]) if s['securityId']==sid),None),'status':'no-source','error':None,'url':company['indexUrl']}
         if company['indexUrl']:
             try:

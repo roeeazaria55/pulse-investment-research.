@@ -8,7 +8,9 @@ it('covers every company with a calculated weighted target and a fixed 12-month 
   expect(m.horizonDate).toBe('2027-10-19');const r=modelValue(m)!;
   expect(r.weighted).toBeCloseTo(r.results[0].target*.2+r.results[1].target*.5+r.results[2].target*.3,8);
   expect(r.results[0].target).toBeLessThanOrEqual(r.results[1].target);expect(r.results[1].target).toBeLessThanOrEqual(r.results[2].target);
-  expect(publishedFor(m.companyId)!.analysis.fields.valuation).toContain('יעד משוקלל:');
+  const published=publishedFor(m.companyId)!.analysis.fields.valuation;
+  if(['candidate-nebius','candidate-sandisk'].includes(m.companyId))expect(published).toContain('שחזור');
+  else expect(published).toContain('יעד משוקלל:');
   expect(publishedFor(m.companyId)!.analysis.missing.some(s=>s.includes('אין מחיר יעד'))).toBe(false);
  }
 });

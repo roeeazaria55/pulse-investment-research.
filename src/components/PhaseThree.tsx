@@ -1,3 +1,4 @@
+import {WeeklyEarnings} from './MarketContext';
 import type {Intelligence,DailyBriefing,Rating} from '../intelligenceTypes';
 import type {News} from '../types';
 import {Section,dateTime} from './UI';
@@ -35,23 +36,7 @@ export function DailyPanel({intel,date,news=[]}:{intel:Intelligence;date?:string
     {intel.dailyBriefings.length>1&&<details><summary>תדריכים קודמים</summary>{intel.dailyBriefings.slice(1,8).map(b=><a className="text-button" href={`#briefing=${b.date}`} key={b.id}>{b.date}</a>)}</details>}
   </Section>;
 }
-export function CalendarPanel({intel,focus}:{intel:Intelligence;focus?:string}){
-  const render=(e:typeof intel.calendar.events[number])=>{const source=intel.calendar.sources.find(s=>s.securityId===e.securityId);return <article className="earnings-card" id={`earnings-${e.id}`} key={e.id}>
-    <h3 dir="auto">{e.name}</h3><span className="badge">{{confirmed:'מועד מאושר',estimated:'מועד משוער',unannounced:'מועד טרם אומת'}[e.status]}</span>
-    <p>{e.period||'תקופת הדוח טרם אומתה'} • <b dir="ltr">{e.date||'אין תאריך מאומת'}</b></p>
-    <p>{e.eventKind==='earnings-call'?'שיחת משקיעים — אינה פרסום תוצאות':e.eventKind==='results-date'?'מועד פרסום תוצאות':'אירוע דוח עתידי טרם אומת'}</p>
-    <p>{e.time?`${e.time} • ${e.timeZone}`:'שעה מדויקת לא נמסרה'}{e.timing==='before-market-open'?' • לפני פתיחת המסחר':e.timing==='after-market-close'?' • לאחר סיום המסחר':''}</p>
-    {e.call&&e.eventKind!=='earnings-call'&&<p>שיחת משקיעים בנפרד: {e.call.time} • {e.call.timeZone}. אינה שעת פרסום התוצאות.</p>}
-    {e.sourceUrl&&<a className="text-button" href={e.sourceUrl} target="_blank" rel="noopener noreferrer">ההודעה המקורית ↗</a>}
-    <small>אימות מועד: {e.verifiedAt||'טרם בוצע'} • בדיקת מקור: {source?.lastAttemptAt?dateTime(source.lastAttemptAt):'אין'} • {source?.status==='ok'?'דף זמין':source?.status==='partial'?'כיסוי חלקי; חלק מדפי המקור נכשלו':source?.status==='no-source'?'אין מקור איסוף רשמי מוגדר':'מקור לא זמין — המידע הקודם נשמר'}</small>
-  </article>;};
-  return <Section title="דוחות קרובים" eyebrow="קשרי משקיעים • ללא תאריכים מומצאים">
-    <div className="earnings-grid">{intel.calendar.events.filter(e=>e.status!=='unannounced').sort((a,b)=>(a.date||'').localeCompare(b.date||'')).map(render)}</div>
-    <details><summary>חברות ללא מועד מאומת</summary>{intel.calendar.events.filter(e=>e.status==='unannounced').map(render)}</details>
-    <p>תזכורות אוטומטיות: ברירת מחדל שלושה ימים ויום לפני. ההפעלה וההעדפות מוגדרות בנפרד ב־GitHub Secrets.</p>
-    <details open={!!focus||undefined}><summary>פרסומי תוצאות שזוהו בפועל</summary>{intel.calendar.releases.length?intel.calendar.releases.slice().reverse().slice(0,15).map(r=><article id={`results-${r.id}`} key={r.id}><a className="text-button" href={r.sourceUrl} target="_blank" rel="noopener noreferrer" dir="auto">{r.headline} ↗</a><p>זוהה: {dateTime(r.firstDetectedAt)} • פרסום: {r.publishedAt?dateTime(r.publishedAt):'זמן לא נמסר'} • מקור רשמי</p></article>):<p>טרם זוהה פרסום תוצאות במקורות הזמינים. כשל מקור אינו הוכחה שלא פורסמו תוצאות.</p>}</details>
-  </Section>;
-}
+export function CalendarPanel({intel,focus}:{intel:Intelligence;focus?:string}){return <WeeklyEarnings intel={intel} focus={focus}/>;}
 export function NotificationsPanel({open=false}:{open?:boolean}){
   return <details className="panel notifications-panel" id="notification-setup" open={open||undefined}><summary>התראות לאנדרואיד • הגדרה חד־פעמית</summary>
     <p>אין עדיין הוכחה לקבלה בטלפון. אישור מהשרת אינו אישור מסירה.</p>
