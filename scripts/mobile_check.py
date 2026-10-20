@@ -32,15 +32,17 @@ with sync_playwright() as pw:
         card.get_by_role('button',name='סימון כנקרא',exact=True).click()
         assert card.get_by_role('button',name='נקרא — ביטול סימון',exact=True).get_attribute('aria-pressed')=='true'
         page.screenshot(path=f'work/mobile-{width}.png',full_page=False)
-        page.evaluate("document.documentElement.style.fontSize='32px'")
+        page.get_by_text('סינון נוסף',exact=True).click()
+        page.evaluate("document.activeElement?.blur();document.documentElement.style.fontSize='32px'")
+        page.evaluate("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))")
         assert page.evaluate('document.documentElement.scrollWidth')<=width+1,f'200% text overflow at {width}'
         page.get_by_role('button',name='רענון מידע',exact=True).scroll_into_view_if_needed()
         page.screenshot(path=f'work/mobile-{width}-text200.png',full_page=False)
         # Emulate keyboard's visual viewport independently from layout viewport.
         page.evaluate("document.documentElement.style.fontSize='16px'")
         nav.get_by_role('button',name='מחקר',exact=True).click()
+        page.get_by_role('tab',name='מקורות וכלים',exact=True).click()
         official=page.get_by_role('region',name='מקורות רשמיים וחבילת מחקר')
-        official.get_by_role('button',name='NBIS',exact=True).click()
         official.get_by_role('button',name='הכנת חבילת מקורות ל־NBIS',exact=True).click()
         pack=page.get_by_role('dialog',name='בקשת ניתוח ל־ChatGPT')
         assert 'מטא־נתונים וקישורים בלבד' in pack.get_by_role('textbox',name='טקסט להעתקה').input_value()
@@ -53,8 +55,14 @@ with sync_playwright() as pw:
         labels=['NBIS','META','DLO','FTAI','LMND','SNDK','IREN','נקסט ויזן','אנלייט','בריינסוויי','גילת טלקום']
         for index,label in enumerate(labels):
             company_select.select_option(f'initial-{index}')
+            page.get_by_role('tab',name='סקירה',exact=True).click()
             exchange.get_by_role('heading',name=f'מחקר בסיס ל־{label}',exact=True).wait_for()
             exchange.get_by_text('קריאת המחקר המלא',exact=True).click()
+            page.evaluate("document.activeElement?.blur();document.documentElement.style.fontSize='32px'")
+            page.evaluate("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))")
+            assert page.evaluate('document.documentElement.scrollWidth')<=width+1,f'Overview {label} overflow at {width}'
+            page.evaluate("document.documentElement.style.fontSize='16px'")
+            page.get_by_role('tab',name='מודל שווי',exact=True).click()
             model=exchange.locator('.company-valuation')
             model.locator('summary').filter(has_text='תרחישים, חישוב ורגישויות').click()
             model.get_by_test_id('weighted-model-target').wait_for()
@@ -82,7 +90,7 @@ with sync_playwright() as pw:
                 model.locator('h4').first.scroll_into_view_if_needed()
                 page.screenshot(path=f'work/mobile-{width}-model-{index}.png',full_page=False)
         company_select.select_option('initial-0')
-        exchange.get_by_role('heading',name='מחקר בסיס ל־NBIS',exact=True).wait_for()
+        page.get_by_role('tab',name='מודל שווי',exact=True).click()
         exchange.get_by_text('NBIS · המודל שלנו ל־12 חודשים',exact=True).click()
         exchange.get_by_text('בדיקת היתכנות היעדים המקוריים',exact=True).click()
         for label,value in [('מזומן חופשי במועד היעד','3000'),('חוב בכיר נוסף במועד היעד','5000'),('מניות נוספות עד היעד','20'),('שווי החזקות נוסף','1000'),('חלק מתוספת הפירעון המלאה (%)','50'),('הכנסה שנתית לצורך בדיקת המכפיל','11000'),('שיעור EBITDA מתואם (%)','40')]:
@@ -98,6 +106,7 @@ with sync_playwright() as pw:
         page.screenshot(path=f'work/mobile-{width}-valuation.png',full_page=False)
         page.evaluate("document.documentElement.style.fontSize='16px'")
         exchange.get_by_text('NBIS · המודל שלנו ל־12 חודשים',exact=True).click()
+        page.get_by_role('tab',name='מקורות וכלים',exact=True).click()
         exchange.locator('summary').filter(has_text='1. קריאת PDF').click()
         # Small in-memory PDF fixture tests the actual bundled PDF.js worker.
         content=b'BT /F1 12 Tf 40 150 Td (PULSE SOURCE TEST 2026) Tj ET'
@@ -121,6 +130,7 @@ with sync_playwright() as pw:
         assert page.evaluate("JSON.parse(localStorage.getItem('pulse.personal.v1')).research.NBIS.thesis")=='MOBILE TEST IMPORT ONLY'
         prior=page.evaluate("JSON.parse(localStorage.getItem('pulse.personal.v1')).research.NBIS.versions[0].fields.thesis")
         page.reload();nav.get_by_role('button',name='מחקר',exact=True).click()
+        page.get_by_role('tab',name='מקורות וכלים',exact=True).click()
         exchange=page.get_by_role('region',name='ניתוח מסמכים וייבוא מחקר')
         exchange.locator('summary').filter(has_text='גרסאות מחקר קודמות').click()
         exchange.get_by_text('הצגת הגרסה',exact=True).first.click()

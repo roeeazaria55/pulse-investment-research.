@@ -89,6 +89,7 @@ describe("application user flows", () => {
     render(<App />);
     await screen.findByText("מצב הדגמה");
     nav("מחקר");
+    fireEvent.click(screen.getByRole("tab",{name:"המחקר שלי"}));
     fireEvent.change(screen.getByLabelText("תזת השקעה"), {
       target: { value: "A private investment hypothesis" },
     });

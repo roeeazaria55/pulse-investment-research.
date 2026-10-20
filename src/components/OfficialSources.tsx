@@ -4,7 +4,7 @@ import {officialPack} from '../research/officialPack';
 import {dateTime} from './UI';
 const kinds={results:'פרסום תוצאות',schedule:'הודעה על מועד עתידי',document:'מסמך או מצגת',release:'הודעת חברה'};
 const statuses={ok:'נאספו קישורים',failed:'הבדיקה האחרונה נכשלה', 'not-checked':'טרם נבדק'};
-export function OfficialSources({ticker,name,onPrepare}:{ticker?:string;name?:string;onPrepare:(text:string)=>void}){
+export function OfficialSources({ticker,name,onPrepare,compact=false}:{compact?:boolean;ticker?:string;name?:string;onPrepare:(text:string)=>void}){
   const [active,setActive]=useState(officialCompany(ticker,name)?.id||'candidate-nebius');
   const [snapshot,setSnapshot]=useState<OfficialSnapshot|null>(null);
   const [error,setError]=useState('');const [loading,setLoading]=useState(true);const [reload,setReload]=useState(0);
@@ -21,9 +21,9 @@ export function OfficialSources({ticker,name,onPrepare}:{ticker?:string;name?:st
   const c=officialRegistry.companies.find(c=>c.id===active)!;
   const items=snapshot?.items.filter(n=>n.companyId===c.id)||[];
   return <section className="official-panel" aria-label="מקורות רשמיים וחבילת מחקר">
-    <div className="official-heading"><div><small>מקורות החברה · כל 11 החברות</small><h2>מהמקור אל התזה.</h2></div><button onClick={()=>setReload(x=>x+1)} disabled={loading}>{loading?'בודק מקורות שמורים…':'רענון המקורות'}</button></div>
+    <div className="official-heading"><div><small>מקורות רשמיים</small><h2>{compact?`המקורות של ${c.label}`:'מהמקור אל התזה.'}</h2></div><button onClick={()=>setReload(x=>x+1)} disabled={loading}>{loading?'בודק מקורות שמורים…':'רענון המקורות'}</button></div>
     <p>הודעות חברה, דוחות ומצגות — עם מקור ותאריך כאשר זמינים. תוכן המסמכים לא נאסף ולא סוכם ב־AI.</p>
-    <div className="official-tabs" aria-label="חברה לחבילת מקורות">{officialRegistry.companies.map(x=><button key={x.id} aria-pressed={active===x.id} onClick={()=>setActive(x.id)}>{x.label}</button>)}</div>
+    {!compact&&<div className="official-tabs" aria-label="חברה לחבילת מקורות">{officialRegistry.companies.map(x=><button key={x.id} aria-pressed={active===x.id} onClick={()=>setActive(x.id)}>{x.label}</button>)}</div>}
     {error&&<p role="status">{error}</p>}
     <div className="official-statuses">{c.sources.map(source=>{const status=snapshot?.sources.find(s=>s.id===source.id);return <div key={source.id}>
       <a href={source.url} target="_blank" rel="noopener noreferrer">{source.label} ↗</a>

@@ -1,5 +1,6 @@
+import {readableHeadline} from '../research/newsPresentation';
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { ArrowUpLeft, Bookmark, ExternalLink, X } from "lucide-react";
+import { ArrowUpLeft, Bookmark, Check, ExternalLink, X } from "lucide-react";
 import type { News } from "../types";
 import {WhyImportant} from './PhaseThree';
 export const dateTime = (date: string) =>
@@ -112,7 +113,9 @@ export function NewsCard({
   onResearch,
   read=false,
   onRead,
+  compact=false,
 }: {
+  compact?:boolean;
   item: News;
   saved: boolean;
   onSave: () => void;
@@ -120,15 +123,13 @@ export function NewsCard({
   read?:boolean;
   onRead?:()=>void;
 }) {
-  const [unrelated,setUnrelated]=useState(()=>{try{return JSON.parse(localStorage.getItem('pulse-unrelated-news')||'[]').includes(item.id);}catch{return false;}});
-  const [reportError,setReportError]=useState(false);
   return (
-    <article className={`news-card ${read?'is-read':''}`} id={`news-${item.id}`}>
+    <article className={`news-card ${compact?'news-card-compact':''} ${read?'is-read':''}`} id={`news-${item.id}`}>
       <div className="news-top">
-        <div className="company-avatar">{(item.ticker || item.company).slice(0, 2)}</div>
+        {!compact&&<div className="company-avatar">{(item.ticker || item.company).slice(0, 2)}</div>}
         <div>
           <b dir="ltr">{item.ticker}</b>
-          <small>{item.company}</small>
+          {(!compact||item.company!==item.ticker)&&<small>{item.company}</small>}
         </div>
         <span className={`badge ${item.importance}`}>
           {
@@ -138,10 +139,42 @@ export function NewsCard({
           }
         </span>
       </div>
-      <span className="demo-label">
+      {(!compact||item.demo)&&<span className="demo-label">
         {item.demo ? "תוכן הדגמה • אינו דיווח אמיתי" : "מקור חיצוני • יש לאמת"}
-      </span>
-      <h3 dir="auto">{item.headline}</h3>
+      </span>}
+      <h3 dir="auto">{compact?<a href={item.sourceUrl} target="_blank" rel="noopener noreferrer">{readableHeadline(item.headline,item.publisher)}</a>:item.headline}</h3>
+      {compact&&<p className="news-byline">{item.publisher||item.sourceName||'מקור חיצוני'}<span> · {item.publishedAt?dateTime(item.publishedAt):'מועד פרסום לא ידוע'}</span></p>}
+      {compact&&item.discoveryProvider&&<small className="headline-only">כותרת בלבד · הכתבה המלאה לא נקראה</small>}
+      {compact&&<details className="news-context"><summary>פרטים והקשר</summary><NewsContext item={item}/><button className="text-button" onClick={onResearch}>פתיחת מחקר החברה <ArrowUpLeft size={14}/></button></details>}
+      {!compact&&<>
+      <NewsContext item={item}/>
+      </>}
+      <div className="news-actions">
+        {onRead&&<button onClick={onRead} aria-pressed={read} aria-label={read?'נקרא — ביטול סימון':'סימון כנקרא'} title={read?'נקרא — ביטול סימון':'סימון כנקרא'}>{compact?<Check size={18}/>:read?'נקרא — ביטול סימון':'סימון כנקרא'}</button>}
+        <a href={item.sourceUrl} target="_blank" rel="noopener noreferrer">
+          {item.demo ? "קישור הדגמה" : item.linkKind==='google-news-redirect' ? "פתיחה דרך Google News" : "מקור"}
+          <ExternalLink size={14} />
+        </a>
+        {!compact&&<button onClick={onResearch}>
+          מחקר
+          <ArrowUpLeft size={15} />
+        </button>}
+        <button
+          aria-pressed={saved}
+          className={saved ? "saved" : ""}
+          onClick={onSave}
+        >
+          <Bookmark size={16} fill={saved ? "currentColor" : "none"} />
+          {saved ? "נשמר" : "שמירה"}
+        </button>
+      </div>
+
+    </article>
+  );
+}
+
+function NewsContext({item}:{item:News}){return <div className="news-context-content">
+{readableHeadline(item.headline,item.publisher)!==item.headline&&<p className="muted">כותרת המקור: <span dir="auto">{item.headline}</span></p>}
       {item.summary && <p>{item.summary}</p>}
       {item.discoveryProvider && <p>מפרסם: <b>{item.publisher}</b> • גילוי: {item.discoveryProvider}<br/>כותרת ומטא־נתונים בלבד; הכתבה המלאה לא נקראה.</p>}
       {item.rating && <WhyImportant rating={item.rating}/>}
@@ -165,26 +198,11 @@ export function NewsCard({
         {item.discoveredAt && <span>זמן גילוי אצל הספק: {item.discoveredAt} (אינו זמן פרסום)</span>}
         {item.sourceName && <span>מקור: {item.sourceName} • שעון ישראל</span>}
       </div>
-      <div className="news-actions">
-        {onRead&&<button onClick={onRead} aria-pressed={read}>{read?'נקרא — ביטול סימון':'סימון כנקרא'}</button>}
-        <a href={item.sourceUrl} target="_blank" rel="noopener noreferrer">
-          {item.demo ? "קישור הדגמה" : item.linkKind==='google-news-redirect' ? "פתיחה דרך Google News" : "מקור"}
-          <ExternalLink size={14} />
-        </a>
-        <button onClick={onResearch}>
-          מחקר
-          <ArrowUpLeft size={15} />
-        </button>
-        <button
-          aria-pressed={saved}
-          className={saved ? "saved" : ""}
-          onClick={onSave}
-        >
-          <Bookmark size={16} fill={saved ? "currentColor" : "none"} />
-          {saved ? "נשמר" : "שמירה"}
-        </button>
-      </div>
-      {item.discoveryProvider && <><button className="text-button" aria-pressed={unrelated} onClick={()=>{try{const ids: string[]=JSON.parse(localStorage.getItem('pulse-unrelated-news')||'[]');localStorage.setItem('pulse-unrelated-news',JSON.stringify(unrelated?ids.filter(id=>id!==item.id):[...new Set([...ids,item.id])]));setUnrelated(!unrelated);setReportError(false);}catch{setReportError(true);}}}>{unrelated?'סומן במכשיר כלא קשור — ביטול':'דיווח: לא קשור לחברה'}</button>{unrelated&&<small>הסימון נשמר במכשיר בלבד, אינו נשלח לשרת ואינו משנה את הפיד הציבורי.</small>}{reportError&&<small role="alert">לא ניתן לשמור סימון במכשיר.</small>}</>}
-    </article>
-  );
+
+<UnrelatedReport item={item}/>
+</div>;}
+function UnrelatedReport({item}:{item:News}){
+ const [unrelated,setUnrelated]=useState(()=>{try{return JSON.parse(localStorage.getItem('pulse-unrelated-news')||'[]').includes(item.id);}catch{return false;}});
+ const [reportError,setReportError]=useState(false);
+ return <>      {item.discoveryProvider && <><button className="text-button" aria-pressed={unrelated} onClick={()=>{try{const ids: string[]=JSON.parse(localStorage.getItem('pulse-unrelated-news')||'[]');localStorage.setItem('pulse-unrelated-news',JSON.stringify(unrelated?ids.filter(id=>id!==item.id):[...new Set([...ids,item.id])]));setUnrelated(!unrelated);setReportError(false);}catch{setReportError(true);}}}>{unrelated?'סומן במכשיר כלא קשור — ביטול':'דיווח: לא קשור לחברה'}</button>{unrelated&&<small>הסימון נשמר במכשיר בלבד, אינו נשלח לשרת ואינו משנה את הפיד הציבורי.</small>}{reportError&&<small role="alert">לא ניתן לשמור סימון במכשיר.</small>}</>}</>;
 }
