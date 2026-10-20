@@ -1792,3 +1792,10 @@ summary { cursor: pointer; min-height: 44px; padding-block: .55rem; line-height:
 .weekly-events {display:grid;gap:10px}.weekly-event {border-bottom:1px solid var(--border,#263243);padding-block:14px;min-width:0;overflow-wrap:anywhere}.weekly-event>div {display:flex;align-items:center;flex-wrap:wrap;gap:10px}.weekly-event p {margin-block:8px}
 .next-earnings {display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;margin-block:14px;padding:12px 16px;border:1px solid var(--border,#263243);border-radius:10px;overflow-wrap:anywhere}.next-earnings small {flex-basis:100%}
 @media(max-width:700px){.macro-grid{grid-template-columns:minmax(0,1fr)}.macro-country{padding:14px}.week-controls button{flex:1 1 40%}.week-controls b{flex-basis:100%;order:-1}}
+
+.full-company-research {max-width:78ch;margin-inline:auto;line-height:1.9;overflow-wrap:anywhere}
+.research-reading-intro {font-weight:600;font-size:1.05rem}.research-coverage-note {border-inline-start:3px solid #6daea4;padding-inline-start:14px;color:var(--muted,#a6b5c9)}
+.research-chapters {display:flex;flex-wrap:wrap;gap:8px;margin-block:20px}.research-chapters button {min-height:44px;font-size:.88rem;white-space:normal}
+.research-reading-chapter {padding-block:20px;border-bottom:1px solid var(--border,#263243)}.research-reading-chapter h4 {font-size:1.15rem;scroll-margin-top:95px}.research-reading-chapter h5 {font-size:1rem;margin-block:18px 8px}.research-reading-chapter p {white-space:pre-line}.research-reading-chapter small {display:block;color:var(--muted,#a6b5c9)}
+.original-research-passage {padding-block:14px}.original-research-passage h5 {margin-top:5px}.research-reading-field {margin-block:18px}.research-reading-chapter li {margin-bottom:10px}
+@media(max-width:600px){.research-chapters button {flex:1 1 40%;min-width:0}.research-reading-chapter {padding-block:16px}}

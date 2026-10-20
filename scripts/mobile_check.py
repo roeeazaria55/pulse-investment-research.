@@ -69,7 +69,12 @@ with sync_playwright() as pw:
             page.get_by_label('הדוח הבא',exact=True).wait_for()
             if label=='NBIS':expect(exchange.locator('.research-target-summary strong')).to_have_text('$248.50')
             if label=='SNDK':expect(exchange.locator('.research-target-summary strong')).to_have_text('≈$1,900.00')
-            exchange.get_by_text('קריאת המחקר המלא',exact=True).click()
+            full_reading=exchange.get_by_text('קריאת המחקר המלא',exact=True)
+            if full_reading.evaluate('(el)=>!el.parentElement.open'):full_reading.click()
+            if label in ['NBIS','SNDK']:
+                chapters=exchange.get_by_role('navigation',name=f'פרקי הניתוח של {label}')
+                expect(chapters.get_by_role('button')).to_have_count(6)
+                chapters.get_by_role('button',name='התרחישים והתמחור',exact=True).click()
             page.evaluate("document.activeElement?.blur();document.documentElement.style.fontSize='32px'")
             page.evaluate("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))")
             assert page.evaluate('document.documentElement.scrollWidth')<=width+1,f'Overview {label} overflow at {width}'
