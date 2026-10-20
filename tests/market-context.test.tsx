@@ -40,11 +40,11 @@ it('marks analysis stale after a scheduled decision, without treating headline c
  expect(screen.getByText(/אינם מעדכנים אוטומטית את הניתוח/)).toBeTruthy();
  expect(screen.getByText('3.7%')).toBeTruthy();expect(screen.getByText('1.6%')).toBeTruthy();
 });
-it('restores original targets consistently and does not invent missing Sandisk probabilities',()=>{
- expect(researchTarget('candidate-nebius')!.target).toBe(248.5);
- expect(researchTarget('candidate-sandisk')!.target).toBe(1900);expect(researchTarget('candidate-sandisk')!.approximate).toBe(true);
- expect(publishedFor('candidate-sandisk')!.analysis.fields.valuation).toContain('המשקולות והגישור הפיננסי לא שוחזרו');
- expect(publishedFor('candidate-nebius')!.analysis.fields.base).toContain('235');
+it('adopts supplied targets consistently and retains prior models as historical data',()=>{
+ expect(researchTarget('candidate-nebius')!.target).toBeCloseTo(182.3333333);
+ expect(researchTarget('candidate-sandisk')!.target).toBe(1759.5);expect(researchTarget('candidate-sandisk')!.approximate).toBe(true);
+ expect(publishedFor('candidate-sandisk')!.analysis.fields.valuation).toContain('FY2028');
+ expect(publishedFor('candidate-nebius')!.analysis.fields.base).toContain('156.67');
  render(<OriginalSandisk/>);expect(screen.getAllByText('המשקל המקורי לא שוחזר')).toHaveLength(3);
  expect(screen.queryByRole('spinbutton')).toBeNull();
 });
