@@ -1,3 +1,4 @@
+import {suppliedFor} from './suppliedResearch';
 import {companyModelFor,modelMoney} from './companyModels';
 import {modelValue} from '../research/scenarioModel';
 import nbis from './nbis-research.json';
@@ -10,7 +11,7 @@ export const publishedResearch:PublishedResearch[]=rows.map(row=>{
  if(!officialRegistry.companies.some(c=>c.id===row.analysis.companyId))throw Error('Unknown published research identity');
  const model=companyModelFor(row.analysis.companyId);
  if(!model)return {...row,analysis:parseAnalysis(JSON.stringify(row.analysis),row.analysis.companyId)};
- if(['candidate-nebius','candidate-sandisk'].includes(row.analysis.companyId))return {...row,analysis:parseAnalysis(JSON.stringify(row.analysis),row.analysis.companyId)};
+ if(suppliedFor(row.analysis.companyId))return {...row,analysis:parseAnalysis(JSON.stringify(row.analysis),row.analysis.companyId)};
  const computed=modelValue(model)!;
  const scenarioText=model.scenarios.map((s,i)=>`${s.label}: ${modelMoney(computed.results[i].target,model.quoteCurrency)} (${s.probability}%)`).join('; ');
 

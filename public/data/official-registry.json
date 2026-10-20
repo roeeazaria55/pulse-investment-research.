@@ -428,6 +428,47 @@
         "Gilat Telecom",
         "גילת טלקום"
       ]
+    },
+    {
+      "id": "us-smci-nasdaq-common",
+      "ticker": "SMCI",
+      "name": "Super Micro Computer",
+      "label": "SMCI",
+      "aliases": [
+        "Supermicro",
+        "סופר מיקרו",
+        "סופרמיקרו"
+      ],
+      "allowedHosts": [
+        "ir.supermicro.com",
+        "www.sec.gov",
+        "data.sec.gov"
+      ],
+      "documentPaths": [
+        "/news/",
+        "/news-events/",
+        "/financials/",
+        "/Archives/edgar/data/1375365/"
+      ],
+      "sources": [
+        {
+          "id": "smci-news",
+          "label": "חדשות קשרי משקיעים",
+          "url": "https://ir.supermicro.com/news/default.aspx"
+        },
+        {
+          "id": "smci-sec",
+          "label": "דיווחי SEC לפי מזהה החברה",
+          "url": "https://data.sec.gov/submissions/CIK0001375365.json",
+          "format": "sec-submissions",
+          "cik": "1375365"
+        }
+      ],
+      "questions": [
+        "האם התזרים מתקרב לרווח הנקי ומה השתנה במלאי ובחייבים?",
+        "האם שיפור המרווח מתמשך ומה מצב ריכוזיות הלקוחות והספקים?",
+        "מה השתנה בבקרות, בחקירות, במימון ובמספר המניות המדולל?"
+      ]
     }
   ]
 }

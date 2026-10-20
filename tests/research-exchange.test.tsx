@@ -13,7 +13,7 @@ const company={id:'candidate-nebius',name:'Nebius Group',label:'NBIS'};
 function payload(id=company.id){return {version:1,companyId:id,asOf:'2026-10-18',fields:{...Object.fromEntries(Object.entries(blankResearch()).filter(([k])=>k!=='notes')),thesis:'NEW THESIS',risks:'NEW RISK'},sourceUrls:['https://nebius.com/financials'],missing:['Test missing data']};}
 afterEach(()=>{cleanup();vi.unstubAllGlobals();});
 it('covers every tracked company, including four distinct Israeli identities',()=>{
- expect(officialRegistry.companies).toHaveLength(11);
+ expect(officialRegistry.companies).toHaveLength(12);
  const snap=parseOfficialSnapshot(official);
  for(const c of officialRegistry.companies){
   const found=officialCompany(c.ticker,c.name);expect(found?.id).toBe(c.id);

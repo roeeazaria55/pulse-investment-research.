@@ -36,7 +36,7 @@ import { DiscoveryPanel, WebNewsSearch } from "./components/Discovery";
 import {DailyPanel,CalendarPanel,NotificationsPanel} from './components/PhaseThree';
 import { OfficialSources } from "./components/OfficialSources";
 import { ResearchExchange } from "./components/ResearchExchange";
-import { officialCompany } from "./data/official";
+import { officialCompany,officialRegistry } from "./data/official";
 import type { Feed, Holding, News, Research, Security } from "./types";
 
 const tabs = [
@@ -108,6 +108,10 @@ export default function App() {
         verified: false,
       });
     }
+  }
+  // Public research is available without mutating an existing personal watchlist.
+  for(const c of officialRegistry.companies){
+    if(!allSecurities.some(s=>officialCompany(s.ticker,s.name)?.id===c.id))allSecurities.push({id:`research-${c.id}`,ticker:c.ticker,name:c.name,category:'מחקר ציבורי',verified:false});
   }
   const security =
     allSecurities.find((s) => s.id === selected) || allSecurities[0];

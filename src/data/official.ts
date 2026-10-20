@@ -22,7 +22,7 @@ const nullableStamp=(x:unknown)=>x===null||stamp(x);
 const text=(x:unknown,max=600):x is string=>typeof x==='string'&&x.length>0&&x.length<=max;
 export function parseOfficialSnapshot(value: unknown): OfficialSnapshot {
   const f=value as OfficialSnapshot;
-  if(!f||f.version!==1||!nullableStamp(f.generatedAt)||!Array.isArray(f.items)||f.items.length>264||!Array.isArray(f.sources))throw Error('Invalid official snapshot');
+  if(!f||f.version!==1||!nullableStamp(f.generatedAt)||!Array.isArray(f.items)||f.items.length>registry.companies.length*24||!Array.isArray(f.sources))throw Error('Invalid official snapshot');
   const sourceMap=new Map(registry.companies.flatMap(c=>c.sources.map(s=>[s.id,{...s,company:c}])));
   const keys=new Set<string>();
   for(const s of f.sources){
