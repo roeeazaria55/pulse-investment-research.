@@ -35,8 +35,8 @@ export function reportComparison(data:ReportIntakeSnapshot,companyId:string,metr
  const pool=samePeriod.length?samePeriod:candidates;
  const latestEnd=pool.map(c=>c.end).sort().at(-1)!;
  const selected=pool.filter(c=>c.end===latestEnd);
- if(selected.some(c=>c.document.revised||c.document.error))return {status:'review',label:'דוח מתוקן או עדכון שנכשל · נדרשת בדיקה לפני השוואה'};
  if(new Set(selected.map(c=>JSON.stringify(c.point))).size!==1)return {status:'conflict',label:'נתוני מקור סותרים · אין השוואה עד לבירור'};
  selected.sort((a,b)=>b.document.lastSuccessfulAt.localeCompare(a.document.lastSuccessfulAt));
+ if(selected.some(c=>c.document.revised||c.document.error))return {status:'review',label:'דוח מתוקן או עדכון שנכשל · נדרשת בדיקה לפני השוואה',observation:selected[0]};
  return {status:'mapped',label:'מיפוי אוטומטי מנתון מקור · ממתין לאימות',observation:selected[0]};
 }

@@ -16,11 +16,12 @@ export function ThesisMonitor({companyId}:{companyId:string}){
   <div className="thesis-metrics">{monitor.metrics.map(metric=>{
    const intake=data?reportComparison(data,companyId,metric):null;
    const observation=intake?.observation;
-   const result=metricComparison(observation?.point||null,metric.target);
+   const result=metricComparison(intake?.status==='mapped'?observation!.point:null,metric.target);
    return <details className="thesis-metric" key={metric.id}>
-    <summary><span>{metric.title}</span><small>{observation?result.label:intake?.label||(failed?'מצב קליטת הדוחות אינו זמין':'טוען נתוני דוחות…')}</small></summary>
+    <summary><span>{metric.title}</span><small>{intake?.status==='mapped'?result.label:intake?.label||(failed?'מצב קליטת הדוחות אינו זמין':'טוען נתוני דוחות…')}</small></summary>
     <dl className="thesis-metric-points"><div><dt>נקודת הפתיחה במחקר</dt><dd>{metric.baseline}</dd></div><div><dt>מה הניתוח מניח קדימה</dt><dd>{metric.expectation}</dd></div></dl>
     {observation&&<div className="mapped-observation"><p><b>נתון מהדוח · ממתין לאימות:</b> <bdi>{observation.point.value.toLocaleString('en-US',{maximumFractionDigits:3})} {observation.point.unit} · {observation.point.period}</bdi></p><p><a href={observation.document.finalUrl} target="_blank" rel="noopener noreferrer">למקור הרשמי ↗</a> · תקופת הנתון <bdi>{observation.start} – {observation.end}</bdi> · נקרא {new Date(observation.document.lastSuccessfulAt).toLocaleString('he-IL')}</p><p className="muted"><bdi>{observation.concept} · {observation.context}</bdi> · {observation.point.basis}</p><small>מזהה גרסת מקור SHA-256: <bdi>{observation.document.sha256}</bdi>. החילוץ והמיפוי אינם אימות חשבונאי.</small></div>}
+    {intake?.status==='review'&&<p role="status">{intake.label}. מוצג הנתון מהקריאה האחרונה שהצליחה; אין חישוב פער.</p>}
     {result.status==='period'&&<p className="muted">אין פער מספרי: {observation!.point.period} ו־{metric.target!.period} הן תקופות שונות.</p>}
     {result.status==='definition'&&<p className="muted">אין פער מספרי: נדרשת התאמה בין הגדרות המדד.</p>}
     {result.status==='comparable'&&<p>פער אוטומטי מההנחה · ממתין לאימות: <bdi>{result.difference.toLocaleString('en-US',{maximumFractionDigits:2})}{result.percent!==null?` (${result.percent.toFixed(1)}%)`:''}</bdi>. הפער לבדו אינו קובע אם התזה התחזקה או נחלשה.</p>}

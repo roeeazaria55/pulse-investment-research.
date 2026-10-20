@@ -60,3 +60,11 @@ it('renders an evidence-linked provisional gap without changing the source resea
  expect(screen.getByRole('link',{name:'למקור הרשמי ↗'}).getAttribute('href')).toBe(data.documents[0].finalUrl);
  expect(screen.getByText(/FY2026: \$39.1B/)).toBeTruthy();
 });
+
+it('keeps failed-refresh evidence visible while suppressing its forecast gap',async()=>{
+ const data=future();data.documents[0].error='HTTP 403';
+ vi.stubGlobal('fetch',vi.fn().mockResolvedValue({ok:true,json:async()=>data}));render(<ThesisMonitor companyId={company}/>);
+ await waitFor(()=>expect(screen.getByText(/מוצג הנתון מהקריאה האחרונה שהצליחה/)).toBeTruthy());
+ expect(document.querySelector('.mapped-observation')!.textContent).toContain('FY2027');
+ expect(screen.queryByText(/פער אוטומטי מההנחה/)).toBeNull();
+});
