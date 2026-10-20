@@ -163,3 +163,14 @@ contained working judgments rather than a full financial valuation. Added a
 separate reverse enterprise-value/EBITDA worksheet with mandatory explicit
 forecast inputs, economic convertible dilution and primary-source limitations.
 See NBIS-12-MONTH-MODEL.md for provenance, outstanding work and rollback.
+
+## 2026-10-19 — Calculated 12-month scenarios for all 11 companies
+
+Added company-specific earnings, insurer equity-sales, and infrastructure
+funding/dilution models with 20/50/30 default probabilities and a fixed
+2027-10-19 horizon. Targets are computed from explicit assumptions; historical
+NBIS targets remain separate. Added editable assumptions, probability checks,
+sensitivity analysis, a full-universe overview and provenance/limitations.
+Published research imports derive numeric targets from the same engine.
+Corrected Gilat Telecom Q2 operating profit against the visually reviewed
+Hebrew statement. See COMPANY-MODELS-2026-10-19.md for every input and source.
