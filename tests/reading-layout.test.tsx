@@ -7,7 +7,7 @@ import {readableHeadline} from '../src/research/newsPresentation';
 import {labels} from '../src/research/prompt';
 afterEach(()=>{cleanup();localStorage.clear();vi.unstubAllGlobals();history.replaceState(null,'','/');});
 function setup(data=fixture){localStorage.clear();vi.stubGlobal('fetch',vi.fn().mockResolvedValue({ok:true,json:async()=>data}));vi.stubGlobal('scrollTo',vi.fn());render(<App/>);}
-function nav(name:string){fireEvent.click(within(screen.getByRole('navigation',{name:'ניווט נייד'})).getByRole('button',{name,exact:true}));}
+function nav(name:string){fireEvent.click(within(screen.getByRole('navigation',{name:'ניווט נייד'})).getByRole('button',{name}));}
 it('opens research with the selected company and overview, then switches tasks without losing a personal draft',async()=>{
  setup();await screen.findByText('מצב הדגמה');nav('מחקר');
  expect(screen.getByRole('combobox',{name:'חברה למחקר'})).toBeTruthy();
