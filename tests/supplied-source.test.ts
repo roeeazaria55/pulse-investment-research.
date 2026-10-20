@@ -14,3 +14,11 @@ it('retains the exact original PDFs and all financial tables by section',()=>{
  const stress=suppliedResearch[1].sections[11].blocks.find(b=>b.type==='table')!;
  expect(stress.type==='table'&&stress.rows.map(row=>row[3])).toEqual(['$1,320','$855','$520']);
 });
+
+it('reconciles DLO quarterly forecasts to annual totals while retaining the source scenario prices',()=>{
+ const r=suppliedResearch.find(r=>r.ticker==='DLO')!;
+ const table=r.sections[3].blocks.find(b=>b.type==='table')!;
+ if(table.type!=='table')throw Error('Missing source quarterly table');
+ for(const start of [0,5,10])for(const column of [1,2,3])expect(table.rows.slice(start,start+4).reduce((sum,row)=>sum+Number(row[column]),0)).toBeCloseTo(Number(table.rows[start+4][column]),8);
+ expect(suppliedValue(r)).toBeCloseTo(23.308,8);
+});
