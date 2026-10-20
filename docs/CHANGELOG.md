@@ -1,5 +1,11 @@
 # PULSE change log
 
+## 2026-10-20 — Thesis monitoring pilot
+
+- Added six source-linked business monitoring metrics for NBIS and SNDK, separating dated baselines from forward assumptions and showing what to check in the next report.
+- Clarified source reference prices, horizons and missing funding/12-month bridges without changing published values.
+- Blocked numerical comparisons across different periods, units or accounting definitions; no automatic thesis scores.
+
 Each numbered change below is kept in its own Git commit. The pull request lists
 exact commit IDs and CI results. Revert an individual commit to undo that change;
 revert the merged pull request to restore its preceding deployed code. Before

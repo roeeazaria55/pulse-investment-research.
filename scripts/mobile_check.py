@@ -72,6 +72,23 @@ with sync_playwright() as pw:
             full_reading=exchange.get_by_text('קריאת המחקר המלא',exact=True)
             if full_reading.evaluate('(el)=>!el.parentElement.open'):full_reading.click()
             if label in ['NBIS','SNDK']:
+                monitor=exchange.get_by_role('region',name=f'מעקב התזה של {label}',exact=True)
+                expect(monitor.locator('details')).to_have_count(6)
+                assert monitor.locator('details[open]').count()==0
+                for summary in monitor.locator('summary').all():summary.click()
+                expect(monitor.get_by_text('מה לבדוק בדוח הבא:',exact=True)).to_have_count(6)
+                page.evaluate("document.activeElement?.blur();document.documentElement.style.fontSize='32px'")
+                page.evaluate("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))")
+                assert page.evaluate('document.documentElement.scrollWidth')<=width+1,f'Thesis monitor {label} 200% overflow at {width}'
+                page.evaluate("document.documentElement.style.fontSize='16px'")
+                monitor.locator('summary').first.scroll_into_view_if_needed()
+                page.screenshot(path=f'work/mobile-{width}-thesis-{label}.png',full_page=False)
+                monitor.get_by_role('button',name='לנתוני המקור · פרק 4',exact=True).first.click()
+                assert page.evaluate("document.activeElement.id").endswith('-pdf-section-4')
+                for summary in monitor.locator('summary').all():summary.click()
+                context_panel=exchange.get_by_role('region',name=f'אופק והנחות השווי של {label}',exact=True)
+                expect(context_panel).to_contain_text('אינו שער חי')
+                if label=='SNDK':expect(context_panel).to_contain_text('אין מועד יעד קשיח')
                 chapters=exchange.get_by_role('navigation',name=f'פרקי הניתוח של {label}')
                 expect(chapters.get_by_role('button')).to_have_count(12 if label=='NBIS' else 13)
                 chapters.get_by_role('button',name='10. הערכת שווי ל־12 חודשים — מכפיל הכנסות' if label=='NBIS' else '10. הערכת שווי לפי EPS מנורמל',exact=True).click()
