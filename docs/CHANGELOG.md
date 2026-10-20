@@ -202,3 +202,9 @@ this layout PR; persisted personal research requires no conversion.
 - Added dated US/Israel macro analysis and separately collected official-source headline updates.
 - Added weekly earnings navigation and per-company next-event dates with confirmed/estimated/unknown status, source provenance and call/results distinction.
 - Corrected calendar revision precedence so a newer reviewed registry event supersedes an older persisted unknown date.
+
+## 2026-10-20 — Full explanatory research for NBIS and SNDK
+- Added dated recovered business reasoning from the conversations alongside all existing financial, scenario, risk and source sections.
+- Opened full reading by default for both companies with six accessible chapters and a return link from valuation.
+- Recovered NBIS base/bull scenario reasoning; kept missing numerical assumptions explicit and separated supplemental research from conversation summaries.
+- Preserved historical corrections and version provenance without publishing personal portfolio allocations.
