@@ -3,12 +3,12 @@ import {render,screen,cleanup} from '@testing-library/react';
 import {afterEach,expect,it} from 'vitest';
 import {ResearchIntakeStatus} from '../src/components/ResearchIntakeStatus';
 afterEach(cleanup);
-it('shows pending Gilat Telecom source without claiming full PDF is already available',()=>{
+it('shows imported Gilat Telecom original without claiming issuer verification',()=>{
  render(<ResearchIntakeStatus companyId="candidate-gilat-telecom"/>);
  expect(screen.getByText('המחקר החדש טרם נקלט במלואו באתר')).toBeTruthy();
  expect(screen.getByText(/SHA-256/)).toBeTruthy();
- expect(screen.getByText(/הקובץ עדיין לא נמצא במאגר/)).toBeTruthy();
- expect(screen.getByText(/חבילת ייבוא חיצונית/)).toBeTruthy();
+ expect(screen.getByText(/פרטי קובץ מקור שמור במאגר/)).toBeTruthy();
+ expect(screen.getByText(/תוכן פיננסי ממתין לאימות/)).toBeTruthy();
 });
 it('shows full published NBIS separately from source re-audit status',()=>{
  render(<ResearchIntakeStatus companyId="candidate-nebius"/>);
