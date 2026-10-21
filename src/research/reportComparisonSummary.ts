@@ -1,9 +1,10 @@
 import type {ReportIntakeSnapshot} from '../data/reportIntake';
 import type {ThesisMetric} from './thesisMonitoring';
-import {metricComparison} from './thesisMonitoring';
+import {thesisMonitorFor} from './thesisMonitoring';
+import {compareDatedMetric} from './financialResults';
 import {reportComparison} from './reportComparison';
 
-export type ReportComparisonStatus = 'comparable'|'period'|'definition'|'qualitative'|'missing'|'unsupported'|'conflict'|'review';
+export type ReportComparisonStatus = 'comparable'|'period'|'definition'|'qualitative'|'missing'|'unsupported'|'conflict'|'review'|'timing';
 export interface ReportComparisonSummary {
  total:number;
  comparable:number;
@@ -26,7 +27,7 @@ export function summarizeReportComparisons(
    difference:null,
    percent:null,
   };
-  const comparison=metricComparison(intake.observation!.point,metric.target);
+  const comparison=compareDatedMetric(intake.observation!.point,metric.target,thesisMonitorFor(companyId)?.asOf??'',intake.observation!.document.publishedDate);
   return {
    metricId:metric.id,
    status:comparison.status as ReportComparisonStatus,
@@ -43,3 +44,4 @@ export function summarizeReportComparisons(
   entries,
  };
 }
+

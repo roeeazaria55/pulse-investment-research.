@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "companyId": "us-smci-nasdaq-common",
+  "title": "Super Micro Computer, Inc. FY2026 Form 10-K",
+  "publishedDate": "2026-08-31",
+  "resultsPublishedDate": "2026-08-11",
+  "resultsSourceUrl": "https://ir.supermicro.com/news/news-details/2026/Supermicro-Announces-Fourth-Quarter-and-Full-Fiscal-Year-2026-Financial-Results/default.aspx",
+  "checkedDate": "2026-10-21",
+  "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1375365/000137536526000022/0001375365-26-000022-index.html",
+  "documentUrl": "https://www.sec.gov/Archives/edgar/data/1375365/000137536526000022/smci-20260630.htm",
+  "captureMethod": "Bounded consolidated statement cells read from the official SEC 10-K HTML (printed pages 59 and 63), checked against the previously ingested non-dimensional USD XBRL facts for 2025-07-01 through 2026-06-30. Filing date checked on the SEC accession index. Not an archive of original document bytes; the intake hash identifies the earlier intake version only.",
+  "intakeEvidence": {
+    "documentId": "report:0d7a6d552215979bd50d9919a33ad350",
+    "sha256": "b04ec998fdd5a11ccbaf2d58c769499a5d8976c2e2d648b40825f902a82b8c80",
+    "lastSuccessfulAt": "2026-10-20T12:44:57.787402+00:00",
+    "context": "c-1",
+    "unit": "iso4217:USD"
+  },
+  "reviewStatus": "pending-analyst-review",
+  "tables": [
+    {
+      "statement": "CONSOLIDATED STATEMENTS OF OPERATIONS",
+      "unit": "USD thousands",
+      "periodKind": "Years ended",
+      "periodStart": "July 1, 2025",
+      "periodEnd": "June 30, 2026",
+      "page": 59,
+      "rows": [
+        {"label": "Net sales (including related party sales of $29,781, $42,259, and $69,791 in fiscal years 2026, 2025, and 2024, respectively)", "current": "39,063,072"},
+        {"label": "Income from operations", "current": "2,770,486"}
+      ]
+    },
+    {
+      "statement": "CONSOLIDATED STATEMENTS OF CASH FLOWS",
+      "unit": "USD thousands",
+      "periodKind": "Years ended",
+      "periodStart": "July 1, 2025",
+      "periodEnd": "June 30, 2026",
+      "page": 63,
+      "rows": [
+        {"label": "Net cash (used in) provided by operating activities", "current": "(6,809,886)"}
+      ]
+    }
+  ]
+}

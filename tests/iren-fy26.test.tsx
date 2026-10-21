@@ -64,14 +64,14 @@ describe('IREN FY26 checked issuer extract',()=>{
  it('uses the shared comparison only for equal period, unit and basis',()=>{
   const observation=irenFy26.observations[0];
   // A synthetic target exercises the gate; it is not added to the PULSE model.
-  const forecast={point:{...observation.point,value:700},description:'Synthetic FY26 test target',definition:observation.definition,asOf:'2026-08-26'};
+  const forecast={companyId:observation.companyId,point:{...observation.point,value:700},description:'Synthetic FY26 test target',definition:observation.definition,asOf:'2026-08-26'};
   expect(compareIrenForecast(observation,forecast).result).toMatchObject({status:'comparable',difference:7,percent:1});
   expect(compareIrenForecast(observation,{...forecast,point:{...forecast.point,basis:'ARR'}}).result.status).toBe('definition');
   expect(compareIrenForecast(observation,{...forecast,point:{...forecast.point,unit:'USD billion'}}).result.status).toBe('definition');
  });
  it.each(['2026-10-20','2026-08-27',''])('never reports a surprise for a forecast after/on publication or with unknown timing: %s',asOf=>{
   const observation=irenFy26.observations[0];
-  const forecast={point:{...observation.point,value:700},description:'Synthetic post-publication target',definition:observation.definition,asOf};
+  const forecast={companyId:observation.companyId,point:{...observation.point,value:700},description:'Synthetic post-publication target',definition:observation.definition,asOf};
   const comparison=compareIrenForecast(observation,forecast);
   expect(comparison.result.status).toBe('timing');
   expect('difference' in comparison.result).toBe(false);
