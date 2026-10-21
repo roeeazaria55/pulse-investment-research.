@@ -1,20 +1,17 @@
+import {metricsWithSemanticMapping} from './financialMetricMappings';
 import {thesisMonitors} from './thesisMonitoring';
 
 /**
  * Phase 1 source coverage is an audit of implemented semantic mappings,
  * NOT a claim that issuer facts have been retrieved or verified.
  */
-const mappedMetrics:Readonly<Record<string,readonly string[]>>={
- 'us-smci-nasdaq-common':['revenue','cashflow'],
- 'candidate-brainsway':['revenue','profit'],
-};
 export type CompanyCoverage = {
  companyId:string;ticker:string;tracked:number;mapped:number;unmapped:string[];
  status:'mapping-partial'|'mapping-missing';
 };
 export function financialDataCoverage():CompanyCoverage[]{
  return thesisMonitors.map(company=>{
-  const supported=new Set(mappedMetrics[company.companyId]??[]);
+  const supported=metricsWithSemanticMapping(company.companyId);
   const ids=company.metrics.map(metric=>metric.id);
   const mapped=ids.filter(id=>supported.has(id)).length;
   return {
