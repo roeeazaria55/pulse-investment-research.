@@ -1,4 +1,5 @@
 import intake from '../data/researchIntakeRegistry.json';
+import {financialDataCoverage} from '../research/financialDataCoverage';
 import sources from '../data/newResearchSourceManifest.json';
 import candidates from '../data/newResearchScenarioCandidates.json';
 import {auditSourceValuation} from '../research/sourceValuationAudit';
@@ -10,6 +11,7 @@ export function ResearchIntakeStatus({companyId}:{companyId:string}){
  if(!item)return null;
  const file=sources.research.find(r=>r.companyId===companyId);
  const active=hasFullResearch(companyId);
+ const coverage=financialDataCoverage().find(c=>c.companyId===companyId);
  const candidate=candidates.companies.find(c=>c.companyId===companyId);
  const audit=candidate?auditSourceValuation(candidate.scenarios.map(s=>({id:s.id as 'bear'|'base'|'bull',weight:s.weight,price:s.price})),candidate.declared,candidate.tolerance):null;
  return <details className="research-import-info" data-testid="research-intake-status">
@@ -19,6 +21,7 @@ export function ResearchIntakeStatus({companyId}:{companyId:string}){
   <p>שלב קליטה: {item.status==='existing-source-recheck'?'מקור קודם במאגר — ממתין לבדיקה חוזרת':'מסמך מקור וטקסט עמודים נשמרו במאגר — תוכן פיננסי ממתין לאימות'}</p>
   {file&&<p>פרטי קובץ מקור שמור במאגר: {file.pages} עמודים · SHA-256 <code dir="ltr">{file.sha256}</code>. הזיהוי אינו אימות של הנתונים הפיננסיים בדוח.</p>}
   <p>מעקב ייעודי מתוכנן: {item.priorityMonitor}</p>
+  {coverage&&<p>כיסוי מיפוי נתונים לדוחות רשמיים: {coverage.mapped} מתוך {coverage.tracked} מדדי מעקב. מיפוי אינו הוכחה לנתון שנקלט או אומת.</p>}
   {candidate&&<details><summary>תרחישי מחקר מועמדים — לא מאושרים</summary>
    <p>מחקר מתאריך {candidate.asOf} · מטבע {candidate.currency} · אופק שווי {candidate.horizon} · מחיר ייחוס היסטורי {candidate.reference}</p>
    <p>סוג הבסיס: {candidate.basis}</p>
