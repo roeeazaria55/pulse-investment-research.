@@ -24,8 +24,8 @@ export function validateResearchCandidate(raw:unknown,companyId:string):Research
  if(!['USD','ILS','ILA'].includes(String(v.currency))||!['share','ADS'].includes(String(v.shareUnit))||!record(v.horizon)||!validDate(v.horizon.date)||typeof v.horizon.earningsPeriod!=='string'||!v.horizon.earningsPeriod.trim()||typeof v.horizon.note!=='string'||v.horizon.note.length>1500)throw Error('אופק, מטבע או יחידות אינם תקינים');
  if(v.reference!==null&&(!record(v.reference)||!finite(v.reference.value)||!validDate(v.reference.asOf)))throw Error('מחיר ייחוס לא תקין');
  if(v.declaredWeighted!==null&&!finite(v.declaredWeighted))throw Error('שווי משוקלל לא תקין');
- if(!Array.isArray(v.scenarios)||v.scenarios.length!==3||new Set(v.scenarios.map((x:unknown)=>record(x)?x.id:null)).size!==3||!['bear','base','bull'].every(id=>v.scenarios.some((x:unknown)=>record(x)&&x.id===id)))throw Error('דרושים שלושה תרחישים שונים');
- for(const x of v.scenarios){if(!record(x)||!finite(x.probability)||x.probability>100||!finite(x.statedPrice)||typeof x.rationale!=='string'||!x.rationale.trim()||x.rationale.length>2000)throw Error('הנחות תרחיש אינן תקינות');}
+ if(!Array.isArray(v.scenarios)||v.scenarios.length!==3||new Set(v.scenarios.map((x:unknown)=>record(x)?x.id:null)).size!==3||!['bear','base','bull'].every(id=>(v.scenarios as unknown[]).some((x:unknown)=>record(x)&&x.id===id)))throw Error('דרושים שלושה תרחישים שונים');
+ for(const x of v.scenarios){if(!record(x)||!finite(x.probability)||Number(x.probability)>100||!finite(x.statedPrice)||typeof x.rationale!=='string'||!x.rationale.trim()||x.rationale.length>2000)throw Error('הנחות תרחיש אינן תקינות');}
  if(Math.abs(v.scenarios.reduce((a:number,x:{probability:number})=>a+x.probability,0)-100)>1e-8)throw Error('הסתברויות חייבות להסתכם ל-100%');
  return raw as unknown as ResearchCandidate;
 }
