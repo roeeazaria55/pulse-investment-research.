@@ -16,8 +16,8 @@ export function ResearchIntakeStatus({companyId}:{companyId:string}){
   <summary>סטטוס קליטת המחקר המלא</summary>
   <p><strong>{active?'מחקר מלא זמין לקריאה באתר':'המחקר החדש טרם נקלט במלואו באתר'}</strong></p>
   <p>קובץ מקור מיועד: <span dir="ltr">{item.filename}</span></p>
-  <p>שלב קליטה: {item.status==='existing-source-recheck'?'מקור קודם במאגר — ממתין לבדיקה חוזרת':'קובץ חדש בחבילת ייבוא חיצונית — טרם נשמר במאגר'}</p>
-  {file&&<p>פרטי קובץ לפי רישום המקור (הקובץ עדיין לא נמצא במאגר): {file.pages} עמודים · SHA-256 <code dir="ltr">{file.sha256}</code>. הזיהוי אינו אימות של הנתונים הפיננסיים בדוח.</p>}
+  <p>שלב קליטה: {item.status==='existing-source-recheck'?'מקור קודם במאגר — ממתין לבדיקה חוזרת':'מסמך מקור וטקסט עמודים נשמרו במאגר — תוכן פיננסי ממתין לאימות'}</p>
+  {file&&<p>פרטי קובץ מקור שמור במאגר: {file.pages} עמודים · SHA-256 <code dir="ltr">{file.sha256}</code>. הזיהוי אינו אימות של הנתונים הפיננסיים בדוח.</p>}
   <p>מעקב ייעודי מתוכנן: {item.priorityMonitor}</p>
   {candidate&&<details><summary>תרחישי מחקר מועמדים — לא מאושרים</summary>
    <p>מחקר מתאריך {candidate.asOf} · מטבע {candidate.currency} · אופק שווי {candidate.horizon} · מחיר ייחוס היסטורי {candidate.reference}</p>
