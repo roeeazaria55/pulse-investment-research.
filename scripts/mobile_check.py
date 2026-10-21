@@ -178,7 +178,7 @@ with sync_playwright() as pw:
         pdf+=b'trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n'+str(xref).encode()+b'\n%%EOF'
         exchange.get_by_label('קובץ מסמך',exact=True).set_input_files({'name':'source-test.pdf','mimeType':'application/pdf','buffer':pdf})
         exchange.get_by_role('button',name='חילוץ טקסט מהקובץ',exact=True).click()
-        page.wait_for_function("document.querySelector('.research-exchange textarea').value.includes('PULSE SOURCE TEST 2026')")
+        page.wait_for_function("Array.from(document.querySelectorAll('.research-exchange textarea')).some(el => el.value.includes('PULSE SOURCE TEST 2026'))")
         exchange.locator('summary').filter(has_text='2. החזרת ניתוח').click()
         fields={k:'' for k in ('thesis','revenue','profitability','cashFlow','valuation','advantages','catalysts','risks','bear','base','bull')}
         fields['thesis']='MOBILE TEST IMPORT ONLY'

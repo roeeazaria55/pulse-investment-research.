@@ -1,0 +1,91 @@
+{
+  "version": 1,
+  "asOf": "2026-10-21",
+  "notice": "All seven new PDF and extracted page text files are now stored in the repository. Issuer fact verification and valuation approval remain pending.",
+  "companies": [
+    {
+      "companyId": "candidate-nebius",
+      "ticker": "NBIS",
+      "filename": "PULSE_NBIS_Full_Research_HE.pdf",
+      "status": "existing-source-recheck",
+      "priorityMonitor": "GPU unit economics, financing and dilution"
+    },
+    {
+      "companyId": "candidate-sandisk",
+      "ticker": "SNDK",
+      "filename": "PULSE_SNDK_Full_Research_HE.pdf",
+      "status": "existing-source-recheck",
+      "priorityMonitor": "NAND cycle and normalized earnings"
+    },
+    {
+      "companyId": "us-dlo-nasdaq-a",
+      "ticker": "DLO",
+      "filename": "PULSE_DLO_Full_Research_HE.pdf",
+      "status": "existing-source-recheck",
+      "priorityMonitor": "TPV to free cash flow"
+    },
+    {
+      "companyId": "candidate-brainsway",
+      "ticker": "BWAY",
+      "filename": "PULSE_BWAY_Full_Research_HE.pdf",
+      "status": "existing-source-recheck",
+      "priorityMonitor": "patient utilization and reimbursement"
+    },
+    {
+      "companyId": "us-smci-nasdaq-common",
+      "ticker": "SMCI",
+      "filename": "PULSE_SMCI_Full_Research_HE.pdf",
+      "status": "existing-source-recheck",
+      "priorityMonitor": "cash conversion and governance"
+    },
+    {
+      "companyId": "us-lmnd-nyse-common",
+      "ticker": "LMND",
+      "filename": "PULSE_LMND_Full_Research_HE.pdf",
+      "status": "repository-source-unverified",
+      "priorityMonitor": "Underwriting Quality Monitor"
+    },
+    {
+      "companyId": "us-meta-nasdaq-a",
+      "ticker": "META",
+      "filename": "PULSE_META_Full_Research_HE_FIXED.pdf",
+      "status": "repository-source-unverified",
+      "priorityMonitor": "AI Capital Efficiency Monitor"
+    },
+    {
+      "companyId": "candidate-ftai",
+      "ticker": "FTAI",
+      "filename": "PULSE_FTAI_Full_Research_HE.pdf",
+      "status": "repository-source-unverified",
+      "priorityMonitor": "Cash Conversion and SOTP Monitor"
+    },
+    {
+      "companyId": "candidate-iren",
+      "ticker": "IREN",
+      "filename": "PULSE_IREN_Full_Research_HE_PreQ1FY27.pdf",
+      "status": "repository-source-unverified",
+      "priorityMonitor": "AI Cloud Cash Conversion Monitor"
+    },
+    {
+      "companyId": "candidate-next-vision",
+      "ticker": "NXSN",
+      "filename": "PULSE_NextVision_Full_Research_HE_FIXED.pdf",
+      "status": "repository-source-unverified",
+      "priorityMonitor": "Order Backlog and Margin Monitor"
+    },
+    {
+      "companyId": "candidate-enlight",
+      "ticker": "ENLT",
+      "filename": "PULSE_ENLT_Full_Research_HE_PreQ3.pdf",
+      "status": "repository-source-unverified",
+      "priorityMonitor": "Project Cash Distribution and NAV Monitor"
+    },
+    {
+      "companyId": "candidate-gilat-telecom",
+      "ticker": "Gilat Telecom",
+      "filename": "PULSE_Gilat_Telecom_Full_Research_HE.pdf",
+      "status": "repository-source-unverified",
+      "priorityMonitor": "Cash Conversion and Convertible Dilution Monitor"
+    }
+  ]
+}

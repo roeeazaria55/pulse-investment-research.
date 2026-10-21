@@ -1,0 +1,247 @@
+{
+  "version": 1,
+  "status": "research_unverified",
+  "promoted": false,
+  "notice": "Source-reported rounded scenario prices are unverified analyst research, not issuer data or live quotes. Never auto-promote.",
+  "companies": [
+    {
+      "companyId": "us-lmnd-nyse-common",
+      "ticker": "LMND",
+      "asOf": "2026-10-20",
+      "currency": "USD",
+      "horizon": "2027-12-31",
+      "basis": "Source scenario targets; independent underwriting verification pending",
+      "reference": 43.15,
+      "declared": 64.46,
+      "tolerance": 0.01,
+      "scenarios": [
+        {
+          "id": "bear",
+          "weight": 30,
+          "price": 29.88
+        },
+        {
+          "id": "base",
+          "weight": 45,
+          "price": 60.24
+        },
+        {
+          "id": "bull",
+          "weight": 25,
+          "price": 113.58
+        }
+      ],
+      "flags": [
+        "GLR prior-year reserve development",
+        "ADR denominator and timing",
+        "Capital/dilution",
+        "Rounded weighted value differs from 64.467 by 0.007 USD; investigate source rounding"
+      ],
+      "check": "consistent"
+    },
+    {
+      "companyId": "us-meta-nasdaq-a",
+      "ticker": "META",
+      "asOf": "2026-10-20",
+      "currency": "USD",
+      "horizon": "2027-12-31",
+      "basis": "2028 versus 2027 financial context must be bridged; nominal end-2027 valuation",
+      "reference": 705.44,
+      "declared": 802.8,
+      "tolerance": 0.01,
+      "scenarios": [
+        {
+          "id": "bear",
+          "weight": 30,
+          "price": 459
+        },
+        {
+          "id": "base",
+          "weight": 50,
+          "price": 847
+        },
+        {
+          "id": "bull",
+          "weight": 20,
+          "price": 1208
+        }
+      ],
+      "flags": [
+        "CapEx vs finance leases",
+        "FCF and depreciation",
+        "Reality Labs losses"
+      ],
+      "check": "consistent"
+    },
+    {
+      "companyId": "candidate-ftai",
+      "ticker": "FTAI",
+      "asOf": "2026-10-20",
+      "currency": "USD",
+      "horizon": "2027-12-31",
+      "basis": "Aerospace/Leasing/Power SOTP; segment EBITDA not equal consolidated EBITDA",
+      "reference": 163.34,
+      "declared": 164.1,
+      "tolerance": 0.05,
+      "scenarios": [
+        {
+          "id": "bear",
+          "weight": 30,
+          "price": 75.5
+        },
+        {
+          "id": "base",
+          "weight": 50,
+          "price": 174.4
+        },
+        {
+          "id": "bull",
+          "weight": 20,
+          "price": 269.1
+        }
+      ],
+      "flags": [
+        "Weighted target mismatch",
+        "Net debt and lease/non-operating claims",
+        "Asset sales are not recurring FCF"
+      ],
+      "check": "discrepancy"
+    },
+    {
+      "companyId": "candidate-iren",
+      "ticker": "IREN",
+      "asOf": "2026-10-20",
+      "currency": "USD",
+      "horizon": "2027-12-31",
+      "basis": "Forward 2028 EBITDA multiple; no discount to end-2027 value",
+      "reference": 27.73,
+      "declared": 38.7,
+      "tolerance": 0.05,
+      "scenarios": [
+        {
+          "id": "bear",
+          "weight": 35,
+          "price": 11.5
+        },
+        {
+          "id": "base",
+          "weight": 45,
+          "price": 41.1
+        },
+        {
+          "id": "bull",
+          "weight": 20,
+          "price": 80.7
+        }
+      ],
+      "flags": [
+        "Contracted ARR vs recognized revenue",
+        "GPU refresh capex and advances",
+        "Net debt and dilution"
+      ],
+      "check": "consistent"
+    },
+    {
+      "companyId": "candidate-next-vision",
+      "ticker": "NXSN",
+      "asOf": "2026-10-20",
+      "currency": "ILS",
+      "horizon": "2027-12-31",
+      "basis": "ILS per TASE share; 2026 H1 corrected, 2027/28 forecasts not recalibrated",
+      "reference": 187.9,
+      "declared": 209.43,
+      "tolerance": 0.01,
+      "scenarios": [
+        {
+          "id": "bear",
+          "weight": 25,
+          "price": 90.7
+        },
+        {
+          "id": "base",
+          "weight": 55,
+          "price": 215.8
+        },
+        {
+          "id": "bull",
+          "weight": 20,
+          "price": 340.3
+        }
+      ],
+      "flags": [
+        "Corrected H1 revenue $144.9M and net $80.8M",
+        "Forecasts require recalibration",
+        "FX assumption ILS 3.10/USD"
+      ],
+      "check": "consistent"
+    },
+    {
+      "companyId": "candidate-enlight",
+      "ticker": "ENLT",
+      "asOf": "2026-10-20",
+      "currency": "USD",
+      "horizon": "2027-12-31",
+      "basis": "2028 EBITDA basis, end-2027 horizon, not present-value discounted",
+      "reference": 68.03,
+      "declared": 76.4,
+      "tolerance": 0.01,
+      "scenarios": [
+        {
+          "id": "bear",
+          "weight": 30,
+          "price": 46
+        },
+        {
+          "id": "base",
+          "weight": 50,
+          "price": 78
+        },
+        {
+          "id": "bull",
+          "weight": 20,
+          "price": 118
+        }
+      ],
+      "flags": [
+        "Project NAV and consolidated debt double count",
+        "Tax equity and minority claims",
+        "CAD vs EBITDA"
+      ],
+      "check": "consistent"
+    },
+    {
+      "companyId": "candidate-gilat-telecom",
+      "ticker": "Gilat Telecom",
+      "asOf": "2026-10-21",
+      "currency": "ILA",
+      "horizon": "2027-12-31",
+      "basis": "Agorot per ordinary share, not ILS; P/E and equity FCF valuation",
+      "reference": 205.6,
+      "declared": 249.8,
+      "tolerance": 0.01,
+      "scenarios": [
+        {
+          "id": "bear",
+          "weight": 25,
+          "price": 125
+        },
+        {
+          "id": "base",
+          "weight": 55,
+          "price": 245
+        },
+        {
+          "id": "bull",
+          "weight": 20,
+          "price": 419
+        }
+      ],
+      "flags": [
+        "125M diluted shares assumed not verified",
+        "Lease principal vs IFRS16 CFO",
+        "Convertible debt rights"
+      ],
+      "check": "consistent"
+    }
+  ]
+}

@@ -1,4 +1,7 @@
+import {summarizeReportComparisons} from '../research/reportComparisonSummary';
 import {useReportIntake} from '../hooks/useReportIntake';
+import type {ReportIntakeSnapshot} from '../data/reportIntake';
+import type {ThesisMetric} from '../research/thesisMonitoring';
 import {reportComparison} from '../research/reportComparison';
 import {suppliedFor,suppliedPdfUrl} from '../data/suppliedResearch';
 import {thesisMonitorFor,metricComparison} from '../research/thesisMonitoring';
@@ -13,6 +16,7 @@ export function ThesisMonitor({companyId}:{companyId:string}){
  return <section className="thesis-monitor" aria-label={`מעקב התזה של ${monitor.ticker}`}>
   <div className="thesis-monitor-head"><h4>האם העסק מתקדם לפי הניתוח?</h4><small>6 מדדי מעקב · בסיס המחקר {monitor.asOf.split('-').reverse().join('.')}</small></div>
   <p>נקודת הפתיחה והתחזית נשמרות מהמחקר שסופק. נתון מובנה שמופה מדוח רשמי מוצג בנפרד וממתין לאימות. פער מחושב רק לאותה תקופה, יחידה והגדרה חשבונאית; אין בכך שינוי אוטומטי במחקר או בשווי.</p>
+  {data&&<ReportComparisonOverview companyId={companyId} data={data} metrics={monitor.metrics}/>}
   <div className="thesis-metrics">{monitor.metrics.map(metric=>{
    const intake=data?reportComparison(data,companyId,metric):null;
    const observation=intake?.observation;
@@ -32,6 +36,14 @@ export function ThesisMonitor({companyId}:{companyId:string}){
   <small>ההנחות הן תרחישי מחקר; תחזית הנהלה מסומנת בנפרד. מידע שלא כומת אינו מקבל ציון עמידה בתזה.</small>
   <a className="text-button" href={suppliedPdfUrl(report)} target="_blank" rel="noopener noreferrer">מקור מדדי המעקב · PDF {monitor.ticker} ↗</a>
  </section>;
+}
+function ReportComparisonOverview({companyId,data,metrics}:{companyId:string;data:ReportIntakeSnapshot;metrics:readonly ThesisMetric[]}){
+ const summary=summarizeReportComparisons(data,companyId,metrics);
+ return <div className="report-comparison-overview" role="status" aria-label="סיכום השוואת דוחות">
+  <p><b>סיכום קליטת דוחות · לא מאומת חשבונאית</b></p>
+  <p>מדדים בני השוואה: <bdi>{summary.comparable}/{summary.total}</bdi> · דורשים בדיקה: <bdi>{summary.needsReview}</bdi> · ממתינים לנתונים מתאימים: <bdi>{summary.waiting}</bdi></p>
+  <small>הסיכום משקף זמינות נתונים והתאמת תקופות והגדרות, ולא דירוג השקעה או שינוי אוטומטי במחיר יעד.</small>
+ </div>;
 }
 export function ValuationContext({companyId}:{companyId:string}){
  const report=suppliedFor(companyId);if(!report)return null;

@@ -1,4 +1,6 @@
 import {ReportIntake} from './ReportIntake';
+import {ResearchCandidatePreview} from './ResearchCandidatePreview';
+import {ResearchIntakeStatus} from './ResearchIntakeStatus';
 import {ThesisMonitor,ValuationContext} from './ThesisMonitor';
 import {SuppliedValuation} from './SuppliedResearch';
 import {FullCompanyResearch,hasFullResearch} from './FullCompanyResearch';
@@ -46,6 +48,8 @@ export function ResearchExchange({company,current,onChange,onPrepare,view='overv
    <div hidden={view!=='valuation'} id="research-pane-valuation" role="tabpanel" aria-labelledby="research-tab-valuation">{hasFullResearch(company.id)&&<button type="button" className="text-button" onClick={()=>onNavigate?.('overview')}>לניתוח העסקי המלא ←</button>}{hasFullResearch(company.id)?<><ValuationContext companyId={company.id}/><SuppliedValuation companyId={company.id}/>{model&&<details className="prior-research-models"><summary>ארכיון מודלים קודמים · אינו הניתוח הפעיל</summary><p>המודלים הבאים קדמו לקובצי 20.10.2026 ואינם היעד הראשי או ההנחות של הניתוח החדש.</p>{company.id==='candidate-nebius'&&<NbisValuation/>}{company.id==='candidate-sandisk'&&<OriginalSandisk/>}<CompanyValuation key={company.id} companyId={company.id}/></details>}</>:<CompanyValuation key={company.id} companyId={company.id}/>}<ValuationOverview/></div>
   </div>}
   <div hidden={view!=='sources'} className="research-tools">
+  <ResearchIntakeStatus companyId={company.id}/>
+  <ResearchCandidatePreview key={company.id} companyId={company.id}/>
   {current.importInfo&&<div className="research-import-info"><strong>ניתוח מיובא — הנתונים לא אומתו אוטומטית</strong><p>שדות שהוחלו בייבוא האחרון: {current.importInfo.appliedFields.map(k=>labels[k]).join(', ')}<br/>תאריך המחקר שצוין: {current.importInfo.asOf} · יובא: {dateTime(current.importInfo.importedAt)}</p>{current.importInfo.sourceUrls.map(url=><a key={url} href={url} target="_blank" rel="noopener noreferrer">{url}</a>)}{current.importInfo.missing.length>0&&<details><summary>מידע חסר שצוין בניתוח</summary>{current.importInfo.missing.map((s,i)=><p key={i}>{s}</p>)}</details>}</div>}
   <details><summary>1. קריאת PDF או טקסט והכנת ניתוח</summary>
    <p>עד 8MB לקובץ; עד 20 עמודי PDF בכל חילוץ. מסמך סרוק דורש טקסט שהועתק בנפרד. המקור אינו נשמר או מועלה לאתר.</p>
