@@ -1,13 +1,6 @@
+import {mappings} from './financialMetricMappings';
 import type {IntakeDocument,ReportIntakeSnapshot} from '../data/reportIntake';
 import type {MetricPoint,ThesisMetric} from './thesisMonitoring';
-interface Mapping {companyId:string;metricId:string;concepts:string[];basis:string;divisor:number;unit:string;fiscalJune?:boolean}
-// Explicit semantic mappings only. No inferred PDF columns, company extensions, adjusted or normalized measures.
-const mappings:Mapping[]=[
- {companyId:'us-smci-nasdaq-common',metricId:'revenue',concepts:['us-gaap:revenues','us-gaap:revenuefromcontractwithcustomerexcludingassessedtax'],basis:'revenue',divisor:1e9,unit:'USD billion',fiscalJune:true},
- {companyId:'us-smci-nasdaq-common',metricId:'cashflow',concepts:['us-gaap:netcashprovidedbyusedinoperatingactivities'],basis:'operating cash flow',divisor:1e9,unit:'USD billion',fiscalJune:true},
- {companyId:'candidate-brainsway',metricId:'revenue',concepts:['us-gaap:revenues','us-gaap:revenuefromcontractwithcustomerexcludingassessedtax'],basis:'revenue',divisor:1e6,unit:'USD million'},
- {companyId:'candidate-brainsway',metricId:'profit',concepts:['us-gaap:operatingincomeloss'],basis:'operating income',divisor:1e6,unit:'USD million'},
-];
 /** Only exact calendar boundaries are recognized. Fiscal 52/53-week calendars require a separate mapping. */
 function period(start:string|null,end:string,fiscalJune=false):string|null{
  if(!start)return null;
