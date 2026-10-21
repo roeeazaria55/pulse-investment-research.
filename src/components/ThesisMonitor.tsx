@@ -39,7 +39,7 @@ export function ThesisMonitor({companyId}:{companyId:string}){
 }
 function ReportComparisonOverview({companyId,data,metrics}:{companyId:string;data:ReportIntakeSnapshot;metrics:readonly ThesisMetric[]}){
  const summary=summarizeReportComparisons(data,companyId,metrics);
- return <div className="mapped-observation" role="status" aria-label="סיכום השוואת דוחות">
+ return <div className="report-comparison-overview" role="status" aria-label="סיכום השוואת דוחות">
   <p><b>סיכום קליטת דוחות · לא מאומת חשבונאית</b></p>
   <p>מדדים בני השוואה: <bdi>{summary.comparable}/{summary.total}</bdi> · דורשים בדיקה: <bdi>{summary.needsReview}</bdi> · ממתינים לנתונים מתאימים: <bdi>{summary.waiting}</bdi></p>
   <small>הסיכום משקף זמינות נתונים והתאמת תקופות והגדרות, ולא דירוג השקעה או שינוי אוטומטי במחיר יעד.</small>
