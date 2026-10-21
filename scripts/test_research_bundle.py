@@ -13,7 +13,7 @@ class ResearchBundleTests(unittest.TestCase):
         entries = []
         blobs = {}
         for i in range(7):
-            original = ("%PDF-1.4\nsource%d" % i).encode()
+            original = ("%%PDF-1.4\nsource%d" % i).encode()
             name = "Source%d.pdf" % i
             textname = "extracted/T%d.pages.json" % i
             entry = {
