@@ -25,3 +25,32 @@ Make issuer-source-to-forecast comparisons dependable before introducing AI-base
 - Add source-cited post-earnings comparison cards and an analyst-approval change log.
 
 This plan does not promise unattended background execution or unattended trading.
+
+## NBIS / IREN / DLO evidence audit (21 October 2026)
+
+Reviewed the structured report snapshot at commit `c9c82cd6a0d65679f20f67422902d5d8f5d9de89`,
+the intake parser, mappings, comparison gates and company research/model records.
+NBIS has four read documents and DLO three; each has **zero structured facts**.
+Their extracted table rows require a source-specific adapter that verifies headers,
+units, periods and consolidation scope. DLO's last collection failed with HTTP 403;
+older successful reads remain evidence of those documents, not complete coverage.
+IREN has research and valuation records, but no entry in report intake and is not
+in `scripts/report_intake.py`'s current pilot set. Narrative source links and model
+capital values are not automatically mappable structured report facts.
+
+No new accounting mappings are enabled by this audit. SMCI/BWAY mappings remain
+unchanged. `financialMappingReadiness.ts` exposes source availability, raw structured
+fact counts, document revision/failure flags and company-specific review requirements.
+The intake panel now displays these gaps for all three pilots, including IREN when
+there is no intake entry. Unsupported forecast comparisons explain the evidence gap
+and return no observation or numeric difference, even if unreviewed/conflicting
+facts appear in a later snapshot. Tests distinguish unknown availability, missing
+reports, table-only evidence, raw facts without a mapping, revisions and failures.
+
+Next safe step: implement and fixture-test a source-specific adapter for one official
+report, retaining issuer identity, consolidation scope, exact dates, units, accounting
+basis and source provenance. IREN also needs explicitly tested intake configuration.
+Only then can reviewed mappings be added; fiscal-June and calendar periods, adjusted
+EBITDA and operating profit, ARR and recognized revenue, corporate and merchant cash,
+and weighted-average diluted shares versus model dilution must stay distinct.
+

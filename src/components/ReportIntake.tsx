@@ -1,12 +1,21 @@
 import {useReportIntake} from '../hooks/useReportIntake';
+import {financialMappingReadiness} from '../research/financialMappingReadiness';
 import {ResearchTableView} from './SuppliedResearch';
 const statuses={ok:'הקריאה האחרונה הושלמה',partial:'הקריאה הושלמה חלקית',failed:'הקריאה האחרונה נכשלה',deferred:'ממתין לסבב איסוף נוסף','no-candidates':'לא נמצא קישור מתאים במאגר הנוכחי'};
 export function ReportIntake({companyId}:{companyId:string}){
  const {data,failed}=useReportIntake(companyId);
  const source=data?.sources.find(s=>s.companyId===companyId),docs=data?.documents.filter(d=>d.companyId===companyId)||[];
- if(data&&!source&&!docs.length)return null;
+ const readiness=financialMappingReadiness(data,companyId);
+ if(data&&!source&&!docs.length&&!readiness)return null;
  return <details className="report-intake" aria-label="קליטת תוכן דוחות רשמיים"><summary>קליטת דוחות אוטומטית{docs.length?` · ${docs.length} מסמכים נקראו`:''}</summary>
   <p>המערכת קוראת תוכן ממקורות רשמיים ומחלצת טבלאות ונתונים מובנים כשהם זמינים. הנתונים ממתינים לבדיקת תקופה והגדרה; המחקר ומחיר השווי אינם משתנים אוטומטית.</p>
+  {readiness&&<div aria-label={`פערי כיסוי פיננסי של ${readiness.ticker}`}>
+   <p><strong>כיסוי פיננסי · {readiness.ticker} · ממתין לאימות</strong></p>
+   {data&&<p>{readiness.documents.length} מסמכי מקור · {readiness.structuredFacts} עובדות מובנות לפני בדיקת התאמה · {readiness.semanticMappings} מיפויים חשבונאיים. ספירת עובדות אינה אישור להשוואה.</p>}
+   <ul>{readiness.gaps.map(gap=><li key={gap.code}>{gap.label}</li>)}</ul>
+   <p><b>מה חסר לפני מיפוי והשוואה:</b></p>
+   <ul>{readiness.requirements.map(requirement=><li key={requirement}>{requirement}</li>)}</ul>
+  </div>}
   {failed?<p role="status">מצב הקליטה אינו זמין. אין להסיק מכך שלא פורסם דוח.</p>:!data?<p role="status">טוען מצב קליטה…</p>:<>
    {source&&<p>{statuses[source.status]} · ניסיון אחרון {new Date(source.lastAttemptAt).toLocaleString('he-IL')}. {source.status!=='ok'&&'ייתכן שקיימים דיווחים נוספים שלא נקלטו.'}</p>}
    {!docs.length&&<p>אין עדיין תוכן דוח שנקרא בהצלחה במאגר הזה. קישורי הדיווחים זמינים במקורות; כשל קריאה אינו היעדר דיווח.</p>}
@@ -23,3 +32,4 @@ export function ReportIntake({companyId}:{companyId:string}){
   </>}
  </details>;
 }
+
