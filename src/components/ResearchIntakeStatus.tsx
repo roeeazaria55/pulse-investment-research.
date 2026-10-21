@@ -17,7 +17,7 @@ export function ResearchIntakeStatus({companyId}:{companyId:string}){
   <p><strong>{active?'מחקר מלא זמין לקריאה באתר':'המחקר החדש טרם נקלט במלואו באתר'}</strong></p>
   <p>קובץ מקור מיועד: <span dir="ltr">{item.filename}</span></p>
   <p>שלב קליטה: {item.status==='existing-source-recheck'?'מקור קודם במאגר — ממתין לבדיקה חוזרת':'קובץ חדש בחבילת ייבוא חיצונית — טרם נשמר במאגר'}</p>
-  {file&&<p>זיהוי קובץ שהועלה: {file.pages} עמודים · SHA-256 <code dir="ltr">{file.sha256}</code>. הזיהוי אינו אימות של הנתונים הפיננסיים בדוח.</p>}
+  {file&&<p>פרטי קובץ לפי רישום המקור (הקובץ עדיין לא נמצא במאגר): {file.pages} עמודים · SHA-256 <code dir="ltr">{file.sha256}</code>. הזיהוי אינו אימות של הנתונים הפיננסיים בדוח.</p>}
   <p>מעקב ייעודי מתוכנן: {item.priorityMonitor}</p>
   {candidate&&<details><summary>תרחישי מחקר מועמדים — לא מאושרים</summary>
    <p>מחקר מתאריך {candidate.asOf} · מטבע {candidate.currency} · אופק שווי {candidate.horizon} · מחיר ייחוס היסטורי {candidate.reference}</p>
@@ -28,6 +28,6 @@ export function ResearchIntakeStatus({companyId}:{companyId:string}){
    <p>לא אומת מול דוחות החברה. השווי הפעיל לא משתנה.</p>
   </details>}
   {file&&<UnverifiedFullResearch companyId={companyId}/>}
-  <p>הנתונים שהועלו הם מחקר עצמאי. אין לסמן אותם כנתוני חברה מאומתים או כתחזית מאושרת ללא בקרת מקורות ומודל.</p>
+  <p>הנתונים המוצגים הם רישום מחקר עצמאי ולא אישור לקליטת הקובץ המקורי. אין לסמן אותם כנתוני חברה מאומתים או כתחזית מאושרת ללא בקרת מקורות ומודל.</p>
  </details>;
 }
