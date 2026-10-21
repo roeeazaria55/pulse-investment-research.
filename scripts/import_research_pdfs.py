@@ -13,6 +13,7 @@ from validate_research_bundle import validate_bundle
 
 ROOT = Path(__file__).resolve().parent.parent
 TARGET = ROOT / "public" / "research"
+PAGES_TARGET = ROOT / "public" / "research-pages"
 
 
 def install(bundle: str, dry_run: bool = True) -> list[str]:
@@ -29,13 +30,29 @@ def install(bundle: str, dry_run: bool = True) -> list[str]:
                     raise ValueError("Conflicting existing PDF: " + destination.name)
                 continue
             tasks.append((destination, source))
+        # Page text has its own namespace and must be validated before any write.
+        page_tasks = []
+        for entry in manifest["research"]:
+            text = z.read(entry["extractedTextFilename"])
+            pages = json.loads(text)["pages"]
+            if len(pages) != entry["pages"]:
+                raise ValueError("Extracted page count mismatch")
+            target = PAGES_TARGET / (entry["ticker"] + ".pages.json")
+            if target.exists() and target.read_bytes() != text:
+                raise ValueError("Conflicting page text: " + target.name)
+            if not target.exists():
+                page_tasks.append((target, text))
         if not dry_run:
             TARGET.mkdir(parents=True, exist_ok=True)
+            PAGES_TARGET.mkdir(parents=True, exist_ok=True)
             for path, source in tasks:
                 path.write_bytes(source)
                 if hashlib.sha256(path.read_bytes()).hexdigest() != hashlib.sha256(source).hexdigest():
                     raise RuntimeError("Post-write checksum mismatch: " + path.name)
-        return [path.name for path, _ in tasks]
+        if not dry_run:
+            for path, text in page_tasks:
+                path.write_bytes(text)
+        return [path.name for path, _ in tasks] + [path.name for path, _ in page_tasks]
 
 
 if __name__ == "__main__":
