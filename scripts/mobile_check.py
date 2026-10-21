@@ -68,6 +68,19 @@ with sync_playwright() as pw:
             company_select.select_option(option)
             page.get_by_role('tab',name='סקירה',exact=True).click()
             exchange.get_by_role('heading',name=f'מחקר בסיס ל־{label}',exact=True).wait_for()
+            if label=='IREN':
+                actuals=exchange.get_by_role('region',name='נתוני בסיס IREN FY2026 מהדוח הרשמי',exact=True)
+                expect(actuals).to_contain_text('$707.0M')
+                expect(actuals).to_contain_text('$2,100.4M')
+                expect(actuals).to_contain_text('$4,333.1M')
+                expect(actuals.get_by_text('אין השוואה מספרית תקפה',exact=True)).to_have_count(3)
+                expect(actuals.get_by_role('link',name='מקור רשמי · PDF עמוד 12 ↗',exact=True)).to_have_attribute('href','https://iren.gcs-web.com/static-files/1cb9f4da-d4c7-4510-8bda-e475022b59f5#page=12')
+                page.evaluate("document.activeElement?.blur();document.documentElement.style.fontSize='32px'")
+                page.evaluate("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))")
+                assert page.evaluate('document.documentElement.scrollWidth')<=width+1,f'IREN actual financial results 200% overflow at {width}'
+                page.evaluate("document.documentElement.style.fontSize='16px'")
+                actuals.locator('article').first.scroll_into_view_if_needed()
+                page.screenshot(path=f'work/mobile-{width}-iren-fy26.png',full_page=False)
             page.get_by_label('הדוח הבא',exact=True).wait_for()
             if label=='NBIS':expect(exchange.locator('.research-target-summary strong')).to_have_text('≈$182.33')
             if label=='SNDK':expect(exchange.locator('.research-target-summary strong')).to_have_text('≈$1,759.50')
@@ -216,3 +229,4 @@ with sync_playwright() as pw:
     browser.close()
 Path('work/mobile-check.json').write_text(json.dumps({'environment':'headless Chromium; Android keyboard and text scaling simulated; no physical receipt test','results':results},indent=2))
 print(json.dumps(results))
+

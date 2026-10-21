@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "companyId": "candidate-iren",
+  "title": "IREN Reports FY26 Results",
+  "publishedDate": "2026-08-27",
+  "checkedDate": "2026-10-21",
+  "sourceUrl": "https://iren.gcs-web.com/news-releases/news-release-details/iren-reports-fy26-results",
+  "pdfUrl": "https://iren.gcs-web.com/static-files/1cb9f4da-d4c7-4510-8bda-e475022b59f5",
+  "captureMethod": "Curated issuer HTML table cells, cross-checked against the linked issuer PDF, pages 12 and 14. This is a bounded source extract, not an archive of the original file bytes.",
+  "reviewStatus": "pending-analyst-review",
+  "tables": [
+    {
+      "statement": "Consolidated Statement of Operations",
+      "unit": "US$m",
+      "periodKind": "Year ended",
+      "periodEnd": "June 30, 2026",
+      "priorPeriodEnd": "June 30, 2025",
+      "pdfPage": 12,
+      "rows": [
+        {"label": "Total Revenue", "current": "707.0", "prior": "501.0"}
+      ]
+    },
+    {
+      "statement": "Consolidated Statement of Cashflows",
+      "unit": "US$m",
+      "periodKind": "Year ended",
+      "periodEnd": "June 30, 2026",
+      "priorPeriodEnd": "June 30, 2025",
+      "pdfPage": 14,
+      "rows": [
+        {"label": "Net cash from (used in) operating activities", "current": "2,100.4", "prior": "245.9"},
+        {"label": "Payments for property, plant and equipment net of computer hardware", "current": "(2,998.0)", "prior": "(573.5)"},
+        {"label": "Payments for computer hardware", "current": "(1,335.1)", "prior": "(799.2)"}
+      ]
+    }
+  ]
+}
