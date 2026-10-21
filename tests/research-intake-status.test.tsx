@@ -7,6 +7,7 @@ it('shows pending Gilat Telecom source without claiming full PDF is already avai
  render(<ResearchIntakeStatus companyId="candidate-gilat-telecom"/>);
  expect(screen.getByText('המחקר החדש טרם נקלט במלואו באתר')).toBeTruthy();
  expect(screen.getByText(/SHA-256/)).toBeTruthy();
+ expect(screen.getByText(/הקובץ עדיין לא נמצא במאגר/)).toBeTruthy();
  expect(screen.getByText(/חבילת ייבוא חיצונית/)).toBeTruthy();
 });
 it('shows full published NBIS separately from source re-audit status',()=>{
