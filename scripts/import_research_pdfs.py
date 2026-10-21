@@ -37,7 +37,7 @@ def install(bundle: str, dry_run: bool = True) -> list[str]:
             pages = json.loads(text)["pages"]
             if len(pages) != entry["pages"]:
                 raise ValueError("Extracted page count mismatch")
-            target = PAGES_TARGET / (entry["ticker"] + ".pages.json")
+            target = PAGES_TARGET / (entry["ticker"].replace(" ", "_") + ".pages.json")
             if target.exists() and target.read_bytes() != text:
                 raise ValueError("Conflicting page text: " + target.name)
             if not target.exists():
