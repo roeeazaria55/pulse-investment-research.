@@ -12,12 +12,13 @@ class ResearchPdfImportTests(unittest.TestCase):
         package = ResearchBundleTests().make_bundle()
         try:
             with tempfile.TemporaryDirectory() as t:
-                with patch("import_research_pdfs.TARGET", Path(t)):
-                    self.assertEqual(len(install(str(package))), 7)
-                    self.assertFalse((Path(t) / "Source0.pdf").exists())
-                    self.assertEqual(len(install(str(package), dry_run=False)), 7)
+                with patch("import_research_pdfs.TARGET", Path(t) / "pdf"), patch("import_research_pdfs.PAGES_TARGET", Path(t) / "pages"):
+                    self.assertEqual(len(install(str(package))), 14)
+                    self.assertFalse((Path(t) / "pdf" / "Source0.pdf").exists())
+                    self.assertEqual(len(install(str(package), dry_run=False)), 14)
                     self.assertEqual(install(str(package), dry_run=False), [])
-                    self.assertTrue((Path(t) / "Source0.pdf").read_bytes().startswith(b"%PDF"))
+                    self.assertTrue((Path(t) / "pdf" / "Source0.pdf").read_bytes().startswith(b"%PDF"))
+                    self.assertTrue((Path(t) / "pages" / "T0.pages.json").exists())
         finally:
             package.unlink()
 
@@ -25,11 +26,12 @@ class ResearchPdfImportTests(unittest.TestCase):
         package = ResearchBundleTests().make_bundle()
         try:
             with tempfile.TemporaryDirectory() as t:
-                (Path(t) / "Source0.pdf").write_bytes(b"different document")
+                (Path(t) / "pdf").mkdir()
+                (Path(t) / "pdf" / "Source0.pdf").write_bytes(b"different document")
                 with patch("import_research_pdfs.TARGET", Path(t)):
                     with self.assertRaises(ValueError):
                         install(str(package), dry_run=False)
-                self.assertEqual((Path(t) / "Source0.pdf").read_bytes(), b"different document")
+                self.assertEqual((Path(t) / "pdf" / "Source0.pdf").read_bytes(), b"different document")
         finally:
             package.unlink()
 
