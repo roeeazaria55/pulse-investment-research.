@@ -165,6 +165,29 @@ jobs:
       - uses: actions/configure-pages@v5
       - id: deployment
         uses: actions/deploy-pages@v4
+      - uses: actions/checkout@v4
+        if: github.event_name != 'schedule'
+        with:
+          ref: ${{ needs.persist.outputs.sha }}
+          persist-credentials: false
+      - name: Install browser runtime for public-site verification
+        if: github.event_name != 'schedule'
+        run: |
+          python3 -m pip install --disable-pip-version-check playwright==1.55.0
+          python3 -m playwright install --with-deps chromium
+      - name: Verify deployed IREN values, research assets and mobile behavior
+        if: github.event_name != 'schedule'
+        env:
+          PULSE_CHECK_URL: ${{ steps.deployment.outputs.page_url }}
+        run: python3 scripts/mobile_check.py
+      - uses: actions/upload-artifact@v4
+        if: always() && github.event_name != 'schedule'
+        with:
+          name: public-site-mobile-evidence
+          path: |
+            work/mobile-*.png
+            work/mobile-*.json
+          retention-days: 14
   notify:
     needs: deploy
     if: success()
@@ -175,3 +198,4 @@ jobs:
       NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
       NTFY_TOKEN: ${{ secrets.NTFY_TOKEN }}
       PULSE_NOTIFY_CONFIG: ${{ secrets.PULSE_NOTIFY_CONFIG }}
+

@@ -1,13 +1,7 @@
+import {mappings} from './financialMetricMappings';
+import {financialMappingReadiness} from './financialMappingReadiness';
 import type {IntakeDocument,ReportIntakeSnapshot} from '../data/reportIntake';
 import type {MetricPoint,ThesisMetric} from './thesisMonitoring';
-interface Mapping {companyId:string;metricId:string;concepts:string[];basis:string;divisor:number;unit:string;fiscalJune?:boolean}
-// Explicit semantic mappings only. No inferred PDF columns, company extensions, adjusted or normalized measures.
-const mappings:Mapping[]=[
- {companyId:'us-smci-nasdaq-common',metricId:'revenue',concepts:['us-gaap:revenues','us-gaap:revenuefromcontractwithcustomerexcludingassessedtax'],basis:'revenue',divisor:1e9,unit:'USD billion',fiscalJune:true},
- {companyId:'us-smci-nasdaq-common',metricId:'cashflow',concepts:['us-gaap:netcashprovidedbyusedinoperatingactivities'],basis:'operating cash flow',divisor:1e9,unit:'USD billion',fiscalJune:true},
- {companyId:'candidate-brainsway',metricId:'revenue',concepts:['us-gaap:revenues','us-gaap:revenuefromcontractwithcustomerexcludingassessedtax'],basis:'revenue',divisor:1e6,unit:'USD million'},
- {companyId:'candidate-brainsway',metricId:'profit',concepts:['us-gaap:operatingincomeloss'],basis:'operating income',divisor:1e6,unit:'USD million'},
-];
 /** Only exact calendar boundaries are recognized. Fiscal 52/53-week calendars require a separate mapping. */
 function period(start:string|null,end:string,fiscalJune=false):string|null{
  if(!start)return null;
@@ -22,7 +16,10 @@ export interface SourceObservation {point:MetricPoint;document:IntakeDocument;co
 export interface ReportComparison {status:'mapped'|'missing'|'unsupported'|'conflict'|'review';label:string;observation?:SourceObservation}
 export function reportComparison(data:ReportIntakeSnapshot,companyId:string,metric:ThesisMetric):ReportComparison{
  const rules=mappings.filter(m=>m.companyId===companyId&&m.metricId===metric.id);
- if(!rules.length)return {status:'unsupported',label:'נדרשת בדיקת טבלה או הגדרה לפני מיפוי אוטומטי'};
+ if(!rules.length){
+  const readiness=financialMappingReadiness(data,companyId);
+  return {status:'unsupported',label:readiness?readiness.gaps.map(g=>g.label).join(' '):'נדרשת בדיקת טבלה או הגדרה לפני מיפוי אוטומטי'};
+ }
  const candidates:SourceObservation[]=[];
  for(const document of data.documents.filter(d=>d.companyId===companyId))for(const rule of rules)for(const fact of document.facts){
   if(!rule.concepts.includes(fact.concept.toLowerCase())||fact.unit!=='iso4217:USD'||!Number.isFinite(fact.value))continue;
@@ -40,3 +37,4 @@ export function reportComparison(data:ReportIntakeSnapshot,companyId:string,metr
  if(selected.some(c=>c.document.revised||c.document.error))return {status:'review',label:'דוח מתוקן או עדכון שנכשל · נדרשת בדיקה לפני השוואה',observation:selected[0]};
  return {status:'mapped',label:'מיפוי אוטומטי מנתון מקור · ממתין לאימות',observation:selected[0]};
 }
+

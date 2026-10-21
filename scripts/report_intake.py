@@ -15,9 +15,10 @@ from official_sources import document_url, canonical
 VERSION=1
 PARSER='official-content-v1'
 MAX_BYTES=8*1024*1024
-PILOTS={'candidate-nebius','candidate-sandisk','us-dlo-nasdaq-a','candidate-brainsway','us-smci-nasdaq-common'}
+PILOTS={'candidate-nebius','candidate-iren','candidate-sandisk','us-dlo-nasdaq-a','candidate-brainsway','us-smci-nasdaq-common'}
 LABELS=re.compile(r'revenue|net (?:income|loss)|gross profit|operating (?:income|loss)|cash flow|inventor|accounts receivable|total assets|earnings per|TPV|remaining performance|הכנסות|רווח|מלאי|תזרים',re.I)
-FINANCIAL_TITLE=re.compile(r'financial|fiscal|quarter|\bQ[1-4]\b|annual report|10-K|10-Q|20-F|shareholder|תוצאות כספיות|דוח כספי',re.I)
+FISCAL_YEAR=re.compile(r'\bFY\s*((?:20)?\d{2})\b',re.I)
+FINANCIAL_TITLE=re.compile(r'financial|fiscal|quarter|\bQ[1-4]\b|\bFY\s*(?:20)?\d{2}\b|annual report|10-K|10-Q|20-F|shareholder|תוצאות כספיות|דוח כספי',re.I)
 SCHEDULE=re.compile(r'to (?:report|release|announce)|date (?:of|for)|timing of|schedule|earnings call registration',re.I)
 KNOWN_FACTS={'us-gaap:revenues','us-gaap:revenuefromcontractwithcustomerexcludingassessedtax','us-gaap:netincomeloss','us-gaap:grossprofit','us-gaap:operatingincomeloss','us-gaap:netcashprovidedbyusedinoperatingactivities','us-gaap:inventorynet','us-gaap:accountsreceivablenetcurrent','us-gaap:cashandcashequivalentsatcarryingvalue','us-gaap:weightedaveragenumberofdilutedsharesoutstanding','us-gaap:earningspersharediluted'}
 def clean(value):return ' '.join(value.split())
@@ -173,9 +174,12 @@ def extract(body,content_type,url,company):
 def candidates(snapshot,company):
  items=[i for i in snapshot.get('items',[]) if i['companyId']==company['id'] and i.get('kind') in ('results','document') and not SCHEDULE.search(i['title']) and FINANCIAL_TITLE.search(i['title']+' '+(i.get('documentPeriod') or '')) and safe_report_url(i['url'],company)]
  def rank(item):
-  period=item.get('documentPeriod') or item['title'];year=re.search(r'20\d{2}',period);quarter=re.search(r'Q([1-4])',period,re.I);word=re.search(r'(first|second|third|fourth)\s+(?:fiscal\s+)?quarter',period,re.I)
+  period=item.get('documentPeriod') or item['title'];year=re.search(r'20\d{2}',period);fiscal=FISCAL_YEAR.search(period);quarter=re.search(r'Q([1-4])',period,re.I);word=re.search(r'(first|second|third|fourth)\s+(?:fiscal\s+)?quarter',period,re.I)
   q=int(quarter[1]) if quarter else {'first':1,'second':2,'third':3,'fourth':4}.get(word[1].lower(),0) if word else 0
-  return (int(year[0]) if year else 0,q,item.get('publishedDate') or '',item.get('lastSeenAt') or '')
+  # FY26 is an issuer-supplied fiscal label used ONLY for discovery ranking.
+  # It does not establish accounting start/end dates for extracted observations.
+  y=2000+int(fiscal[1][-2:]) if fiscal else int(year[0]) if year else 0
+  return (y,4 if fiscal and not q else q,item.get('publishedDate') or '',item.get('lastSeenAt') or '')
  return sorted(items,key=rank,reverse=True)
 
 def collect(snapshot,registry,previous,now,fetcher=fetch_document,limit=8,budget=120):
@@ -187,6 +191,10 @@ def collect(snapshot,registry,previous,now,fetcher=fetch_document,limit=8,budget
    ident='report:'+hashlib.sha256((company['id']+'|'+canonical(item['url'])).encode()).hexdigest()[:32]
    return (ident in records,records.get(ident,{}).get('lastSuccessfulAt',''))
   todo.sort(key=priority);chosen=todo[:1];status=dict(companyId=company['id'],lastAttemptAt=now,status='no-candidates',error=None)
+  discovery=[s for s in snapshot.get('sources',[]) if s.get('companyId')==company['id']]
+  if not chosen and discovery and all(s.get('status')=='failed' for s in discovery):
+   detail=next((s.get('error') for s in discovery if s.get('error')),'Unknown discovery failure')
+   status.update(status='failed',error=('Official source discovery failed; publication status unknown: '+detail)[:180])
   for item in chosen:
    if attempts>=limit or time.monotonic()>deadline:status.update(status='deferred',error='Run budget reached; retained records unchanged');break
    url=canonical(item['url']);ident='report:'+hashlib.sha256((company['id']+'|'+url).encode()).hexdigest()[:32]
@@ -219,5 +227,7 @@ def main():
  snapshot=json.loads(Path('public/data/official-sources.json').read_text());registry=json.loads(Path('public/data/official-registry.json').read_text())
  result=collect(snapshot,registry,previous,dt.datetime.now(dt.timezone.utc).isoformat())
  tmp=path.with_suffix('.json.tmp');tmp.write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n');tmp.replace(path)
- print(json.dumps({'documents':len(result['documents']),'sources':result['sources']}))
+ evidence=[{k:d[k] for k in ('companyId','url','finalUrl','sha256','lastSuccessfulAt','status','tableCount','error')}|{'structuredFacts':len(d['facts'])} for d in result['documents']]
+ print(json.dumps({'documents':len(result['documents']),'sources':result['sources'],'documentEvidence':evidence}))
 if __name__=='__main__':main()
+

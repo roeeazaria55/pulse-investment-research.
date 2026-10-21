@@ -1,4 +1,5 @@
 import {ReportIntake} from './ReportIntake';
+import {IrenFinancialResults} from './IrenFinancialResults';
 import {ResearchCandidatePreview} from './ResearchCandidatePreview';
 import {ResearchIntakeStatus} from './ResearchIntakeStatus';
 import {ThesisMonitor,ValuationContext} from './ThesisMonitor';
@@ -39,6 +40,7 @@ export function ResearchExchange({company,current,onChange,onPrepare,view='overv
    <ValuationContext companyId={company.id}/>
    <div className="research-thesis"><h4>התזה בקצרה</h4><p>{published.fields.thesis.includes('פרשנות:')?published.fields.thesis.slice(published.fields.thesis.indexOf('פרשנות:')+7).trim():published.fields.thesis}</p></div>
    <ThesisMonitor companyId={company.id}/>
+   <IrenFinancialResults companyId={company.id}/>
    <ReportIntake companyId={company.id}/>
    {model&&!hasFullResearch(company.id)&&<div className="research-next-checks"><h4>מה לבדוק בהמשך</h4><ul>{model.checks.map(c=><li key={c}>{c}</li>)}</ul></div>}
    <details className="research-full-reading" open={hasFullResearch(company.id)||undefined}><summary>קריאת המחקר המלא</summary>{hasFullResearch(company.id)?<FullCompanyResearch analysis={published}/>:<>{researchFields.map(k=><div key={k}><h4>{labels[k]}</h4><p>{published.fields[k]}</p></div>)}<h4>מקורות שנקראו</h4>{published.sourceUrls.map((url,i)=><p key={url}><a href={url} target="_blank" rel="noopener noreferrer">מקור {i+1}: {new URL(url).hostname}</a></p>)}<h4>מידע חסר ומגבלות</h4>{published.missing.map((m,i)=><p key={i}>{m}</p>)}</>}</details>
@@ -72,3 +74,4 @@ export function ResearchExchange({company,current,onChange,onPrepare,view='overv
   </div>
  </section>;
 }
+
