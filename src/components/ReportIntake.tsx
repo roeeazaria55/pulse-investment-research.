@@ -1,7 +1,7 @@
 import {useReportIntake} from '../hooks/useReportIntake';
 import {financialMappingReadiness} from '../research/financialMappingReadiness';
 import {ResearchTableView} from './SuppliedResearch';
-const statuses={ok:'הקריאה האחרונה הושלמה',partial:'הקריאה הושלמה חלקית',failed:'הקריאה האחרונה נכשלה',deferred:'ממתין לסבב איסוף נוסף','no-candidates':'לא נמצא קישור מתאים במאגר הנוכחי'};
+const statuses={ok:'הקריאה האחרונה הושלמה',partial:'הקריאה הושלמה חלקית',failed:'הקריאה האחרונה נכשלה',deferred:'ממתין לסבב איסוף נוסף','no-candidates':'לא נמצאה רשומת דוח מתאימה במאגר הנוכחי; אין בכך קביעה שלא פורסם דוח'};
 export function ReportIntake({companyId}:{companyId:string}){
  const {data,failed}=useReportIntake(companyId);
  const source=data?.sources.find(s=>s.companyId===companyId),docs=data?.documents.filter(d=>d.companyId===companyId)||[];
@@ -18,6 +18,7 @@ export function ReportIntake({companyId}:{companyId:string}){
   </div>}
   {failed?<p role="status">מצב הקליטה אינו זמין. אין להסיק מכך שלא פורסם דוח.</p>:!data?<p role="status">טוען מצב קליטה…</p>:<>
    {source&&<p>{statuses[source.status]} · ניסיון אחרון {new Date(source.lastAttemptAt).toLocaleString('he-IL')}. {source.status!=='ok'&&'ייתכן שקיימים דיווחים נוספים שלא נקלטו.'}</p>}
+   {source?.error&&<p role="status">פרטי כשל הקליטה: <bdi>{source.error}</bdi></p>}
    {!docs.length&&<p>אין עדיין תוכן דוח שנקרא בהצלחה במאגר הזה. קישורי הדיווחים זמינים במקורות; כשל קריאה אינו היעדר דיווח.</p>}
    {docs.map(d=><details className="intake-document" key={d.id}><summary>{d.title}{d.revised?' · זוהתה גרסה מתוקנת':''}</summary>
     <p><a href={d.finalUrl} target="_blank" rel="noopener noreferrer">פתיחת הדיווח הרשמי ↗</a></p>

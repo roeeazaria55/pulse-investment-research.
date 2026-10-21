@@ -2,7 +2,7 @@
 
 ## What runs automatically
 
-After official metadata collection, `scripts/report_intake.py` reads financial report candidates for NBIS, SNDK, DLO, BWAY and SMCI. It uses the existing scheduled GitHub Actions publication workflow, without an AI service or API secret. HTML bodies and up to 60 PDF pages are read under size/time bounds. Financial tables are extracted as candidate source rows; selected inline XBRL concepts retain exact context start/end dates, unit, scale and issuer identity. If a financial release has no supported data but links to an approved PDF, one attachment can be followed. This is distinct from the user-supplied PULSE research PDFs.
+After official metadata collection, `scripts/report_intake.py` reads financial report candidates for NBIS, IREN, SNDK, DLO, BWAY and SMCI. It uses the existing scheduled GitHub Actions publication workflow, without an AI service or API secret. HTML bodies and up to 60 PDF pages are read under size/time bounds. Financial tables are extracted as candidate source rows; selected inline XBRL concepts retain exact context start/end dates, unit, scale and issuer identity. If a financial release has no supported data but links to an approved PDF, one attachment can be followed. This is distinct from the user-supplied PULSE research PDFs.
 
 The scheduled run persists `public/data/report-intake.json` alongside existing public ingestion state and publishes it. A compact disclosure in each covered company's overview shows documents read, the successful read date, publication date when known, scope, candidate tables, structured facts and links to the actual read document. A failed refresh retains previous successful content and marks the failure. A source failure does not mean no report was published.
 
@@ -29,7 +29,26 @@ The source analysis PDFs of DLO (4 pages, 10 sections), BWAY (3 pages, 16 sectio
 1. Review and map supported extracted observations to the company's monitoring metric definitions, including accounting reconciliations and fiscal periods. Never compare quarter and full-year values directly.
 2. Generate a versioned proposed research update with cited evidence. AI narrative analysis, if added, needs a separately configured service and budget; it is not enabled here.
 3. Review revised scenario assumptions and capital/funding bridges before replacing the active model. Automatic content intake does not mean automatic valuation approval.
-4. Expand report parsing beyond these five companies after testing their source formats.
+4. Expand report parsing beyond these pilot companies after testing their source formats.
+
+## IREN intake coverage correction
+
+IREN's existing registry already includes its issuer IR portals and verified
+IREN-distributed GlobeNewswire source. The checked metadata includes the release
+`IREN Reports FY26 Results` (27 August 2026). IREN was missing from the content
+pilot set, and the financial-title filter also rejected the abbreviated FY26
+title. Both are now covered. FY26/FY2026 labels also participate in candidate
+ranking, with annual FY26 results ahead of Q3 FY26; no accounting dates or facts
+are inferred from these labels.
+
+No candidate in the metadata means `no-candidates`, not "no report published".
+If all recorded discovery sources failed and no candidate is available, intake
+records a discovery failure instead. A content download error records `failed`
+and preserves any previous successful document. Missing intake entries remain
+distinct from those recorded failures. CI retains the generated intake snapshot
+as `pr-report-intake-evidence` and logs document URLs, hashes, successful-read
+timestamps and extraction counts so a live read can be distinguished from fixture
+tests. Content extraction does not enable accounting mappings or valuation changes.
 
 ## Forecast comparison (October 2026)
 
@@ -54,3 +73,4 @@ Snapshot fetch/validation failure is shown as unavailable, never as a zero resul
 
 Next coverage step: source-specific financial table adapters with explicit headers,
 units and periods, followed by reviewed bridges for non-GAAP and business metrics.
+

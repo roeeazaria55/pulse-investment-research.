@@ -39,3 +39,14 @@ it('does not label an unavailable snapshot as proof of missing issuer reports',a
  expect(screen.getByText('מצב קליטת הדוחות אינו זמין; לא ניתן לקבוע כיסוי נתונים.')).toBeTruthy();
  expect(screen.queryByText('טרם נקלט תוכן דוח רשמי לחברה במאגר הזה.')).toBeNull();
 });
+
+it.each(['failed','no-candidates'] as const)('distinguishes IREN %s from a missing intake entry or an unpublished report',async status=>{
+ const data=structuredClone(raw);data.documents=data.documents.filter(d=>d.companyId!=='candidate-iren');data.sources=data.sources.filter(s=>s.companyId!=='candidate-iren');
+ data.sources.push({companyId:'candidate-iren',lastAttemptAt:data.generatedAt,status,error:status==='failed'?'HTTP 403: Forbidden':null});
+ vi.stubGlobal('fetch',vi.fn().mockResolvedValue({ok:true,json:async()=>data}));
+ render(<ReportIntake companyId="candidate-iren"/>);
+ fireEvent.click(screen.getByText('קליטת דוחות אוטומטית'));
+ if(status==='failed')await waitFor(()=>expect(screen.getByText('HTTP 403: Forbidden')).toBeTruthy());
+ else await waitFor(()=>expect(screen.getByText(/לא נמצאה רשומת דוח מתאימה במאגר הנוכחי; אין בכך קביעה שלא פורסם דוח/)).toBeTruthy());
+ expect(screen.queryByText('אין רישום קליטת דוחות לחברה בתמונת הנתונים הנוכחית.')).toBeNull();
+});

@@ -49,8 +49,30 @@ reports, table-only evidence, raw facts without a mapping, revisions and failure
 
 Next safe step: implement and fixture-test a source-specific adapter for one official
 report, retaining issuer identity, consolidation scope, exact dates, units, accounting
-basis and source provenance. IREN also needs explicitly tested intake configuration.
+basis and source provenance. IREN intake configuration is corrected below.
 Only then can reviewed mappings be added; fiscal-June and calendar periods, adjusted
 EBITDA and operating profit, ARR and recognized revenue, corporate and merchant cash,
 and weighted-average diluted shares versus model dilution must stay distinct.
+
+## IREN intake follow-up
+
+Root causes: `candidate-iren` was excluded from the content collector pilot set,
+and the financial-title filter did not recognize the official FY26 annual-results
+title already present in metadata. The registry itself was not missing. Existing
+IR discovery attempts had HTTP 403 errors, but the verified issuer-distributed
+GlobeNewswire source had retained the actual annual-results release:
+https://rss.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html
+
+The collector now includes IREN, recognizes FY26/FY2026 labels for discovery and
+ranking only, and preserves explicit unknown publication status when no report
+record exists. Failed discovery without candidates is recorded as a failure;
+failed report reads retain previous successful evidence. Python fixtures cover
+selection, ordering, schedules, issuer/path restrictions, missing records, network
+failure, retained history and budget deferral. UI tests distinguish missing entries,
+recorded failures and no matching records. These fixtures contain no issuer figures.
+
+The local live attempt was blocked by an unavailable proxy. Its intake source status
+is recorded as failed, not as an absent/unpublished report. The PR CI performs an
+independent live attempt and preserves its generated snapshot as an evidence artifact.
+No IREN financial metric mapping or active research target is enabled by this change.
 
