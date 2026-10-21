@@ -1,4 +1,6 @@
 import {expect,it} from 'vitest';
+import {readFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
 import sources from '../src/data/newResearchSourceManifest.json';
 import registry from '../src/data/researchIntakeRegistry.json';
 it('attests all seven extracted uploaded sources with explicit unverified status after PDF and page ingestion',()=>{
@@ -13,3 +15,17 @@ it('attests all seven extracted uploaded sources with explicit unverified status
   expect(item.pages).toBeGreaterThanOrEqual(3);
  }
 });
+
+it('preserves the seven actual original PDFs and all seven page JSON files',()=>{
+ for(const item of sources.research){
+  const bytes=readFileSync(new URL('../public/research/'+item.filename,import.meta.url));
+  expect(bytes.subarray(0,4).toString()).toBe('%PDF');
+  expect(bytes.length).toBe(item.bytes);
+  expect(createHash('sha256').update(bytes).digest('hex')).toBe(item.sha256);
+  const name=item.ticker==='Gilat Telecom'?'Gilat_Telecom':item.ticker;
+  const pages=JSON.parse(readFileSync(new URL('../public/research-pages/'+name+'.pages.json',import.meta.url),'utf8')).pages;
+  expect(pages).toHaveLength(item.pages);
+  expect(pages.every((p:{page:number;text:string},i:number)=>p.page===i+1&&p.text.trim().length>0)).toBe(true);
+ }
+});
+

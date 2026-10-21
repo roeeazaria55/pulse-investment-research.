@@ -1,11 +1,14 @@
 """Headless Chromium mobile/text/keyboard emulation; not a physical Android test."""
 import json
+import hashlib
+import os
 import time
 import urllib.request
+from urllib.parse import urljoin
 from pathlib import Path
 from playwright.sync_api import sync_playwright, expect
 
-URL='http://127.0.0.1:4173/pulse-investment-research./'
+URL=os.environ.get('PULSE_CHECK_URL','http://127.0.0.1:4173/pulse-investment-research./').rstrip('/')+'/'
 for attempt in range(30):
     try:
         with urllib.request.urlopen(URL,timeout=2) as r:
@@ -16,6 +19,25 @@ Path('work').mkdir(exist_ok=True)
 results=[]
 with sync_playwright() as pw:
     browser=pw.chromium.launch()
+    assets=pw.request.new_context()
+    checked_assets=[]
+    manifest=json.loads(Path('src/data/newResearchSourceManifest.json').read_text())
+    for item in manifest['research']:
+        pdf_url=urljoin(URL,'research/'+item['filename'])
+        response=assets.get(pdf_url,timeout=30000)
+        assert response.status==200,f'Research PDF link failed: {pdf_url} ({response.status})'
+        body=response.body()
+        assert body.startswith(b'%PDF') and len(body)==item['bytes'],f'Research PDF bytes changed: {pdf_url}'
+        assert hashlib.sha256(body).hexdigest()==item['sha256'],f'Research PDF hash changed: {pdf_url}'
+        page_name='Gilat_Telecom' if item['ticker']=='Gilat Telecom' else item['ticker']
+        pages_url=urljoin(URL,'research-pages/'+page_name+'.pages.json')
+        response=assets.get(pages_url,timeout=30000)
+        assert response.status==200,f'Research page JSON link failed: {pages_url} ({response.status})'
+        pages=response.json()['pages']
+        assert len(pages)==item['pages'] and all(p['text'].strip() for p in pages),f'Research page content missing: {pages_url}'
+        checked_assets.append({'pdf':pdf_url,'sha256':item['sha256'],'pages':pages_url})
+    assets.dispose()
+    Path('work/mobile-research-assets.json').write_text(json.dumps({'url':URL,'checked':checked_assets},ensure_ascii=False))
     for width in (320,390,430):
         context=browser.new_context(viewport={'width':width,'height':844},is_mobile=True,has_touch=True,device_scale_factor=1)
         page=context.new_page()
@@ -73,6 +95,9 @@ with sync_playwright() as pw:
                 expect(actuals).to_contain_text('$707.0M')
                 expect(actuals).to_contain_text('$2,100.4M')
                 expect(actuals).to_contain_text('$4,333.1M')
+                expect(actuals).to_contain_text('2,998.0 + 1,335.1 = 4,333.1')
+                expect(actuals).to_contain_text('ממתין לבדיקת אנליסט')
+                expect(actuals).to_contain_text('אינם הפתעה ואינם בדיקת איכות התחזית')
                 expect(actuals.get_by_text('אין השוואה מספרית תקפה',exact=True)).to_have_count(3)
                 expect(actuals.get_by_role('link',name='מקור רשמי · PDF עמוד 12 ↗',exact=True)).to_have_attribute('href','https://iren.gcs-web.com/static-files/1cb9f4da-d4c7-4510-8bda-e475022b59f5#page=12')
                 page.evaluate("document.activeElement?.blur();document.documentElement.style.fontSize='32px'")
