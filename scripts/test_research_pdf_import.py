@@ -28,7 +28,7 @@ class ResearchPdfImportTests(unittest.TestCase):
             with tempfile.TemporaryDirectory() as t:
                 (Path(t) / "pdf").mkdir()
                 (Path(t) / "pdf" / "Source0.pdf").write_bytes(b"different document")
-                with patch("import_research_pdfs.TARGET", Path(t)):
+                with patch("import_research_pdfs.TARGET", Path(t) / "pdf"), patch("import_research_pdfs.PAGES_TARGET", Path(t) / "pages"):
                     with self.assertRaises(ValueError):
                         install(str(package), dry_run=False)
                 self.assertEqual((Path(t) / "pdf" / "Source0.pdf").read_bytes(), b"different document")
