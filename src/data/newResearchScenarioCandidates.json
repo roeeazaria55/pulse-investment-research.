@@ -34,9 +34,10 @@
       "flags": [
         "GLR prior-year reserve development",
         "ADR denominator and timing",
-        "Capital/dilution"
+        "Capital/dilution",
+        "Rounded weighted value differs from 64.467 by 0.007 USD; investigate source rounding"
       ],
-      "check": "investigate_rounding"
+      "check": "consistent"
     },
     {
       "companyId": "us-meta-nasdaq-a",
