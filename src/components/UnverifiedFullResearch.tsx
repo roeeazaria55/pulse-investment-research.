@@ -18,7 +18,7 @@ export function UnverifiedFullResearch({companyId}:{companyId:string}){
  const load=async()=>{
   setStatus('loading');
   try{
-   const url=import.meta.env.BASE_URL+'research-pages/'+encodeURIComponent(source.ticker)+'.pages.json';
+   const url=import.meta.env.BASE_URL+'research-pages/'+encodeURIComponent(source.ticker.replace(/\s+/g,'_'))+'.pages.json';
    const response=await fetch(url,{cache:'no-store'});
    if(!response.ok)throw Error('not published');
    if(Number(response.headers.get('content-length')||0)>250000)throw Error('too large');
