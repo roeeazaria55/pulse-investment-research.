@@ -3,6 +3,7 @@ import sources from '../data/newResearchSourceManifest.json';
 import candidates from '../data/newResearchScenarioCandidates.json';
 import {auditSourceValuation} from '../research/sourceValuationAudit';
 import {hasFullResearch} from './FullCompanyResearch';
+import {UnverifiedFullResearch} from './UnverifiedFullResearch';
 
 export function ResearchIntakeStatus({companyId}:{companyId:string}){
  const item=intake.companies.find(r=>r.companyId===companyId);
@@ -26,6 +27,7 @@ export function ResearchIntakeStatus({companyId}:{companyId:string}){
    <p>בדיקות חסרות:</p><ul>{candidate.flags.map(flag=><li key={flag}>{flag}</li>)}</ul>
    <p>לא אומת מול דוחות החברה. השווי הפעיל לא משתנה.</p>
   </details>}
+  {file&&<UnverifiedFullResearch companyId={companyId}/>}
   <p>הנתונים שהועלו הם מחקר עצמאי. אין לסמן אותם כנתוני חברה מאומתים או כתחזית מאושרת ללא בקרת מקורות ומודל.</p>
  </details>;
 }
