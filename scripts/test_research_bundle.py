@@ -17,7 +17,7 @@ class ResearchBundleTests(unittest.TestCase):
             name = "Source%d.pdf" % i
             textname = "extracted/T%d.pages.json" % i
             entry = {
-                "companyId": "company-%d" % i, "filename": name,
+                "companyId": "company-%d" % i, "ticker": "T%d" % i, "filename": name,
                 "sha256": hashlib.sha256(original).hexdigest(),
                 "bytes": len(original), "pages": 1,
                 "extractedTextFilename": textname,
