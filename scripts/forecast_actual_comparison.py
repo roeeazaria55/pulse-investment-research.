@@ -66,8 +66,7 @@ def main():
     data=evaluate(archive,actual,ledger)
     out=root/"forecast-actual-comparisons.json"
     tmp=out.with_suffix(".json.tmp")
-    tmp.write_text(json.dumps(data,ensure_ascii=False,indent=2)+"
-")
+    tmp.write_text(json.dumps(data,ensure_ascii=False,indent=2)+"\n")
     tmp.replace(out)
     print(json.dumps({"comparisons":len(data["results"]),"valid":sum(x["status"]=="comparable" for x in data["results"])}))
 
