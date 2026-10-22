@@ -36,3 +36,15 @@ No model, probability, financial target, supplied PDF research or
 user portfolio holding is modified. This PR is stacked on Phase 2C
 (PR #26). The manual review ledger is in Phase 2D (PR #27); when
 neither approved nor merged, comparisons stay blocked.
+
+## Repository policy hard stop (2026-10-22)
+
+GitHub currently reports `main.protected = false`. A decision entered into a
+mutable JSON ledger is **Review Decision Recorded**, not verified analyst
+approval. The production comparison pipeline deliberately passes
+`verified_review_authority = False` and therefore emits **no numerical
+performance surprises**, even when a JSON entry says `approved`. Test-only
+calls exercise the math behind an explicit trusted-review flag using
+synthetic evidence. Do not enable that flag in production until GitHub
+rulesets requiring authenticated review are actually enforced and the
+source-to-review attestations are validated.
