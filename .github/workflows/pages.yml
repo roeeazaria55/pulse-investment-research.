@@ -2,7 +2,7 @@ name: Publish PULSE
 on:
   push:
     branches: [main]
-    paths-ignore: ["public/data/feed.json", "public/data/ingestion-state.json", "public/data/official-sources.json", "public/data/report-intake.json"]
+    paths-ignore: ["public/data/feed.json", "public/data/ingestion-state.json", "public/data/official-sources.json", "public/data/report-intake.json", "public/data/report-review-queue.json"]
   workflow_dispatch:
   schedule:
     # About every 30 minutes; 13:00 Jerusalem daily window is generated on
@@ -63,6 +63,9 @@ jobs:
         run: |
           python3 -m pip install --disable-pip-version-check -r scripts/requirements-report-intake.txt
           python3 scripts/report_intake.py
+      - name: Update pending review queue from official source evidence
+        if: steps.collect.outputs.skipped != 'true'
+        run: python3 scripts/report_review_queue.py
       - name: Test
         if: steps.collect.outputs.skipped != 'true'
         run: npm test
@@ -80,6 +83,7 @@ jobs:
             public/data/ingestion-state.json
             public/data/official-sources.json
             public/data/report-intake.json
+            public/data/report-review-queue.json
           retention-days: 7
       - name: Install browser test runtime for code/manual releases only
         if: github.event_name != 'schedule'
@@ -133,9 +137,10 @@ jobs:
           cp work/ingestion-artifact/ingestion-state.json public/data/ingestion-state.json
           cp work/ingestion-artifact/official-sources.json public/data/official-sources.json
           cp work/ingestion-artifact/report-intake.json public/data/report-intake.json
+          cp work/ingestion-artifact/report-review-queue.json public/data/report-review-queue.json
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -- public/data/feed.json public/data/ingestion-state.json public/data/official-sources.json public/data/report-intake.json
+          git add -- public/data/feed.json public/data/ingestion-state.json public/data/official-sources.json public/data/report-intake.json public/data/report-review-queue.json
           if ! git diff --cached --quiet; then
             git commit -m "Update public news and SEC collection state [skip ci]"
             git push origin HEAD:main
