@@ -1,5 +1,5 @@
 import {useEffect,useState} from 'react';
-interface BriefEvidence {observationId:string;metricId:string;value:number;unit:string;raw:string;periodStart:string;periodEnd:string;basis:string;sourceUrl:string;approvalStatus:string;forecastComparisonStatus:string;reviewQuestion:string}
+interface BriefEvidence {observationId:string;metricId:string;value:number;unit:string;raw:string;periodStart:string;periodEnd:string;basis:string;sourceUrl:string;approvalStatus:string;forecastComparisonStatus:string;forecastComparisonReasons?:string[];reviewQuestion:string}
 interface Brief {id:string;companyId:string;status:string;period:string;sourceUrl:string;reportPublishedDate:string|null;evidence:BriefEvidence[];thesisImpact:string;valuationAction:string;aiAnalysisEnabled:boolean;missing:string[]}
 const labels:Record<string,string>={revenue:'הכנסות',grossProfit:'רווח גולמי',operatingCash:'תזרים תפעולי',capex:'השקעות הוניות'};
 export function ResearchUpdateProposal({companyId}:{companyId:string}){
@@ -26,6 +26,8 @@ export function ResearchUpdateProposal({companyId}:{companyId:string}){
    <ul>{b.evidence.map(e=><li key={e.observationId}>
     <strong>{labels[e.metricId]||e.metricId}:</strong> <bdi>{e.value} {e.unit}</bdi> · {e.approvalStatus==='approved'?'אושר':'לא אושר'}
     <p>{e.reviewQuestion}</p>
+    <p>השוואת תחזית: {e.forecastComparisonStatus==="comparable"?"נמצאה השוואה מאושרת":e.forecastComparisonStatus==="blocked"?"חסומה": "אין תחזית תואמת מאושרת"}.</p>
+    {e.forecastComparisonReasons?.length? <ul>{e.forecastComparisonReasons.map((r,i)=><li key={i}>{r}</li>)}</ul>:null}
    </li>)}</ul>
    <p>{b.thesisImpact}</p><p>{b.valuationAction}</p>
    <p>חסר לפני החלטה: {b.missing.join(' · ')}</p>
