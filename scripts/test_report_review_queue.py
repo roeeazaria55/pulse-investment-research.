@@ -6,7 +6,7 @@ from report_review_queue import build_queue, version_id
 
 NOW = "2026-10-22T12:00:00+00:00"
 LATER = "2026-10-22T13:00:00+00:00"
-COMPANY = {"id": "candidate-nebius", "ticker": "NBIS"}
+COMPANY = {"id": "candidate-nebius", "ticker": "NBIS", "allowedHosts": ["nebius.com"], "documentPaths": ["/newsroom/"]}
 REGISTRY = {"companies": [COMPANY]}
 URL = "https://nebius.com/newsroom/test-results"
 DOC = {
@@ -88,6 +88,7 @@ class ReportReviewQueueTests(unittest.TestCase):
         bad = [
             {**DOC, "sha256": "not-a-hash"},
             {**DOC, "url": "http://nebius.com/newsroom/test-results"},
+            {**DOC, "url": "https://evil.example/newsroom/test-results"},
             {**DOC, "status": "failed"},
             {**DOC, "companyId": "unknown"},
             {**DOC, "lastSuccessfulAt": "nonsense"},
