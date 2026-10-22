@@ -9,7 +9,7 @@ ACTUAL={"id":"observation:test","companyId":"us-dlo-nasdaq-a","metricId":"revenu
 APPROVAL={"observationId":ACTUAL["id"],"sourceSha256":ACTUAL["sourceSha256"],"decision":"approved"}
 class ForecastActualTests(unittest.TestCase):
  def test_valid_prospective_checked_comparison(self):
-  result=compare(FORECAST,ACTUAL,[APPROVAL])
+  result=compare(FORECAST,ACTUAL,[APPROVAL],verified_review_authority=True)
   self.assertEqual(result["status"],"comparable")
   self.assertEqual(result["difference"],40)
   self.assertEqual(result["percent"],10)
@@ -34,8 +34,8 @@ class ForecastActualTests(unittest.TestCase):
    self.assertEqual(compare(FORECAST,a,[{**APPROVAL,"observationId":a["id"]}])["status"],"blocked")
  def test_zero_target_preserves_null_percentage(self):
   f={**FORECAST,"point":{**FORECAST["point"],"value":0}}
-  self.assertIsNone(compare(f,ACTUAL,[APPROVAL])["percent"])
- def test_empty_approved_ledger_has_no_claimed_forecast_success(self):
+  self.assertIsNone(compare(f,ACTUAL,[APPROVAL],verified_review_authority=True)["percent"])
+ def test_unprotected_main_never_claims_verified_approval(self):\n  result=compare(FORECAST,ACTUAL,[APPROVAL])\n  self.assertEqual(result['status'],'blocked')\n  self.assertTrue(any('not verified' in r for r in result['reasons']))\n def test_empty_approved_ledger_has_no_claimed_forecast_success(self):
   out=evaluate({"forecasts":[FORECAST]},{"observations":[ACTUAL]},{"decisions":[]})
   self.assertEqual(out["results"][0]["status"],"blocked")
 if __name__=="__main__":unittest.main()
