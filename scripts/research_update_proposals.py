@@ -36,6 +36,7 @@ def build_proposals(snapshot,comparison,ledger):
                 "sourceSha256":ob.get("sourceSha256"),"sourceUrl":ob.get("sourceUrl"),
                 "approvalStatus":"approved" if approved else ob.get("reviewStatus","pending-review"),
                 "forecastComparisonStatus":match_status or "no-comparable-forecast",
+                "forecastComparisonReasons":match.get(ob.get("id"),{}).get("reasons",[]) if match_status=="blocked" else [],
                 "reviewQuestion":REVIEW_TASKS[ob["metricId"]],
             })
         ident="research-proposal:"+hashlib.sha256((str(company_id)+"|"+str(review_id)).encode()).hexdigest()[:32]
