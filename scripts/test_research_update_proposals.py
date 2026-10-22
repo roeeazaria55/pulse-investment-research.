@@ -24,6 +24,7 @@ class ResearchBriefTests(unittest.TestCase):
   output=build_proposals({"observations":[O]},{},{"decisions":[wrong]})
   self.assertEqual(output["proposals"][0]["evidence"][0]["approvalStatus"],"needs-reconciliation")
  def test_comparison_is_explained_as_pending_not_fabricated(self):
-  result=build_proposals({"observations":[O]},{"results":[{"observationId":O["id"],"status":"blocked"}]},{})
+  result=build_proposals({"observations":[O]},{"results":[{"observationId":O["id"],"status":"blocked","reasons":["Review Decision Recorded; not verified"]}]},{})
   self.assertEqual(result["proposals"][0]["evidence"][0]["forecastComparisonStatus"],"blocked")
+  self.assertIn("not verified",result["proposals"][0]["evidence"][0]["forecastComparisonReasons"][0])
 if __name__=="__main__":unittest.main()
