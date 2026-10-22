@@ -9,6 +9,7 @@ import json
 import re
 from pathlib import Path
 from urllib.parse import urlsplit
+from report_intake import safe_report_url
 
 VERSION = 1
 HEX_SHA = re.compile(r"^[0-9a-f]{64}$")
@@ -35,7 +36,7 @@ def valid_document(doc, companies):
     if doc.get("status") not in ("extracted", "read-no-supported-data"):
         return False
     u = urlsplit(str(doc.get("url", "")))
-    if u.scheme != "https" or not u.hostname or u.username or u.password:
+    if u.scheme != "https" or not u.hostname or u.username or u.password or not safe_report_url(doc["url"], companies[doc["companyId"]]):
         return False
     if not valid_time(doc.get("lastSuccessfulAt")):
         return False
