@@ -11,7 +11,7 @@ export interface FinancialObservation<Id extends string=string> {
 export interface FinancialForecast {companyId:string;point:MetricPoint;description:string;definition:string;asOf:string}
 export interface FinancialResult<Id extends string=string> {observations:FinancialObservation<Id>[];issues:{id:Id|'source';reason:string}[]}
 export interface FinancialRule<Id extends string=string> {
- id:Id;title:string;statement:string;page:number;labels:string[];basis:string;definition:string;
+ id:Id;title:string;statement:string;page?:number;labels:string[];basis:string;definition:string;
  transform?:'negative-sum';
 }
 export interface FinancialSourceConfig<Id extends string=string> {
@@ -46,7 +46,7 @@ export function extractFinancialResults<Id extends string>(input:unknown,config:
   if(tables.length!==1)throw Error('טבלת מקור חסרה או כפולה');
   const t=tables[0];
   if(t.unit!==config.sourceUnit)throw Error('יחידת המקור אינה תואמת ליחידה שנבדקה: '+config.sourceUnit);
-  if(t.periodKind!==config.sourcePeriodKind||t.periodEnd!==config.sourcePeriodEnd||(config.sourcePeriodStart!==undefined&&t.periodStart!==config.sourcePeriodStart)||(t.pdfPage??t.page)!==rule.page)throw Error('תקופת המקור או מיקום העמוד אינם תואמים לדוח שנבדק');
+  if(t.periodKind!==config.sourcePeriodKind||t.periodEnd!==config.sourcePeriodEnd||(config.sourcePeriodStart!==undefined&&t.periodStart!==config.sourcePeriodStart)||(rule.page!==undefined&&(t.pdfPage??t.page)!==rule.page))throw Error('תקופת המקור או מיקום העמוד אינם תואמים לדוח שנבדק');
   if(!Array.isArray(t.rows))throw Error('שורות מקור חסרות');
   const sourceValues=rule.labels.map(label=>{
    const rows=t.rows.filter(r=>r?.label===label);
@@ -60,7 +60,7 @@ export function extractFinancialResults<Id extends string>(input:unknown,config:
   const value=Math.round(rawValue*config.multiplier*1e6)/1e6;
   if(!Number.isFinite(value))throw Error('ערך מקור לא סופי');
   const pdf=config.documentKey==='pdfUrl';
-  observations.push({id:rule.id,companyId:x.companyId,title:rule.title,point:{value,period:config.period,unit:config.unit,basis:rule.basis},periodStart:config.periodStart,periodEnd:config.periodEnd,periodText:config.periodText,definition:rule.definition,sourceValues,sourceUnit:t.unit,sourceUrl:x.sourceUrl,documentUrl:config.documentUrl,locationUrl:pdf?`${config.documentUrl}#page=${rule.page}`:`${config.documentUrl}#:~:text=${encodeURIComponent(rule.statement)}`,locationLabel:pdf?`PDF עמוד ${rule.page}`:`10-K עמוד ${rule.page} · ${rule.statement}`,checkedDate:x.checkedDate,publishedDate:x.publishedDate,resultsPublishedDate:config.resultsPublishedDate??x.publishedDate,verification:derived?'derived-source-checked-pending-review':'source-checked-pending-review'});
+  observations.push({id:rule.id,companyId:x.companyId,title:rule.title,point:{value,period:config.period,unit:config.unit,basis:rule.basis},periodStart:config.periodStart,periodEnd:config.periodEnd,periodText:config.periodText,definition:rule.definition,sourceValues,sourceUnit:t.unit,sourceUrl:x.sourceUrl,documentUrl:config.documentUrl,locationUrl:pdf&&rule.page!==undefined?`${config.documentUrl}#page=${rule.page}`:`${config.documentUrl}#:~:text=${encodeURIComponent(rule.statement)}`,locationLabel:pdf&&rule.page!==undefined?`PDF עמוד ${rule.page}`:rule.page!==undefined?`דוח רשמי עמוד ${rule.page} · ${rule.statement}`:`דוח רשמי · ${rule.statement}`,checkedDate:x.checkedDate,publishedDate:x.publishedDate,resultsPublishedDate:config.resultsPublishedDate??x.publishedDate,verification:derived?'derived-source-checked-pending-review':'source-checked-pending-review'});
  }catch(e){issues.push({id:rule.id,reason:(e as Error).message});}
  return {observations,issues};
 }
