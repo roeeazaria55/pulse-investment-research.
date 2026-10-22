@@ -24,7 +24,7 @@ export function ResearchUpdateProposal({companyId}:{companyId:string}){
   {briefs?.map(b=><article key={b.id}>
    <p><strong>דוח {b.period}</strong> · פרסום {b.reportPublishedDate||'מועד לא מאומת'} · מצב: {b.status==='review-only'?'ממתין לבדיקה':b.status}</p>
    <ul>{b.evidence.map(e=><li key={e.observationId}>
-    <strong>{labels[e.metricId]||e.metricId}:</strong> <bdi>{e.value} {e.unit}</bdi> · {e.approvalStatus==='approved'?'אושר':'לא אושר'}
+    <strong>{labels[e.metricId]||e.metricId}:</strong> <bdi>{e.value} {e.unit}</bdi> · {e.approvalStatus==='review-decision-recorded'?'החלטת בדיקה תועדה · אישור לא אומת': 'לא אושר'}
     <p>{e.reviewQuestion}</p>
     <p>השוואת תחזית: {e.forecastComparisonStatus==="comparable"?"נמצאה השוואה מאושרת":e.forecastComparisonStatus==="blocked"?"חסומה": "אין תחזית תואמת מאושרת"}.</p>
     {e.forecastComparisonReasons?.length? <ul>{e.forecastComparisonReasons.map((r,i)=><li key={i}>{r}</li>)}</ul>:null}
