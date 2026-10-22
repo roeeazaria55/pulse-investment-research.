@@ -32,7 +32,12 @@ def compare(forecast,actual,decisions,*,verified_review_authority=False):
                        e.get("sourceSha256")==actual.get("sourceSha256")]
     if not current_approvals or current_approvals[-1].get("decision")!="approved":
         reasons.append("observation is not approved by a merged analyst review")
-    # A mutable public ledger is not evidence of a verified review. Main currently\n    # has no protected-branch policy. The production pipeline MUST NOT set this\n    # flag until a server-side reviewer-authentication gate has been implemented.\n    if not verified_review_authority:\n        reasons.append("Review Decision Recorded; analyst approval is not verified by an enforced repository policy")\n    val=point.get("value"); actual_val=actual.get("value")
+    # A mutable public ledger is not evidence of a verified review. Main currently
+    # has no protected-branch policy. The production pipeline MUST NOT set this
+    # flag until a server-side reviewer-authentication gate has been implemented.
+    if not verified_review_authority:
+        reasons.append("Review Decision Recorded; analyst approval is not verified by an enforced repository policy")
+    val=point.get("value"); actual_val=actual.get("value")
     if isinstance(val,bool) or isinstance(actual_val,bool) or not isinstance(val,(float,int)) or not isinstance(actual_val,(float,int)) or not math.isfinite(val) or not math.isfinite(actual_val):
         reasons.append("invalid numeric value")
     if reasons:
@@ -61,7 +66,8 @@ def main():
     data=evaluate(archive,actual,ledger)
     out=root/"forecast-actual-comparisons.json"
     tmp=out.with_suffix(".json.tmp")
-    tmp.write_text(json.dumps(data,ensure_ascii=False,indent=2)+"\n")
+    tmp.write_text(json.dumps(data,ensure_ascii=False,indent=2)+"
+")
     tmp.replace(out)
     print(json.dumps({"comparisons":len(data["results"]),"valid":sum(x["status"]=="comparable" for x in data["results"])}))
 
