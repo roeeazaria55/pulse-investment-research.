@@ -27,14 +27,14 @@ def build_proposals(snapshot,comparison,ledger):
         evidence=[]
         for ob in rows:
             d=decisions.get(ob.get("id"))
-            approved=bool(d and d.get("decision")=="approved" and d.get("sourceSha256")==ob.get("sourceSha256"))
+            recorded=bool(d and d.get("decision")=="approved" and d.get("sourceSha256")==ob.get("sourceSha256"))
             match_status=match.get(ob.get("id"),{}).get("status")
             evidence.append({
                 "observationId":ob.get("id"),"metricId":ob["metricId"],"value":ob.get("value"),
                 "unit":ob.get("unit"),"raw":ob.get("sourceRaw"),"periodStart":ob.get("periodStart"),
                 "periodEnd":ob.get("periodEnd"),"basis":ob.get("basis"),
                 "sourceSha256":ob.get("sourceSha256"),"sourceUrl":ob.get("sourceUrl"),
-                "approvalStatus":"approved" if approved else ob.get("reviewStatus","pending-review"),
+                "approvalStatus":"review-decision-recorded" if recorded else ob.get("reviewStatus","pending-review"),
                 "forecastComparisonStatus":match_status or "no-comparable-forecast",
                 "forecastComparisonReasons":match.get(ob.get("id"),{}).get("reasons",[]) if match_status=="blocked" else [],
                 "reviewQuestion":REVIEW_TASKS[ob["metricId"]],
