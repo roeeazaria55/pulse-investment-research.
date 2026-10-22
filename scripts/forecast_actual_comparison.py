@@ -8,7 +8,7 @@ def calendar_date(iso):
     try:return dt.date.fromisoformat(iso)
     except (TypeError,ValueError):return None
 
-def compare(forecast,actual,decisions):
+def compare(forecast,actual,decisions,*,verified_review_authority=False):
     reasons=[]
     if forecast.get("companyId")!=actual.get("companyId"):
         reasons.append("company mismatch")
@@ -32,6 +32,11 @@ def compare(forecast,actual,decisions):
                        e.get("sourceSha256")==actual.get("sourceSha256")]
     if not current_approvals or current_approvals[-1].get("decision")!="approved":
         reasons.append("observation is not approved by a merged analyst review")
+    # A mutable public ledger is not evidence of a verified review. Main currently
+    # has no protected-branch policy. The production pipeline MUST NOT set this
+    # flag until a server-side reviewer-authentication gate has been implemented.
+    if not verified_review_authority:
+        reasons.append("Review Decision Recorded; analyst approval is not verified by an enforced repository policy")
     val=point.get("value"); actual_val=actual.get("value")
     if isinstance(val,bool) or isinstance(actual_val,bool) or not isinstance(val,(float,int)) or not isinstance(actual_val,(float,int)) or not math.isfinite(val) or not math.isfinite(actual_val):
         reasons.append("invalid numeric value")

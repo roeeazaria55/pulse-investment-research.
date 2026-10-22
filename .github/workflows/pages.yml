@@ -75,7 +75,7 @@ jobs:
       - name: Compare only previously archived and formally approved financial facts
         if: steps.collect.outputs.skipped != 'true'
         run: python3 scripts/forecast_actual_comparison.py
-      - name: Produce non-AI evidence-only research update proposals
+      - name: Generate evidence-only research briefs
         if: steps.collect.outputs.skipped != 'true'
         run: python3 scripts/research_update_proposals.py
       - name: Test
