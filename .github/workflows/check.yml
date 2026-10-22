@@ -25,6 +25,7 @@ jobs:
         run: |
           python3 -m pip install --disable-pip-version-check -r scripts/requirements-report-intake.txt
           python3 scripts/report_intake.py
+          python3 scripts/report_review_queue.py
       - run: npm test
       - run: npm run build
         env:
@@ -44,7 +45,9 @@ jobs:
         if: always()
         with:
           name: pr-report-intake-evidence
-          path: public/data/report-intake.json
+          path: |
+            public/data/report-intake.json
+            public/data/report-review-queue.json
           retention-days: 7
       - uses: actions/upload-artifact@v4
         if: always()
