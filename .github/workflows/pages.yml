@@ -2,7 +2,7 @@ name: Publish PULSE
 on:
   push:
     branches: [main]
-    paths-ignore: ["public/data/feed.json", "public/data/ingestion-state.json", "public/data/official-sources.json", "public/data/report-intake.json", "public/data/report-review-queue.json", "public/data/auto-financial-observations.json", "public/data/forecast-archive.json", "public/data/forecast-actual-comparisons.json"]
+    paths-ignore: ["public/data/feed.json", "public/data/ingestion-state.json", "public/data/official-sources.json", "public/data/report-intake.json", "public/data/report-review-queue.json", "public/data/auto-financial-observations.json", "public/data/forecast-archive.json", "public/data/forecast-actual-comparisons.json", "public/data/research-update-proposals.json"]
   workflow_dispatch:
   schedule:
     # About every 30 minutes; 13:00 Jerusalem daily window is generated on
@@ -75,6 +75,9 @@ jobs:
       - name: Compare only previously archived and formally approved financial facts
         if: steps.collect.outputs.skipped != 'true'
         run: python3 scripts/forecast_actual_comparison.py
+      - name: Generate evidence-only research briefs
+        if: steps.collect.outputs.skipped != 'true'
+        run: python3 scripts/research_update_proposals.py
       - name: Test
         if: steps.collect.outputs.skipped != 'true'
         run: npm test
@@ -96,6 +99,7 @@ jobs:
             public/data/auto-financial-observations.json
             public/data/forecast-archive.json
             public/data/forecast-actual-comparisons.json
+            public/data/research-update-proposals.json
           retention-days: 7
       - name: Install browser test runtime for code/manual releases only
         if: github.event_name != 'schedule'
@@ -153,9 +157,10 @@ jobs:
           cp work/ingestion-artifact/auto-financial-observations.json public/data/auto-financial-observations.json
           cp work/ingestion-artifact/forecast-archive.json public/data/forecast-archive.json
           cp work/ingestion-artifact/forecast-actual-comparisons.json public/data/forecast-actual-comparisons.json
+          cp work/ingestion-artifact/research-update-proposals.json public/data/research-update-proposals.json
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -- public/data/feed.json public/data/ingestion-state.json public/data/official-sources.json public/data/report-intake.json public/data/report-review-queue.json public/data/auto-financial-observations.json public/data/forecast-archive.json public/data/forecast-actual-comparisons.json
+          git add -- public/data/feed.json public/data/ingestion-state.json public/data/official-sources.json public/data/report-intake.json public/data/report-review-queue.json public/data/auto-financial-observations.json public/data/forecast-archive.json public/data/forecast-actual-comparisons.json public/data/research-update-proposals.json
           if ! git diff --cached --quiet; then
             git commit -m "Update public news and SEC collection state [skip ci]"
             git push origin HEAD:main
