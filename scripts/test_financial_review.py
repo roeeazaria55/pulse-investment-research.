@@ -23,7 +23,7 @@ class FinancialReviewTests(unittest.TestCase):
   entry=result["decisions"][0]
   self.assertEqual(entry["decision"],"approved")
   self.assertEqual(entry["value"],399.7)
-  self.assertIn("PR merge required",entry["authentication"])
+  self.assertIn("Recorded only",entry["authentication"])\n  self.assertEqual(entry["verificationStatus"],"recorded-not-verified")
   self.assertEqual(LEDGER["decisions"],[])
  def test_duplicate_review_request_is_idempotent(self):
   once,_=apply_review(REQUEST,SNAPSHOT,LEDGER,TIME)
@@ -38,9 +38,12 @@ class FinancialReviewTests(unittest.TestCase):
   revised["observations"][0]["revisedSource"]=True
   revised["observations"][0]["reviewStatus"]="needs-reconciliation"
   with self.assertRaisesRegex(ValueError,"reconciliation"):apply_review(REQUEST,revised,LEDGER,TIME)
-  request={**REQUEST,"decision":"needs-reconciliation"}
+  request={**REQUEST,"decision":"reconciled","reason":"Verified new source cells in signed issuer exhibit"}
   out,_=apply_review(request,revised,LEDGER,TIME)
-  self.assertEqual(out["decisions"][0]["decision"],"needs-reconciliation")
+  self.assertEqual(out["decisions"][0]["decision"],"reconciled")
+  approved,_=apply_review(REQUEST,revised,out,TIME)
+  self.assertEqual(approved["decisions"][1]["decision"],"approved")
+  self.assertEqual(approved["decisions"][1]["verificationStatus"],"recorded-not-verified")
  def test_manual_rejection_requires_reason_and_preserves_previous_event(self):
   old,_=apply_review(REQUEST,SNAPSHOT,LEDGER,TIME)
   request={**REQUEST,"decision":"rejected","reason":"Cross-checked source column failed"}
