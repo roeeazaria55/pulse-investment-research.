@@ -106,6 +106,19 @@ with sync_playwright() as pw:
                 page.evaluate("document.documentElement.style.fontSize='16px'")
                 actuals.locator('article').first.scroll_into_view_if_needed()
                 page.screenshot(path=f'work/mobile-{width}-iren-fy26.png',full_page=False)
+            if label in ('NBIS','DLO'):
+                actuals=exchange.get_by_role('region',name=f'נתוני בסיס {label} Q2 2026 מהדוח הרשמי',exact=True)
+                expected=('$582.3M','$-175.9M','$2,246.1M','$5,657.4M') if label=='NBIS' else ('$399.7M','$127.2M','$64.2M','$9.91M')
+                for value in expected:expect(actuals).to_contain_text(value)
+                expect(actuals).to_contain_text('ממתין לבדיקת אנליסט')
+                expect(actuals.get_by_text('אין השוואה מספרית תקפה',exact=True)).to_have_count(4)
+                expect(actuals.get_by_role('link',name='מקור רשמי',exact=False)).to_have_count(4)
+                page.evaluate("document.activeElement?.blur();document.documentElement.style.fontSize='32px'")
+                page.evaluate("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))")
+                assert page.evaluate('document.documentElement.scrollWidth')<=width+1,f'{label} Q2 results 200% overflow at {width}'
+                page.evaluate("document.documentElement.style.fontSize='16px'")
+                actuals.locator('article').first.scroll_into_view_if_needed()
+                page.screenshot(path=f'work/mobile-{width}-{label.lower()}-q2-2026.png',full_page=False)
             if label=='SMCI':
                 actuals=exchange.get_by_role('region',name='נתוני בסיס SMCI FY2026 מהדוח הרשמי',exact=True)
                 for value in ['$39,063.072M','$2,770.486M','$-6,809.886M']:
