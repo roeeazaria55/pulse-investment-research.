@@ -1,9 +1,8 @@
 """Offline review-decision proposals for PR-gated financial source observations.
 
-Security: this CLI does NOT authenticate analysts and does NOT approve changes
-in a public browser. Reviewer identity is authenticated by GitHub permissions
-and the PR review/merge process. An approval ledger is trusted ONLY after a
-maintainer merges its reviewed PR.
+Security: this CLI does NOT authenticate analysts. The repository's main
+branch is not currently protected, so even merged review records are NOT
+cryptographic or policy-enforced verification of analyst identity.
 """
 import argparse
 import datetime as dt
@@ -12,7 +11,7 @@ import json
 import math
 from pathlib import Path
 
-ALLOWED = {"approved", "rejected", "needs-reconciliation"}
+ALLOWED = {"approved", "rejected", "needs-reconciliation", "reconciled"}
 VERSION = 1
 
 
@@ -39,8 +38,12 @@ def apply_review(request, snapshot, ledger, now):
     if observation.get("reviewStatus") not in ("pending-review", "needs-reconciliation"):
         raise ValueError("Unexpected upstream review state")
     if request["decision"] == "approved":
-        if observation.get("reviewStatus") != "pending-review" or observation.get("revisedSource"):
-            raise ValueError("A revised or conflicting source requires reconciliation, not automatic approval")
+        prior_reconciliation = any(e.get("observationId") == observation["id"] and
+                                   e.get("sourceSha256") == observation["sourceSha256"] and
+                                   e.get("decision") == "reconciled"
+                                   for e in ledger.get("decisions", []))
+        if (observation.get("reviewStatus") != "pending-review" or observation.get("revisedSource")) and not prior_reconciliation:
+            raise ValueError("A revised or conflicting source requires a recorded reconciliation of this exact version first")
         if not isinstance(observation.get("value"), (float,int)) or not math.isfinite(observation["value"]):
             raise ValueError("Invalid financial value")
         for k in ("companyId", "metricId", "periodStart", "periodEnd", "sourceUrl", "sourceRaw", "basis", "unit"):
@@ -57,7 +60,7 @@ def apply_review(request, snapshot, ledger, now):
     fingerprint = hashlib.sha256((request["observationId"]+"|"+request["decision"]+"|"+request["reason"]+"|"+request["evidenceUrl"]).encode()).hexdigest()
     events = list(ledger.get("decisions", []))
     if any(e.get("fingerprint") == fingerprint for e in events):
-        return {"version":VERSION,"decisions":events,"notice":"Decisions require authenticated GitHub PR review and merge."}, False
+        return {"version":VERSION,"decisions":events,"notice":"Review Decision Recorded. Main is unprotected: this ledger does NOT verify analyst identity or authorize quantitative model comparisons."}, False
     # Never overwrite an earlier decision; a new decision is a new event.
     events.append({
         "fingerprint":fingerprint, "observationId":observation["id"],
@@ -68,7 +71,8 @@ def apply_review(request, snapshot, ledger, now):
         "unit":observation["unit"], "basis":observation["basis"],
         "decision":request["decision"], "reason":request["reason"],
         "evidenceUrl":request["evidenceUrl"], "proposedAt":now,
-        "authentication":"GitHub PR merge required; proposedAt is not proof of actor identity",
+        "authentication":"Review Decision Recorded only; unprotected main does not enforce analyst identity",
+        "verificationStatus":"recorded-not-verified",
     })
     return {"version":VERSION,"decisions":events,"notice":"Decisions require authenticated GitHub PR review and merge."}, True
 
