@@ -5,7 +5,7 @@ import nbisSource from '../public/data/nbis-q2-2026-source.json';
 import dloSource from '../public/data/dlo-q2-2026-source.json';
 import {nbisQ22026,extractNbisQ22026,nbisPulseForecasts} from '../src/research/nbisQ22026';
 import {dloQ22026,extractDloQ22026,dloPulseForecasts} from '../src/research/dloQ22026';
-import {compareFinancialForecast} from '../src/research/financialResults';
+import {compareFinancialForecast,type FinancialForecast} from '../src/research/financialResults';
 import {CompanyFinancialResults} from '../src/components/CompanyFinancialResults';
 afterEach(cleanup);
 
@@ -40,7 +40,7 @@ describe('NBIS and DLO Q2 2026 checked issuer evidence',()=>{
  it('blocks post-publication forecasts and definition/period mismatches',()=>{
   for(const [observations,forecasts] of [[nbisQ22026.observations,nbisPulseForecasts()],[dloQ22026.observations,dloPulseForecasts()]] as const){
    for(const o of observations){
-    const actual=compareFinancialForecast(o,forecasts[o.id]);
+    const actual=compareFinancialForecast(o,(forecasts as Record<string,FinancialForecast|undefined>)[o.id]);
     expect(actual.result.status).not.toBe('comparable');
     const demo={companyId:o.companyId,point:{...o.point,value:o.point.value-1},description:'Synthetic target',definition:o.definition,asOf:o.resultsPublishedDate};
     expect(compareFinancialForecast(o,demo).result.status).toBe('timing');
