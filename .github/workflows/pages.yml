@@ -21,6 +21,7 @@ jobs:
     outputs:
       skipped: ${{ steps.collect.outputs.skipped }}
       base_sha: ${{ steps.base.outputs.sha }}
+      data_base_sha: ${{ steps.seed.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -28,6 +29,17 @@ jobs:
           persist-credentials: false
       - id: base
         run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Load prior public collection state from a separate branch
+        id: seed
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin refs/heads/pulse-data:refs/remotes/origin/pulse-data
+          echo "sha=$(git rev-parse refs/remotes/origin/pulse-data)" >> "$GITHUB_OUTPUT"
+          for file in public/data/feed.json public/data/ingestion-state.json public/data/official-sources.json public/data/report-intake.json public/data/report-review-queue.json public/data/auto-financial-observations.json public/data/forecast-archive.json public/data/forecast-actual-comparisons.json public/data/research-update-proposals.json; do
+            if git cat-file -e "refs/remotes/origin/pulse-data:$file"; then
+              git show "refs/remotes/origin/pulse-data:$file" > "$file"
+            fi
+          done
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -137,7 +149,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
+          ref: pulse-data
       - uses: actions/download-artifact@v4
         with:
           name: public-ingestion-state
@@ -145,7 +157,7 @@ jobs:
       - name: Commit only selected public state files
         id: persist
         env:
-          EXPECTED_BASE: ${{ needs.collect.outputs.base_sha }}
+          EXPECTED_BASE: ${{ needs.collect.outputs.data_base_sha }}
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$EXPECTED_BASE"
@@ -163,7 +175,7 @@ jobs:
           git add -- public/data/feed.json public/data/ingestion-state.json public/data/official-sources.json public/data/report-intake.json public/data/report-review-queue.json public/data/auto-financial-observations.json public/data/forecast-archive.json public/data/forecast-actual-comparisons.json public/data/research-update-proposals.json
           if ! git diff --cached --quiet; then
             git commit -m "Update public news and SEC collection state [skip ci]"
-            git push origin HEAD:main
+            git push origin HEAD:pulse-data
           fi
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
   deploy:
@@ -182,18 +194,21 @@ jobs:
       - name: Reject a superseded publication
         uses: actions/github-script@v7
         env:
-          EXPECTED_HEAD: ${{ needs.persist.outputs.sha }}
+          EXPECTED_HEAD: ${{ needs.collect.outputs.base_sha }}
+          EXPECTED_DATA_HEAD: ${{ needs.persist.outputs.sha }}
         with:
           script: |
             const {data} = await github.rest.git.getRef({...context.repo, ref:'heads/main'});
             if (data.object.sha !== process.env.EXPECTED_HEAD) throw new Error('A newer main exists; do not publish an old snapshot.');
+            const state = await github.rest.git.getRef({...context.repo, ref:'heads/pulse-data'});
+            if (state.data.object.sha !== process.env.EXPECTED_DATA_HEAD) throw new Error('A newer data state exists; do not publish stale artifacts.');
       - uses: actions/configure-pages@v5
       - id: deployment
         uses: actions/deploy-pages@v4
       - uses: actions/checkout@v4
         if: github.event_name != 'schedule'
         with:
-          ref: ${{ needs.persist.outputs.sha }}
+          ref: ${{ needs.collect.outputs.base_sha }}
           persist-credentials: false
       - name: Install browser runtime for public-site verification
         if: github.event_name != 'schedule'
