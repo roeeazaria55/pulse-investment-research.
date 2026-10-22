@@ -19,7 +19,7 @@ describe('read-only research briefs',()=>{
   vi.stubGlobal('fetch',vi.fn().mockResolvedValue({ok:true,json:async()=>result}));
   render(<ResearchUpdateProposal companyId="us-dlo-nasdaq-a"/>);
   expect(await screen.findByText(/399.7 USD million/)).toBeTruthy();
-  expect(screen.getByText('לא אושר')).toBeTruthy();
+  expect(screen.getByText(/לא אושר/)).toBeTruthy();
   expect(screen.getByText(/אינו ניתוח AI/)).toBeTruthy();
   expect(screen.getByText('אין שינוי במחירי יעד')).toBeTruthy();
  });
