@@ -12,7 +12,7 @@ export interface FinancialForecast {companyId:string;point:MetricPoint;descripti
 export interface FinancialResult<Id extends string=string> {observations:FinancialObservation<Id>[];issues:{id:Id|'source';reason:string}[]}
 export interface FinancialRule<Id extends string=string> {
  id:Id;title:string;statement:string;page?:number;labels:string[];basis:string;definition:string;
- transform?:'negative-sum';sourceUnit?:string;multiplier?:number;
+ transform?:'negative-sum';sourceUnit?:string;multiplier?:number;locationLabel?:string;
 }
 export interface FinancialSourceConfig<Id extends string=string> {
  companyId:string;title:string;sourceUrl:string;documentUrl:string;documentKey:'pdfUrl'|'documentUrl';publishedDate:string;resultsPublishedDate?:string;resultsSourceUrl?:string;
@@ -60,7 +60,7 @@ export function extractFinancialResults<Id extends string>(input:unknown,config:
   const value=Math.round(rawValue*(rule.multiplier??config.multiplier)*1e6)/1e6;
   if(!Number.isFinite(value))throw Error('ערך מקור לא סופי');
   const pdf=config.documentKey==='pdfUrl';
-  observations.push({id:rule.id,companyId:x.companyId,title:rule.title,point:{value,period:config.period,unit:config.unit,basis:rule.basis},periodStart:config.periodStart,periodEnd:config.periodEnd,periodText:config.periodText,definition:rule.definition,sourceValues,sourceUnit:t.unit,sourceUrl:x.sourceUrl,documentUrl:config.documentUrl,locationUrl:pdf&&rule.page!==undefined?`${config.documentUrl}#page=${rule.page}`:`${config.documentUrl}#:~:text=${encodeURIComponent(rule.statement)}`,locationLabel:pdf&&rule.page!==undefined?`PDF עמוד ${rule.page}`:rule.page!==undefined?`דוח רשמי עמוד ${rule.page} · ${rule.statement}`:`דוח רשמי · ${rule.statement}`,checkedDate:x.checkedDate,publishedDate:x.publishedDate,resultsPublishedDate:config.resultsPublishedDate??x.publishedDate,verification:derived?'derived-source-checked-pending-review':'source-checked-pending-review'});
+  observations.push({id:rule.id,companyId:x.companyId,title:rule.title,point:{value,period:config.period,unit:config.unit,basis:rule.basis},periodStart:config.periodStart,periodEnd:config.periodEnd,periodText:config.periodText,definition:rule.definition,sourceValues,sourceUnit:t.unit,sourceUrl:x.sourceUrl,documentUrl:config.documentUrl,locationUrl:pdf&&rule.page!==undefined?`${config.documentUrl}#page=${rule.page}`:`${config.documentUrl}#:~:text=${encodeURIComponent(rule.statement)}`,locationLabel:rule.locationLabel??(pdf&&rule.page!==undefined?`PDF עמוד ${rule.page}`:rule.page!==undefined?`10-K עמוד ${rule.page} · ${rule.statement}`:`דוח רשמי · ${rule.statement}`),checkedDate:x.checkedDate,publishedDate:x.publishedDate,resultsPublishedDate:config.resultsPublishedDate??x.publishedDate,verification:derived?'derived-source-checked-pending-review':'source-checked-pending-review'});
  }catch(e){issues.push({id:rule.id,reason:(e as Error).message});}
  return {observations,issues};
 }
