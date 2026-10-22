@@ -28,6 +28,7 @@ jobs:
           python3 scripts/report_review_queue.py
           python3 scripts/financial_observations.py
           python3 scripts/forecast_archive.py
+          python3 scripts/forecast_actual_comparison.py
       - run: npm test
       - run: npm run build
         env:
@@ -52,6 +53,7 @@ jobs:
             public/data/report-review-queue.json
             public/data/auto-financial-observations.json
             public/data/forecast-archive.json
+            public/data/forecast-actual-comparisons.json
           retention-days: 7
       - uses: actions/upload-artifact@v4
         if: always()
