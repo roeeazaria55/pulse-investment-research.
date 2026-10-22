@@ -23,7 +23,8 @@ class FinancialReviewTests(unittest.TestCase):
   entry=result["decisions"][0]
   self.assertEqual(entry["decision"],"approved")
   self.assertEqual(entry["value"],399.7)
-  self.assertIn("Recorded only",entry["authentication"])\n  self.assertEqual(entry["verificationStatus"],"recorded-not-verified")
+  self.assertIn("Recorded only",entry["authentication"])
+  self.assertEqual(entry["verificationStatus"],"recorded-not-verified")
   self.assertEqual(LEDGER["decisions"],[])
  def test_duplicate_review_request_is_idempotent(self):
   once,_=apply_review(REQUEST,SNAPSHOT,LEDGER,TIME)
