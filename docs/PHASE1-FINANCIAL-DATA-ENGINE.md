@@ -76,3 +76,39 @@ is recorded as failed, not as an absent/unpublished report. The PR CI performs a
 independent live attempt and preserves its generated snapshot as an evidence artifact.
 No IREN financial metric mapping or active research target is enabled by this change.
 
+## Phase 1B — checked IREN and SMCI baseline cards
+
+`financialResults.ts` now owns strict cell parsing, source identity/header/unit checks,
+duplicate/conflict handling, explicit transformations, provenance and dated comparison
+gates. Issuer modules supply bounded statement rules; `FinancialResults.tsx` renders
+both companies in RTL. These are saved checked extracts, not live reads, original-file
+archives or analyst-approved observations. Missing/mismatched source cells fail closed.
+
+IREN's original source extract and research/model files are unchanged: FY2026 revenue
+707.0, operating cash flow 2,100.4 and selected derived CAPEX 4,333.1, all USD million.
+CAPEX remains the negative sum of the two identified cash-payment rows.
+
+SMCI uses the official consolidated FY2026 10-K, year 2025-07-01 to 2026-06-30,
+[filed 2026-08-31](https://www.sec.gov/Archives/edgar/data/1375365/000137536526000022/0001375365-26-000022-index.html).
+[Statement pages 59 and 63](https://www.sec.gov/Archives/edgar/data/1375365/000137536526000022/smci-20260630.htm)
+report net sales 39,063,072, operating income 2,770,486 and operating cash flow
+(6,809,886), in USD thousands. The shared adapter explicitly divides by 1,000
+to display 39,063.072, 2,770.486 and -6,809.886 USD million. These are US GAAP
+consolidated measures, not adjusted earnings, EBITDA, orders or FCF. The bounded
+extract retains raw cells, location, filing date and the earlier intake version's
+hash/context; it does not claim to archive the source bytes.
+
+SMCI first announced the results on [2026-08-11](https://ir.supermicro.com/news/news-details/2026/Supermicro-Announces-Fourth-Quarter-and-Full-Fiscal-Year-2026-Financial-Results/default.aspx).
+The comparison gate uses that earlier date rather than the later 10-K filing date.
+Existing PULSE revenue assumptions are FY2027 in USD billion; there are no matching
+numeric FY2026 operating-income or CFO targets. No FY2026 surprise is calculated.
+IREN's later research and future FY2027 assumptions are likewise preserved.
+The existing intake-driven thesis monitor and its summary also reject unknown,
+same-day and post-publication forecast timing before computing any numeric gap.
+
+Regression coverage includes both issuers, wrong company/source/period/unit/page,
+unavailable sources, revisions, duplicates/conflicts, missing metrics, signed CFO,
+derived CAPEX and the publication-order gate. The PR workflow runs JavaScript,
+Python, production build and mobile checks at 320/390/430 pixels with 200% text,
+including both financial cards and the existing research/PDF regression checks.
+

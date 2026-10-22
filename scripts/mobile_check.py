@@ -106,6 +106,21 @@ with sync_playwright() as pw:
                 page.evaluate("document.documentElement.style.fontSize='16px'")
                 actuals.locator('article').first.scroll_into_view_if_needed()
                 page.screenshot(path=f'work/mobile-{width}-iren-fy26.png',full_page=False)
+            if label=='SMCI':
+                actuals=exchange.get_by_role('region',name='נתוני בסיס SMCI FY2026 מהדוח הרשמי',exact=True)
+                for value in ['$39,063.072M','$2,770.486M','$-6,809.886M']:
+                    expect(actuals).to_contain_text(value)
+                expect(actuals).to_contain_text('01.07.2025–30.06.2026')
+                expect(actuals).to_contain_text('ממתין לבדיקת אנליסט')
+                expect(actuals.get_by_text('אין השוואה מספרית תקפה',exact=True)).to_have_count(3)
+                expect(actuals.get_by_role('link',name='פרטי הגשת SEC ↗',exact=True)).to_have_count(3)
+                expect(actuals.get_by_role('link',name='מקור רשמי · 10-K עמוד 63 · CONSOLIDATED STATEMENTS OF CASH FLOWS ↗',exact=True)).to_have_attribute('href','https://www.sec.gov/Archives/edgar/data/1375365/000137536526000022/smci-20260630.htm#:~:text=CONSOLIDATED%20STATEMENTS%20OF%20CASH%20FLOWS')
+                page.evaluate("document.activeElement?.blur();document.documentElement.style.fontSize='32px'")
+                page.evaluate("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))")
+                assert page.evaluate('document.documentElement.scrollWidth')<=width+1,f'SMCI actual financial results 200% overflow at {width}'
+                page.evaluate("document.documentElement.style.fontSize='16px'")
+                actuals.locator('article').first.scroll_into_view_if_needed()
+                page.screenshot(path=f'work/mobile-{width}-smci-fy26.png',full_page=False)
             page.get_by_label('הדוח הבא',exact=True).wait_for()
             if label=='NBIS':expect(exchange.locator('.research-target-summary strong')).to_have_text('≈$182.33')
             if label=='SNDK':expect(exchange.locator('.research-target-summary strong')).to_have_text('≈$1,759.50')

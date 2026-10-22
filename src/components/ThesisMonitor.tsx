@@ -4,7 +4,8 @@ import type {ReportIntakeSnapshot} from '../data/reportIntake';
 import type {ThesisMetric} from '../research/thesisMonitoring';
 import {reportComparison} from '../research/reportComparison';
 import {suppliedFor,suppliedPdfUrl} from '../data/suppliedResearch';
-import {thesisMonitorFor,metricComparison} from '../research/thesisMonitoring';
+import {thesisMonitorFor} from '../research/thesisMonitoring';
+import {compareDatedMetric} from '../research/financialResults';
 function openChapter(companyId:string,number:number){
  const heading=document.getElementById(`${companyId}-pdf-section-${number}`);
  const reading=heading?.closest('details');if(reading)reading.open=true;
@@ -20,7 +21,7 @@ export function ThesisMonitor({companyId}:{companyId:string}){
   <div className="thesis-metrics">{monitor.metrics.map(metric=>{
    const intake=data?reportComparison(data,companyId,metric):null;
    const observation=intake?.observation;
-   const result=metricComparison(intake?.status==='mapped'?observation!.point:null,metric.target);
+   const result=compareDatedMetric(intake?.status==='mapped'?observation!.point:null,metric.target,monitor.asOf,observation?.document.publishedDate??null);
    return <details className="thesis-metric" key={metric.id}>
     <summary><span>{metric.title}</span><small>{intake?.status==='mapped'?result.label:intake?.label||(failed?'מצב קליטת הדוחות אינו זמין':'טוען נתוני דוחות…')}</small></summary>
     <dl className="thesis-metric-points"><div><dt>נקודת הפתיחה במחקר</dt><dd>{metric.baseline}</dd></div><div><dt>מה הניתוח מניח קדימה</dt><dd>{metric.expectation}</dd></div></dl>
@@ -28,6 +29,7 @@ export function ThesisMonitor({companyId}:{companyId:string}){
     {intake?.status==='review'&&<p role="status">{intake.label}. מוצג הנתון מהקריאה האחרונה שהצליחה; אין חישוב פער.</p>}
     {result.status==='period'&&<p className="muted">אין פער מספרי: {observation!.point.period} ו־{metric.target!.period} הן תקופות שונות.</p>}
     {result.status==='definition'&&<p className="muted">אין פער מספרי: נדרשת התאמה בין הגדרות המדד.</p>}
+    {result.status==='timing'&&<p className="muted">אין פער מספרי: לא הוכח שהתחזית נקבעה לפני פרסום התוצאה. מחקר מתאריך {monitor.asOf}; פרסום הדוח: {observation?.document.publishedDate||'לא ידוע'}.</p>}
     {result.status==='comparable'&&<p>פער אוטומטי מההנחה · ממתין לאימות: <bdi>{result.difference.toLocaleString('en-US',{maximumFractionDigits:2})}{result.percent!==null?` (${result.percent.toFixed(1)}%)`:''}</bdi>. הפער לבדו אינו קובע אם התזה התחזקה או נחלשה.</p>}
     <p><b>למה זה משנה לשווי:</b> {metric.why}</p><p><b>מה לבדוק בדוח הבא:</b> {metric.nextCheck}</p><p><b>מה ידרוש בחינה מחדש:</b> {metric.thesisRisk}</p>
     <div className="thesis-source-actions"><button type="button" className="text-button" onClick={()=>openChapter(companyId,metric.section)}>לנתוני המקור · פרק {metric.section}</button>{metric.targetSection!==metric.section&&<button type="button" className="text-button" onClick={()=>openChapter(companyId,metric.targetSection)}>להנחות · פרק {metric.targetSection}</button>}</div>
@@ -56,3 +58,4 @@ export function ValuationContext({companyId}:{companyId:string}){
   </details>
  </section>;
 }
+

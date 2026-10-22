@@ -1,7 +1,7 @@
 name: Read-only PR checks
 on:
   push:
-    branches: [pulse/phase1-financial-data-engine]
+    branches: [pulse/phase1-financial-data-engine, pulse/phase1b-reusable-financial-engine]
   pull_request:
 permissions:
   contents: read
