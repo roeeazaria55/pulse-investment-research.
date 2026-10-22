@@ -1,7 +1,14 @@
 # Phase 2D — analyst decisions through GitHub PR review
 
 PULSE is hosted as a **public static GitHub Pages** website. It has no
-authenticated server endpoint for approving issuer facts. A button on
+authenticated server endpoint for approving issuer facts.
+
+**Security finding (2026-10-22): main is currently UNPROTECTED.** A GitHub PR
+merge does NOT enforce independent analyst approval in this repository. All
+entries are labeled **Review Decision Recorded**, never Verified Analyst
+Approval. Keep this PR as a draft until a protected-branch policy and required
+review are set, then test enforcement. Production forecast comparisons remain
+fail-closed while this authority cannot be proven. A button on
 that page must not claim to perform an authorized approval.
 
 The offline CLI `scripts/financial_review.py` accepts a review request
@@ -18,7 +25,7 @@ source row, financial basis, period boundaries and HTTPS evidence.
    proposal's raw row, column/period, currency and accounting basis.
 2. Create a local JSON review request (do not commit private notes).
    Example:
-   `{"observationId":"observation:<id>","reviewVersionId":"review:<id>","sourceSha256":"<64-character hash>","decision":"needs-reconciliation","reason":"Issuer document revised; reconcile exact source cells","evidenceUrl":"https://<verified official source>"}`
+   `{"observationId":"observation:<id>","reviewVersionId":"review:<id>","sourceSha256":"<64-character hash>","decision":"reconciled","reason":"Rechecked the revised version's exact source cells","evidenceUrl":"https://<verified official source>"}`
 3. On a separate GitHub branch run:
    `python3 scripts/financial_review.py --request ./review-request.json`
    This appends a proposed event to
@@ -39,3 +46,8 @@ price targets, investment assumptions or forecast probabilities.
 
 This PR is stacked on the phase 2C extraction proposal PR; do not
 merge it ahead of that dependency.
+
+A revised source has a two-decision path: record `reconciled` with exact
+source hash and independent evidence, then record an `approved` decision for
+that SAME version in a new review entry. These are **recorded decisions only**;
+neither becomes authenticated while branch protections are absent.
