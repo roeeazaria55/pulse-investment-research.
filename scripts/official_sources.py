@@ -34,19 +34,98 @@ def document_url(url,company):
     return (not re.search(r'\.(?:png|jpe?g|gif|svg|webp|css|js|ico)$',urllib.parse.urlsplit(url).path,re.I) and approved(url,company['allowedHosts']) and
             any(urllib.parse.urlsplit(url).path.startswith(p) for p in company['documentPaths']))
 
+# Persisted pulse-data is a cache, not an authenticated issuer or reviewer.
+# Keep only the fields produced by this collector. Never carry unknown keys,
+# e.g. forged approval flags or model instructions, into public snapshots.
+PERSISTED_ITEM_FIELDS = frozenset((
+    'id', 'companyId', 'ticker', 'title', 'sourceKind', 'issuerEvidenceUrl',
+    'sourceLabel', 'url', 'indexRank', 'sourceId', 'kind', 'publishedDate',
+    'collectedAt', 'lastSeenAt', 'metadataStatus', 'metadataCheckedAt',
+    'metadataError', 'contentScope', 'publishedDateBasis', 'dateEvidenceUrl',
+    'titleBasis', 'language', 'documentPeriod', 'periodBasis',
+))
+
+def _past_timestamp(value, now):
+    try:
+        timestamp=dt.datetime.fromisoformat(value)
+        reference=dt.datetime.fromisoformat(now)
+        return bool(timestamp.tzinfo and reference.tzinfo and timestamp<=reference)
+    except (ValueError, TypeError, OverflowError):
+        return False
+
+def restore_previous(item, company, now):
+    """Revalidate identity and sanitize cached metadata before any network call.
+
+    If identity has been tampered with, stop the entire run BEFORE publishing a
+    new snapshot. A failed refresh must never silently erase legitimate history.
+    """
+    if not isinstance(item,dict) or item.get('companyId')!=company['id']:
+        return None
+    url=item.get('url')
+    if not isinstance(url,str) or not document_url(url,company):
+        # Do not silently discard historical evidence on an HTTP 403 if a
+        # persisted URL was forged or an issuer allowlist was tightened.
+        raise ValueError('Persisted official item destination no longer allowlisted')
+    expected='official:'+hashlib.sha256((company['id']+'|'+canonical(url)).encode()).hexdigest()[:32]
+    sources={source['id']:source for source in company['sources']}
+    if (item.get('id')!=expected or canonical(url)!=url or
+        item.get('sourceId') not in sources or item.get('ticker')!=company['ticker']):
+        raise ValueError('Persisted official item identity/source mismatch')
+    if (not isinstance(item.get('title'),str) or
+        not 1<=len(item['title'])<=600 or
+        item.get('kind') not in ('release','results','schedule','document') or
+        type(item.get('indexRank')) is not int or
+        not 0<=item['indexRank']<=100 or
+        item.get('titleBasis') not in (None,'page-heading','link-label','filename','index-context') or
+        item.get('periodBasis') not in (None,'unknown','index-heading','filename-hint','title') or
+        item.get('language') not in (None,'he','en') or
+        not _past_timestamp(item.get('collectedAt'),now) or
+        not _past_timestamp(item.get('lastSeenAt'),now)):
+        raise ValueError('Persisted official item has invalid title or timestamps')
+    clean_item={k:item[k] for k in PERSISTED_ITEM_FIELDS if k in item}
+    source=sources[item['sourceId']]
+    clean_item['sourceKind']=source.get('kind','company-ir')
+    clean_item['issuerEvidenceUrl']=source['url'] if source.get('kind')=='issuer-distributed' else None
+    clean_item['sourceLabel']=clean(item.get('sourceLabel') or item['title'])
+    clean_item['contentScope']='metadata-only'
+    clean_item['metadataError']=clean(str(item.get('metadataError') or ''))[:180] or None
+    period=clean_item.get('documentPeriod')
+    if period is not None and (not isinstance(period,str) or len(period)>160):
+        clean_item.update(documentPeriod=None,periodBasis='unknown')
+    if clean_item.get('metadataStatus') not in ('index-link','page-metadata'):
+        clean_item.update(metadataStatus='index-link',metadataCheckedAt=None)
+    # An impossible or untraceable cached date is not publication evidence.
+    published=iso_date(clean_item.get('publishedDate'))
+    evidence=clean_item.get('dateEvidenceUrl')
+    basis=clean_item.get('publishedDateBasis')
+    if (not published or published>now[:10] or
+        evidence not in (url,source['url']) or
+        basis not in ('index-time','page-published-metadata','unknown')):
+        clean_item.update(publishedDate=None,publishedDateBasis='unknown',dateEvidenceUrl=None)
+    else:
+        clean_item['publishedDate']=published
+    return clean_item
+
 def get_official_page(url,hosts):return get_page(url,hosts,page_factory=OfficialPage)
 
 def collect(config,previous,now,getter=get_official_page):
     old_items=previous.get('items',[])
     items={}
     for item in old_items:
-        company=next((c for c in config['companies'] if item['companyId']==c['id'] and document_url(item['url'],c)),None)
+        if not isinstance(item,dict):
+            raise ValueError('Invalid persisted official item')
+        company=next((c for c in config['companies'] if item.get('companyId')==c['id']),None)
         if company:
-            fixed={**item,**describe(company,item['url'],item['title'])}
-            if item.get('titleBasis'):fixed.update({k:item[k] for k in ('title','titleBasis','language','documentPeriod','periodBasis') if k in item})
-            fixed.setdefault('publishedDateBasis','legacy-metadata' if fixed.get('publishedDate') else 'unknown')
-            fixed.setdefault('dateEvidenceUrl',fixed['url'] if fixed.get('publishedDate') else None)
-            items[item['id']]=fixed
+            fixed=restore_previous(item,company,now)
+            if fixed is None:continue
+            if fixed['id'] in items:
+                raise ValueError('Duplicate persisted official item identity')
+            retained={k:fixed[k] for k in ('title','titleBasis','language','documentPeriod','periodBasis') if k in fixed}
+            described=describe(company,fixed['url'],fixed['title'])
+            fixed={**fixed,**described}
+            if retained.get('titleBasis'):
+                fixed.update(retained)
+            items[fixed['id']]=fixed
     statuses=[]
     deadline=time.monotonic()+240
     for company in config['companies']:
