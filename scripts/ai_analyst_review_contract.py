@@ -1,0 +1,108 @@
+"""Validate potential AI analyst OUTPUT, without invoking or trusting an AI.
+
+No data mutation, no approval, no execution. All suggestions remain pending.
+This schema deliberately separates cited evidence from interpretation.
+"""
+import json
+import math
+from pathlib import Path
+
+KINDS={"financial-observation", "archived-forecast", "research-section", "valuation-scenario"}
+SCENARIOS={"bear","base","bull"}
+
+def _str(v,maxlen=4000):
+    return isinstance(v,str) and bool(v.strip()) and len(v)<=maxlen
+
+def _type_is_safe(v):
+    return isinstance(v,(int,float)) and not isinstance(v,bool) and math.isfinite(v)
+
+def validate_ai_proposal(packet, proposed):
+    if not isinstance(packet,dict) or packet.get("contractVersion")!=1:
+        raise ValueError("AI packet missing or wrong contract")
+    if packet.get("trustPolicy",{}).get("mayModifyTargetsOrProbabilities") is not False:
+        raise ValueError("Input packet trust gate is not locked")
+    if not isinstance(proposed,dict):
+        raise ValueError("Missing proposed review")
+    expected={"version","companyId","packetContentSha256","status","analysisMode",
+              "evidenceCitations","analystQuestions","interpretations",
+              "suggestedScenarioReview","proposedValuationAction"}
+    if set(proposed)!=expected:
+        raise ValueError("Unexpected proposal keys; no mutable approvals or commands allowed")
+    if proposed["version"]!=1 or proposed["companyId"]!=packet["companyId"]:
+        raise ValueError("Wrong issuer or proposal version")
+    if proposed["packetContentSha256"]!=packet["contentSha256"]:
+        raise ValueError("Stale packet version; no evidence binding")
+    if proposed["status"]!="requires-human-review":
+        raise ValueError("AI cannot approve its own output")
+    if proposed["analysisMode"] not in ("model-generated-unverified","deterministic-no-ai"):
+        raise ValueError("Invalid AI provenance")
+    if proposed["proposedValuationAction"]!="no-automatic-change":
+        raise ValueError("Direct financial model edits are forbidden")
+    candidates={o["observationId"]:"financial-observation" for o in packet.get("financialObservations",[])}
+    candidates.update({f["id"]:"archived-forecast" for f in packet.get("archivedForecasts",[])})
+    for name in (packet.get("research") or {}).get("sections",{}):
+        candidates["research-section:"+name]="research-section"
+    for item in (packet.get("valuationModel") or {}).get("assumptions",[]):
+        candidates["valuation-scenario:"+str(item.get("id"))]="valuation-scenario"
+    refs=proposed["evidenceCitations"]
+    if not isinstance(refs,list) or len(refs)>100:
+        raise ValueError("Unbounded citations")
+    for c in refs:
+        if not isinstance(c,dict) or set(c)!={"evidenceId","kind","claim","uncertainty"}:
+            raise ValueError("Missing source trace for claim")
+        if c["evidenceId"] not in candidates or candidates[c["evidenceId"]]!=c["kind"]:
+            raise ValueError("Fabricated or mistyped evidence reference")
+        if not _str(c["claim"]) or not _str(c["uncertainty"]):
+            raise ValueError("Empty claim or uncertainty")
+        if c["kind"] not in KINDS:
+            raise ValueError("Invalid evidence kind")
+    questions=proposed["analystQuestions"]
+    if not isinstance(questions,list) or len(questions)>30 or not all(_str(q) for q in questions):
+        raise ValueError("Invalid analyst questions")
+    interpretations=proposed["interpretations"]
+    if not isinstance(interpretations,list) or len(interpretations)>40:
+        raise ValueError("Invalid interpretation count")
+    ids={c["evidenceId"] for c in refs}
+    for item in interpretations:
+        if not isinstance(item,dict) or set(item)!={"observation","hypothesis","evidenceIds","unknowns"}:
+            raise ValueError("An interpretation must be cited and clearly hypothetical")
+        if not _str(item["observation"]) or not _str(item["hypothesis"]):
+            raise ValueError("Invalid inference text")
+        if not isinstance(item["unknowns"],list) or not all(_str(v) for v in item["unknowns"]):
+            raise ValueError("Missing limits")
+        if not isinstance(item["evidenceIds"],list) or not item["evidenceIds"] or not all(v in ids for v in item["evidenceIds"]):
+            raise ValueError("Interpretation references unknown or uncited source")
+    scenarios=proposed["suggestedScenarioReview"]
+    if not isinstance(scenarios,list) or len(scenarios)>3:
+        raise ValueError("Invalid scenario review")
+    if scenarios and (packet.get("valuationModel") is None or set(x.get("id") for x in scenarios if isinstance(x,dict))!=SCENARIOS):
+        raise ValueError("Scenario suggestions require current quantified model and all three scenarios")
+    weights=[]
+    for s in scenarios:
+        if not isinstance(s,dict) or set(s)!={"id","suggestedProbability","reason","evidenceIds","status"}:
+            raise ValueError("Scenario review missing fields")
+        if s["id"] not in SCENARIOS or not _type_is_safe(s["suggestedProbability"]) or not 0<=s["suggestedProbability"]<=100:
+            raise ValueError("Invalid scenario probability")
+        if s["status"]!="review-only" or not _str(s["reason"]):
+            raise ValueError("Unjustified scenario or attempted promotion")
+        if not isinstance(s["evidenceIds"],list) or not s["evidenceIds"] or not all(v in ids for v in s["evidenceIds"]):
+            raise ValueError("Uncited scenario rationale")
+        weights.append(s["suggestedProbability"])
+    if weights and abs(sum(weights)-100)>0.001:
+        raise ValueError("Scenario suggestions must total 100 percent")
+    return {"valid":True,"status":"requires-human-review",
+            "cited":len(refs),"interpretations":len(interpretations),
+            "scenarioSuggestions":len(scenarios),"modelChanges":0}
+
+def main():
+    import argparse
+    p=argparse.ArgumentParser(description="Validate externally prepared review-only AI proposal; never approve it")
+    p.add_argument("--packet",required=True)
+    p.add_argument("--proposal",required=True)
+    args=p.parse_args()
+    packet=json.loads(Path(args.packet).read_text(encoding="utf-8"))
+    proposed=json.loads(Path(args.proposal).read_text(encoding="utf-8"))
+    print(json.dumps(validate_ai_proposal(packet,proposed)))
+
+if __name__=="__main__":
+    main()
