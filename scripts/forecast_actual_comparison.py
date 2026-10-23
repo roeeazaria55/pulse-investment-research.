@@ -9,7 +9,7 @@ from pathlib import Path
 # representation in full: slicing [:10] would accept a forged timestamp such
 # as '2026-07-31-not-a-real-archive-time' as pre-publication evidence.
 _DATE = re.compile(r"\d{4}-\d{2}-\d{2}\Z")
-_INSTANT = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})\Z")
+_INSTANT = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})\Z")
 
 def calendar_date(iso):
     if not isinstance(iso, str) or not _DATE.fullmatch(iso):
