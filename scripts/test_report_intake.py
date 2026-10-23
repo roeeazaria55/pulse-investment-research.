@@ -33,6 +33,33 @@ class IntakeTests(unittest.TestCase):
   def fail(u,c):raise ValueError('offline')
   failed=collect({'items':[ITEM]},{'companies':[C]},changed,'2026-10-20T15:00:00Z',fetcher=fail)
   self.assertEqual(failed['documents'][0]['sha256'],changed['documents'][0]['sha256']);self.assertEqual(failed['documents'][0]['lastSuccessfulAt'],changed['documents'][0]['lastSuccessfulAt']);self.assertEqual(failed['sources'][0]['status'],'failed')
+ def test_http_200_with_no_financial_rows_cannot_erase_prior_extracted_evidence(self):
+  def fetch_good(url,c):return HTML,'text/html',url
+  first=collect({'items':[ITEM]},{'companies':[C]}, {},'2026-10-20T12:00:00Z',fetcher=fetch_good)
+  old=first['documents'][0]
+  self.assertEqual(old['status'],'extracted')
+  # Valid issuer identity and financial title, but zero supported financial data:
+  # this can happen after an IR page redesign, blocked dynamic content or a parser regression.
+  no_data=(b'<html><h1>Super Micro Computer FY2026 financial results</h1><p>'+
+           b'Corporate information and annual reporting context. '*12+b'</p></html>')
+  parsed=extract(no_data,'text/html',URL,C)
+  self.assertEqual(parsed['status'],'read-no-supported-data')
+  second=collect({'items':[ITEM]},{'companies':[C]},first,'2026-10-20T13:00:00Z',
+                 fetcher=lambda url,c:(no_data,'text/html',url))
+  retained=second['documents'][0]
+  self.assertEqual(retained['sha256'],old['sha256'])
+  self.assertEqual(retained['facts'],old['facts'])
+  self.assertEqual(retained['tables'],old['tables'])
+  self.assertEqual(retained['lastSuccessfulAt'],old['lastSuccessfulAt'])
+  self.assertEqual(retained['status'],'extracted')
+  self.assertIn('retained for reconciliation',retained['error'])
+  self.assertEqual(second['sources'][0]['status'],'failed')
+  self.assertFalse(retained['revised'])
+  # A first-ever unsupported report is still recorded as an honest no-data result.
+  fresh=collect({'items':[ITEM]},{'companies':[C]}, {},'2026-10-20T13:00:00Z',
+                fetcher=lambda url,c:(no_data,'text/html',url))
+  self.assertEqual(fresh['documents'][0]['status'],'read-no-supported-data')
+
  def test_attached_financial_document_is_followed_with_same_issuer_scope(self):
   parent=b'<h1>SMCI financial results</h1><p>'+b'report '*30+b'</p><a href="attached.htm.pdf">Download financial results</a>'
   calls=[]
