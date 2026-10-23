@@ -27,7 +27,7 @@ def valid_time(value):
         return False
 
 
-def report_id(company_id, url):
+def expected_report_id(company_id, url):
     """Match the identity assigned by report_intake.collect, not a supplied label."""
     return "report:" + hashlib.sha256((company_id + "|" + canonical(url)).encode()).hexdigest()[:32]
 
@@ -45,7 +45,7 @@ def valid_document(doc, companies):
     if (u.scheme != "https" or not u.hostname or u.username or u.password or
             canonical(doc["url"]) != doc["url"] or
             not safe_report_url(doc["url"], companies[doc["companyId"]]) or
-            doc["id"] != report_id(doc["companyId"], doc["url"])):
+            doc["id"] != expected_report_id(doc["companyId"], doc["url"])):
         return False
     if not valid_time(doc.get("lastSuccessfulAt")):
         return False
@@ -85,7 +85,7 @@ def build_queue(intake, registry, previous, now):
                 not HEX_SHA.fullmatch(sha) or
                 not safe_report_url(url, companies[company_id]) or
                 canonical(url) != url or
-                e["reportId"] != report_id(company_id, url) or
+                e["reportId"] != expected_report_id(company_id, url) or
                 e["id"] != version_id(company_id, e["reportId"], sha) or
                 not valid_time(e.get("firstObservedAt")) or
                 not valid_time(e.get("lastSuccessfulAt")) or
