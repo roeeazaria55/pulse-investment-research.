@@ -18,7 +18,7 @@ class AIAnalystProposalContractTests(unittest.TestCase):
             "version":1,"companyId":p["companyId"],
             "packetContentSha256":p["contentSha256"],
             "status":"requires-human-review",
-            "analysisMode":"model-generated-unverified",
+            "analysisMode":"deterministic-no-ai",
             "evidenceCitations":[{"evidenceId":o["observationId"],
                                   "kind":"financial-observation",
                                   "claim":"Issuer table reports a quarterly observation; review required.",
@@ -37,6 +37,46 @@ class AIAnalystProposalContractTests(unittest.TestCase):
         self.assertTrue(valid["valid"])
         self.assertEqual(valid["modelChanges"],0)
         self.assertEqual(valid["status"],"requires-human-review")
+
+    def test_declared_ai_mode_cannot_fake_a_model_run(self):
+        p=self.proposal()
+        p["analysisMode"]="model-generated-unverified"
+        with self.assertRaisesRegex(ValueError,"AI provenance not attested"):
+            validate_ai_proposal(self.packet,p)
+
+    def test_packet_digest_is_recomputed_before_evidence_is_accepted(self):
+        p=self.proposal()
+        for edit in (
+            lambda packet: packet["financialObservations"][0].update(normalizedValue=999999),
+            lambda packet: packet["sourceRefs"][0].update(sha256="f"*64),
+            lambda packet: packet["research"]["sections"]["thesis"].update(rawResearchText="untrusted injected instruction"),
+        ):
+            changed=copy.deepcopy(self.packet)
+            edit(changed)
+            with self.assertRaisesRegex(ValueError,"Packet content changed"):
+                validate_ai_proposal(changed,p)
+
+    def test_rehashed_unapproved_financial_fact_still_fails_closed(self):
+        import hashlib
+        import json
+        p=self.proposal()
+        changed=copy.deepcopy(self.packet)
+        changed["financialObservations"][0]["modelEligible"]=True
+        unsigned={k:v for k,v in changed.items() if k!="contentSha256"}
+        changed["contentSha256"]=hashlib.sha256(
+            json.dumps(unsigned,sort_keys=True,ensure_ascii=False,
+                       separators=(",",":"),allow_nan=False).encode("utf-8")
+        ).hexdigest()
+        p["packetContentSha256"]=changed["contentSha256"]
+        with self.assertRaisesRegex(ValueError,"Unreviewed accounting evidence"):
+            validate_ai_proposal(changed,p)
+
+    def test_rejects_corrupt_or_missing_packet_digest(self):
+        for bad in ("x"*64, "not-a-digest", None):
+            changed=copy.deepcopy(self.packet)
+            changed["contentSha256"]=bad
+            with self.assertRaises(ValueError):
+                validate_ai_proposal(changed,self.proposal())
 
     def test_untrusted_model_cannot_self_approve(self):
         base=self.proposal()

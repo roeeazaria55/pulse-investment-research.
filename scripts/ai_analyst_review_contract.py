@@ -3,8 +3,10 @@
 No data mutation, no approval, no execution. All suggestions remain pending.
 This schema deliberately separates cited evidence from interpretation.
 """
+import hashlib
 import json
 import math
+import re
 from pathlib import Path
 
 KINDS={"financial-observation", "archived-forecast", "research-section", "valuation-scenario"}
@@ -16,11 +18,47 @@ def _str(v,maxlen=4000):
 def _type_is_safe(v):
     return isinstance(v,(int,float)) and not isinstance(v,bool) and math.isfinite(v)
 
-def validate_ai_proposal(packet, proposed):
-    if not isinstance(packet,dict) or packet.get("contractVersion")!=1:
+def _validate_input_packet(packet):
+    """Recalculate the source snapshot digest before accepting any model citation.
+
+    A checksum binds the review to an exact packet; it is NOT a signature,
+    an issuer attestation, or a substitute for protected GitHub approvals.
+    """
+    if not isinstance(packet, dict) or type(packet.get("contractVersion")) is not int or packet["contractVersion"] != 1:
         raise ValueError("AI packet missing or wrong contract")
-    if packet.get("trustPolicy",{}).get("mayModifyTargetsOrProbabilities") is not False:
+    digest = packet.get("contentSha256")
+    if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
+        raise ValueError("Invalid packet digest")
+    unsigned = {key: value for key, value in packet.items() if key != "contentSha256"}
+    try:
+        serialized = json.dumps(unsigned, sort_keys=True, ensure_ascii=False,
+                                separators=(",", ":"), allow_nan=False)
+    except (ValueError, TypeError, OverflowError) as exc:
+        raise ValueError("Invalid packet content") from exc
+    calculated = hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+    if calculated != digest:
+        raise ValueError("Packet content changed without matching SHA-256")
+    policy = packet.get("trustPolicy")
+    if (not isinstance(policy, dict)
+        or policy.get("mayModifyTargetsOrProbabilities") is not False
+        or policy.get("includesPersonalPortfolio") is not False
+        or policy.get("aiAnalysisExecuted") is not False):
         raise ValueError("Input packet trust gate is not locked")
+    observations = packet.get("financialObservations")
+    if not isinstance(observations, list):
+        raise ValueError("Missing financial evidence")
+    for ob in observations:
+        if (not isinstance(ob, dict) or ob.get("modelEligible") is not False
+            or ob.get("verification") not in ("pending-review", "needs-reconciliation")
+            or ob.get("reviewStatus") not in ("pending-review", "needs-reconciliation")
+            or not isinstance(ob.get("sourceSha256"), str)
+            or not re.fullmatch(r"[0-9a-f]{64}", ob["sourceSha256"])):
+            raise ValueError("Unreviewed accounting evidence cannot be promoted")
+    return digest
+
+
+def validate_ai_proposal(packet, proposed):
+    verified_digest = _validate_input_packet(packet)
     if not isinstance(proposed,dict):
         raise ValueError("Missing proposed review")
     expected={"version","companyId","packetContentSha256","status","analysisMode",
@@ -30,12 +68,15 @@ def validate_ai_proposal(packet, proposed):
         raise ValueError("Unexpected proposal keys; no mutable approvals or commands allowed")
     if proposed["version"]!=1 or proposed["companyId"]!=packet["companyId"]:
         raise ValueError("Wrong issuer or proposal version")
-    if proposed["packetContentSha256"]!=packet["contentSha256"]:
+    if proposed["packetContentSha256"] != verified_digest:
         raise ValueError("Stale packet version; no evidence binding")
     if proposed["status"]!="requires-human-review":
         raise ValueError("AI cannot approve its own output")
-    if proposed["analysisMode"] not in ("model-generated-unverified","deterministic-no-ai"):
-        raise ValueError("Invalid AI provenance")
+    if proposed["analysisMode"] != "deterministic-no-ai":
+        # There is no trusted, server-side model-execution attestation yet.
+        # Accepting a model's self-declared analysisMode would let a caller
+        # misrepresent deterministic output as actual AI research.
+        raise ValueError("AI provenance not attested; only deterministic-no-ai is allowed")
     if proposed["proposedValuationAction"]!="no-automatic-change":
         raise ValueError("Direct financial model edits are forbidden")
     candidates={o["observationId"]:"financial-observation" for o in packet.get("financialObservations",[])}
