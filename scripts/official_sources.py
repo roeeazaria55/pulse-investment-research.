@@ -63,7 +63,9 @@ def restore_previous(item, company, now):
         return None
     url=item.get('url')
     if not isinstance(url,str) or not document_url(url,company):
-        return None  # Source no longer allowlisted by the current registry.
+        # Do not silently discard historical evidence on an HTTP 403 if a
+        # persisted URL was forged or an issuer allowlist was tightened.
+        raise ValueError('Persisted official item destination no longer allowlisted')
     expected='official:'+hashlib.sha256((company['id']+'|'+canonical(url)).encode()).hexdigest()[:32]
     sources={source['id']:source for source in company['sources']}
     if (item.get('id')!=expected or canonical(url)!=url or
