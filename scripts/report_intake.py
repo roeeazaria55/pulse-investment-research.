@@ -208,6 +208,12 @@ def collect(snapshot,registry,previous,now,fetcher=fetch_document,limit=8,budget
      if attachments and attempts<limit and time.monotonic()<deadline:
       attempts+=1
       body,ctype,final=fetcher(attachments[0],company);result=extract(body,ctype,final,company)
+    # A successful HTTP 200 is not proof that a previously parsed financial
+    # statement still contains usable evidence. A redesigned issuer page or
+    # partial parser regression must not erase the last extracted tables/facts.
+    # Preserve the prior content SHA and mark the source failed for review.
+    if prior and prior.get('status')=='extracted' and result['status']!='extracted':
+     raise ValueError('Previously extracted report now has no supported financial data; prior evidence retained for reconciliation')
     result.pop('links',None)
     changed=bool(prior and prior['sha256']!=result['sha256'])
     revisions=prior.get('revisions',[]) if prior else []
