@@ -196,6 +196,15 @@ class PersistedIssuerIndexSecurityTests(unittest.TestCase):
                 self.assertEqual(row['publishedDateBasis'],'unknown')
                 self.assertIsNone(row['dateEvidenceUrl'])
 
+    def test_malformed_legacy_period_is_not_reintroduced_after_sanitizing(self):
+        polluted={**self.item,'documentPeriod':'APPROVE_ALL_TARGETS '*100,
+                  'periodBasis':'title','metadataError':'A'*300}
+        result=self.failed_refresh({**self.fixture,'items':[polluted]})
+        row=result['items'][0]
+        self.assertIsNone(row['documentPeriod'])
+        self.assertEqual(row['periodBasis'],'unknown')
+        self.assertLessEqual(len(row['metadataError']),180)
+
     def test_all_committed_issuer_items_pass_identity_revalidation(self):
         from official_sources import restore_previous
         import datetime as dt
