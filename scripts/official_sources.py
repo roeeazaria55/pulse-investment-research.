@@ -71,6 +71,12 @@ def restore_previous(item, company, now):
         raise ValueError('Persisted official item identity/source mismatch')
     if (not isinstance(item.get('title'),str) or
         not 1<=len(item['title'])<=600 or
+        item.get('kind') not in ('release','results','schedule','document') or
+        type(item.get('indexRank')) is not int or
+        not 0<=item['indexRank']<=100 or
+        item.get('titleBasis') not in (None,'page-heading','link-label','filename','index-context') or
+        item.get('periodBasis') not in (None,'unknown','index-heading','filename-hint','title') or
+        item.get('language') not in (None,'he','en') or
         not _past_timestamp(item.get('collectedAt'),now) or
         not _past_timestamp(item.get('lastSeenAt'),now)):
         raise ValueError('Persisted official item has invalid title or timestamps')
@@ -80,6 +86,10 @@ def restore_previous(item, company, now):
     clean_item['issuerEvidenceUrl']=source['url'] if source.get('kind')=='issuer-distributed' else None
     clean_item['sourceLabel']=clean(item.get('sourceLabel') or item['title'])
     clean_item['contentScope']='metadata-only'
+    clean_item['metadataError']=clean(str(item.get('metadataError') or ''))[:180] or None
+    period=clean_item.get('documentPeriod')
+    if period is not None and (not isinstance(period,str) or len(period)>160):
+        clean_item.update(documentPeriod=None,periodBasis='unknown')
     if clean_item.get('metadataStatus') not in ('index-link','page-metadata'):
         clean_item.update(metadataStatus='index-link',metadataCheckedAt=None)
     # An impossible or untraceable cached date is not publication evidence.
