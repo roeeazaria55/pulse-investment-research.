@@ -10,6 +10,7 @@ import re
 from pathlib import Path
 from urllib.parse import urlsplit
 from report_intake import safe_report_url
+from official_sources import canonical
 
 VERSION = 1
 HEX_SHA = re.compile(r"^[0-9a-f]{64}$")
@@ -26,6 +27,11 @@ def valid_time(value):
         return False
 
 
+def report_id(company_id, url):
+    """Match the identity assigned by report_intake.collect, not a supplied label."""
+    return "report:" + hashlib.sha256((company_id + "|" + canonical(url)).encode()).hexdigest()[:32]
+
+
 def valid_document(doc, companies):
     if not isinstance(doc, dict):
         return False
@@ -36,7 +42,10 @@ def valid_document(doc, companies):
     if doc.get("status") not in ("extracted", "read-no-supported-data"):
         return False
     u = urlsplit(str(doc.get("url", "")))
-    if u.scheme != "https" or not u.hostname or u.username or u.password or not safe_report_url(doc["url"], companies[doc["companyId"]]):
+    if (u.scheme != "https" or not u.hostname or u.username or u.password or
+            canonical(doc["url"]) != doc["url"] or
+            not safe_report_url(doc["url"], companies[doc["companyId"]]) or
+            doc["id"] != report_id(doc["companyId"], doc["url"])):
         return False
     if not valid_time(doc.get("lastSuccessfulAt")):
         return False
@@ -54,8 +63,35 @@ def build_queue(intake, registry, previous, now):
     if not isinstance(registry.get("companies"), list):
         raise ValueError("Invalid issuer registry")
     companies = {c["id"]: c for c in registry["companies"] if isinstance(c, dict) and c.get("id")}
-    past = {e["id"]: e for e in previous.get("entries", []) if isinstance(e, dict) and isinstance(e.get("id"), str)}
-    entries = {k: v for k, v in past.items() if v.get("companyId") in companies and v.get("reviewStatus") == "pending-review"}
+    # pulse-data is a public, mutable snapshot. An old pending record is not
+    # trusted merely because its self-asserted status says pending-review.
+    # Reject forged report/version identities rather than carrying them into
+    # a new snapshot as apparent historical evidence.
+    if not isinstance(previous, dict) or not isinstance(previous.get("entries", []), list):
+        raise ValueError("Invalid persisted review queue")
+    entries = {}
+    for e in previous.get("entries", []):
+        if not isinstance(e, dict):
+            raise ValueError("Malformed persisted review entry")
+        if e.get("reviewStatus") != "pending-review":
+            continue  # Old approvals are never carried over from a public file.
+        company_id = e.get("companyId")
+        if company_id not in companies:
+            continue
+        url = e.get("sourceUrl")
+        sha = e.get("sha256")
+        if (not isinstance(url, str) or not isinstance(e.get("reportId"), str) or
+                not isinstance(e.get("id"), str) or not isinstance(sha, str) or
+                not HEX_SHA.fullmatch(sha) or
+                not safe_report_url(url, companies[company_id]) or
+                canonical(url) != url or
+                e["reportId"] != report_id(company_id, url) or
+                e["id"] != version_id(company_id, e["reportId"], sha) or
+                not valid_time(e.get("firstObservedAt")) or
+                not valid_time(e.get("lastSuccessfulAt")) or
+                e["id"] in entries):
+            raise ValueError("Untrusted or duplicated persisted review version")
+        entries[e["id"]] = e
     present_keys = set()
     accepted, rejected = 0, 0
     new_versions, revised_versions = 0, 0
