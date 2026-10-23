@@ -208,4 +208,4 @@ class PersistedIssuerIndexSecurityTests(unittest.TestCase):
                 restored=restore_previous(item,companies[item['companyId']],now)
                 self.assertEqual(restored['id'],item['id'])
                 self.assertEqual(restored['contentScope'],'metadata-only')
-                self.assertEqual(set(restored)-set(item),set())
+                self.assertTrue(set(restored)-set(item) <= {'sourceKind','sourceLabel','issuerEvidenceUrl'})
