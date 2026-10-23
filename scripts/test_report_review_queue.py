@@ -4,7 +4,7 @@ import json
 import unittest
 from pathlib import Path
 
-from report_review_queue import build_queue, version_id, report_id
+from report_review_queue import build_queue, version_id, expected_report_id
 
 NOW = "2026-10-22T12:00:00+00:00"
 LATER = "2026-10-22T13:00:00+00:00"
@@ -12,7 +12,7 @@ COMPANY = {"id": "candidate-nebius", "ticker": "NBIS", "allowedHosts": ["nebius.
 REGISTRY = {"companies": [COMPANY]}
 URL = "https://nebius.com/newsroom/test-results"
 DOC = {
-    "id": report_id(COMPANY["id"], URL),
+    "id": expected_report_id(COMPANY["id"], URL),
     "companyId": COMPANY["id"], "ticker": "NBIS", "url": URL,
     "sha256": "a" * 64, "status": "extracted",
     "lastSuccessfulAt": NOW, "publishedDate": "2026-08-01",
