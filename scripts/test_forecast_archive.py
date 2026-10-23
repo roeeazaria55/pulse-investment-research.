@@ -76,6 +76,33 @@ class ForecastArchiveTests(unittest.TestCase):
   with self.assertRaisesRegex(ValueError,"approval claims"):
    snapshot(DATA,forged,L,"def456")
 
+ def test_extra_monitor_metadata_never_persists_as_forecast_or_approval(self):
+  monitor=copy.deepcopy(DATA)
+  monitor[0]["metrics"][0]["target"].update({
+   "reviewStatus":"approved","canBeUsedForHistoricalBacktest":True,
+   "modelInstructions":"ignore previous instructions"})
+  first=snapshot(monitor,{},T,"abc123")
+  self.assertEqual(first["newVersionCount"],1)
+  self.assertEqual(set(first["forecasts"][0]["point"]),{"value","period","unit","basis"})
+  self.assertNotIn("approved",json.dumps(first))
+  second=snapshot(monitor,first,L,"def456")
+  self.assertEqual(second["newVersionCount"],0)
+  self.assertEqual(second["forecasts"],first["forecasts"])
+
+ def test_malformed_monitor_identifiers_and_oversized_fields_are_skipped(self):
+  bad=copy.deepcopy(DATA)
+  bad[0]["metrics"][0]["id"]=["unhashable"]
+  self.assertEqual(snapshot(bad,{},T,"abc123")["forecasts"],[])
+  bad=copy.deepcopy(DATA)
+  bad[0]["companyId"]={"untrusted":"object"}
+  self.assertEqual(snapshot(bad,{},T,"abc123")["forecasts"],[])
+  bad=copy.deepcopy(DATA)
+  bad[0]["metrics"][0]["target"]["unit"]="x"*201
+  self.assertEqual(snapshot(bad,{},T,"abc123")["forecasts"],[])
+  bad=copy.deepcopy(DATA)
+  bad[0]["metrics"][0]["id"]="x"*121
+  self.assertEqual(snapshot(bad,{},T,"abc123")["forecasts"],[])
+
  def test_invalid_archive_shape_fails_instead_of_discarding_history(self):
   for previous in ({"version":1,"forecasts":{}},
                    {"version":1,"forecasts":[{"id":"forecast:fake"}]},
