@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PULSE AI Analyst Review Proposal v1 — NEVER a model update",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "companyId",
+    "packetContentSha256",
+    "status",
+    "analysisMode",
+    "evidenceCitations",
+    "analystQuestions",
+    "interpretations",
+    "suggestedScenarioReview",
+    "proposedValuationAction"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "companyId": {
+      "type": "string",
+      "minLength": 2
+    },
+    "packetContentSha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "status": {
+      "const": "requires-human-review"
+    },
+    "analysisMode": {
+      "enum": [
+        "model-generated-unverified",
+        "deterministic-no-ai"
+      ]
+    },
+    "evidenceCitations": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "evidenceId",
+          "kind",
+          "claim",
+          "uncertainty"
+        ],
+        "properties": {
+          "evidenceId": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "financial-observation",
+              "archived-forecast",
+              "research-section",
+              "valuation-scenario"
+            ]
+          },
+          "claim": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "uncertainty": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          }
+        }
+      }
+    },
+    "analystQuestions": {
+      "type": "array",
+      "maxItems": 30,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "interpretations": {
+      "type": "array",
+      "maxItems": 40,
+      "items": {
+        "type": "object",
+        "required": [
+          "observation",
+          "hypothesis",
+          "evidenceIds",
+          "unknowns"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "suggestedScenarioReview": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "suggestedProbability",
+          "reason",
+          "evidenceIds",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "enum": [
+              "bear",
+              "base",
+              "bull"
+            ]
+          },
+          "suggestedProbability": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidenceIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          },
+          "status": {
+            "const": "review-only"
+          }
+        }
+      }
+    },
+    "proposedValuationAction": {
+      "const": "no-automatic-change"
+    }
+  }
+}
