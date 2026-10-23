@@ -44,7 +44,7 @@ class AIResearchPacketTests(unittest.TestCase):
             self.assertIsNotNone(p["research"])
             self.assertFalse(p["trustPolicy"]["mayModifyTargetsOrProbabilities"])
         self.assertEqual(self.packets["SMCI"]["valuationModel"],None)
-        self.assertEqual(self.packets["IREN"]["valuationModel"],None)
+        self.assertIsNotNone(self.packets["IREN"]["valuationModel"])
 
     def test_repeated_inputs_produce_identical_packet_ids_and_content(self):
         again=build_all()
