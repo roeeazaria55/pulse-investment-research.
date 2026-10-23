@@ -17,6 +17,7 @@ def valid_day(day):
     except ValueError:return False
 
 def valid_instant(value):
+    if not isinstance(value,str) or len(value)>80:return False
     try:return bool(value and dt.datetime.fromisoformat(value.replace("Z","+00:00")).tzinfo)
     except (ValueError,AttributeError):return False
 
