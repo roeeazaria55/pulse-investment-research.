@@ -114,3 +114,98 @@ class NavigationTests(unittest.TestCase):
         result=collect({'companies':[c]}, {},NOW,getter)
         self.assertEqual(len(result['items']),1);self.assertEqual(result['items'][0]['sourceId'],'body')
         self.assertEqual(result['sources'][1]['status'],'failed')
+
+
+class PersistedIssuerIndexSecurityTests(unittest.TestCase):
+    """Persisted pulse-data is untrusted: no forged identities or approvals."""
+
+    def setUp(self):
+        self.config=copy.deepcopy(CONFIG)
+        self.config['companies']=self.config['companies'][:1]
+        self.company=self.config['companies'][0]
+        self.company['sources']=self.company['sources'][:1]
+        self.source=self.company['sources'][0]
+        def getter(url,hosts):
+            p=Page()
+            if url==self.source['url']:
+                p.links=[('/newsroom/nebius-results','Nebius reports financial results')]
+            else:
+                p.feed('<h1>Nebius reports financial results</h1>'
+                       '<meta property="article:published_time" content="2026-10-16T12:00:00Z">')
+            return p
+        self.fixture=collect(self.config,{},NOW,getter)
+        self.item=self.fixture['items'][0]
+
+    def failed_refresh(self,previous):
+        def blocked(*_):
+            raise ValueError('HTTP 403')
+        return collect(self.config,previous,'2026-10-19T16:00:00+00:00',blocked)
+
+    def test_rejects_tampered_source_identity_without_publishing_snapshot(self):
+        for key,value in (
+            ('id','official:'+'a'*32),
+            ('sourceId','unlisted-source'),
+            ('ticker','OTHER'),
+            ('url',self.item['url']+'?redirected=1'),
+            ('kind','verified-approved'),
+            ('collectedAt','2099-01-01T00:00:00+00:00'),
+            ('lastSeenAt','2099-01-01T00:00:00+00:00'),
+            ('indexRank',999999),
+        ):
+            with self.subTest(field=key):
+                changed={**self.item,key:value}
+                with self.assertRaisesRegex(ValueError,'Persisted official item'):
+                    self.failed_refresh({**self.fixture,'items':[changed]})
+
+    def test_rejects_duplicate_persisted_item_ids(self):
+        duplicate={**self.item,'title':'Changed title'}
+        with self.assertRaisesRegex(ValueError,'Duplicate persisted'):
+            self.failed_refresh({**self.fixture,'items':[self.item,duplicate]})
+
+    def test_discards_extra_untrusted_fields_and_false_verified_metadata(self):
+        poisoned={**self.item,'verifiedOfficial':True,'analystApproval':'approved',
+                  'modelOverride':{'targetPrice':99999},'contentScope':'full-report',
+                  'metadataStatus':'approved','sourceKind':'verified-reviewer',
+                  'issuerEvidenceUrl':'https://evil.example/inject'}
+        output=self.failed_refresh({**self.fixture,'items':[poisoned]})
+        self.assertEqual(len(output['items']),1)
+        row=output['items'][0]
+        self.assertNotIn('verifiedOfficial',row)
+        self.assertNotIn('analystApproval',row)
+        self.assertNotIn('modelOverride',row)
+        self.assertEqual(row['contentScope'],'metadata-only')
+        self.assertEqual(row['metadataStatus'],'index-link')
+        self.assertEqual(row['sourceKind'],self.source.get('kind','company-ir'))
+        self.assertIsNone(row['issuerEvidenceUrl'])
+        self.assertEqual(output['sources'][0]['status'],'failed')
+
+    def test_unverifiable_dates_are_cleared_without_deleting_document(self):
+        for change in (
+            {'publishedDate':'2099-01-01'},
+            {'publishedDate':'2026-02-30'},
+            {'dateEvidenceUrl':'https://evil.example/false-date'},
+            {'publishedDateBasis':'analyst-approved'},
+        ):
+            with self.subTest(change=change):
+                item={**self.item,**change}
+                result=self.failed_refresh({**self.fixture,'items':[item]})
+                self.assertEqual(len(result['items']),1)
+                row=result['items'][0]
+                self.assertEqual(row['id'],self.item['id'])
+                self.assertIsNone(row['publishedDate'])
+                self.assertEqual(row['publishedDateBasis'],'unknown')
+                self.assertIsNone(row['dateEvidenceUrl'])
+
+    def test_all_committed_issuer_items_pass_identity_revalidation(self):
+        from official_sources import restore_previous
+        import datetime as dt
+        snap=json.loads(Path('public/data/official-sources.json').read_text())
+        now=dt.datetime.now(dt.timezone.utc).isoformat()
+        companies={c['id']:c for c in CONFIG['companies']}
+        self.assertGreaterEqual(len(snap['items']),100)
+        for item in snap['items']:
+            with self.subTest(item=item['id']):
+                restored=restore_previous(item,companies[item['companyId']],now)
+                self.assertEqual(restored['id'],item['id'])
+                self.assertEqual(restored['contentScope'],'metadata-only')
+                self.assertEqual(set(restored)-set(item),set())
