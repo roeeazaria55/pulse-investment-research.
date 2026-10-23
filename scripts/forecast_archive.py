@@ -75,21 +75,30 @@ def snapshot(monitors,previous,now,source_commit):
         raise ValueError("Invalid input snapshot")
     entries=validated_history(previous,now);new_count=0
     for monitor in monitors:
-        if not isinstance(monitor,dict) or not isinstance(monitor.get("metrics"),list) or not monitor.get("companyId"):
+        if (not isinstance(monitor,dict) or not isinstance(monitor.get("metrics"),list)
+            or not isinstance(monitor.get("companyId"),str)
+            or not 1<=len(monitor["companyId"])<=120):
             continue
         seen=set()
         for m in monitor["metrics"]:
-            if not isinstance(m,dict) or not m.get("id") or m["id"] in seen:
+            if not isinstance(m,dict):
                 continue
-            seen.add(m["id"])
+            metric_id=m.get("id")
+            if not isinstance(metric_id,str) or not 1<=len(metric_id)<=120 or metric_id in seen:
+                continue
+            seen.add(metric_id)
             target=m.get("target")
             if not isinstance(target,dict) or any(k not in target for k in ("value","period","unit","basis")):
                 continue
             if isinstance(target["value"],bool) or not isinstance(target["value"],(float,int)) or not math.isfinite(target["value"]):
                 continue
-            if any(not isinstance(target[k],str) or not target[k] for k in ("period","unit","basis")):
+            if any(not isinstance(target[k],str) or not 1<=len(target[k])<=200 for k in ("period","unit","basis")):
                 continue
-            body={"companyId":monitor["companyId"],"metricId":m["id"],"point":target,
+            # Only these four evidence fields are part of a forecast definition.
+            # Never persist arbitrary metadata (including forged approval claims)
+            # from monitor targets: it would fail next-run history validation.
+            point={k:target[k] for k in ("value","period","unit","basis")}
+            body={"companyId":monitor["companyId"],"metricId":metric_id,"point":point,
                   "researchAsOf":monitor.get("asOf") if valid_day(monitor.get("asOf")) else None}
             ident=forecast_identity(body)
             if ident in entries:
