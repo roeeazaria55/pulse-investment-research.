@@ -118,10 +118,11 @@ def collect(config,previous,now,getter=get_official_page):
             if fixed is None:continue
             if fixed['id'] in items:
                 raise ValueError('Duplicate persisted official item identity')
+            retained={k:fixed[k] for k in ('title','titleBasis','language','documentPeriod','periodBasis') if k in fixed}
             described=describe(company,fixed['url'],fixed['title'])
             fixed={**fixed,**described}
-            if item.get('titleBasis'):
-                fixed.update({k:item[k] for k in ('title','titleBasis','language','documentPeriod','periodBasis') if k in item})
+            if retained.get('titleBasis'):
+                fixed.update(retained)
             items[fixed['id']]=fixed
     statuses=[]
     deadline=time.monotonic()+240
