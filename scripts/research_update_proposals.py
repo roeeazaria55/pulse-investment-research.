@@ -1,8 +1,12 @@
 """Evidence-only research update briefs; not investment advice or AI-generated claims."""
+import datetime as dt
 import hashlib
 import json
+import math
 from pathlib import Path
 from report_review_queue import version_id
+from report_intake import safe_report_url
+from official_sources import canonical
 
 REVIEW_TASKS={
  "revenue":"השווה לתקופה קודמת רק אם קיימים נתוני GAAP/IFRS תואמים; בחן מנועי צמיחה.",
@@ -10,13 +14,19 @@ REVIEW_TASKS={
  "operatingCash":"בדוק הון חוזר, תזמון סליקה ותשלומים; אין להסיק מכאן FCF.",
  "capex":"בדוק הגדרת הוצאות ההשקעה, רכוש קבוע ונכסים בלתי מוחשיים.",
 }
-def build_proposals(snapshot, comparison, ledger):
+def build_proposals(snapshot, comparison, ledger, registry):
     """Build a review-only briefing; mutable ledger/compare files grant no authority.
 
     The issuer document and digest must identify a *single* source version.
     Conflicting observations fail closed instead of mixing unrelated evidence
     into one apparently coherent analyst briefing.
     """
+    if not isinstance(registry, dict) or not isinstance(registry.get("companies"), list):
+        raise ValueError("Missing trusted issuer registry")
+    companies = {c["id"]: c for c in registry["companies"]
+                 if isinstance(c, dict) and isinstance(c.get("id"), str)}
+    if len(companies) != len(registry["companies"]):
+        raise ValueError("Malformed or duplicate issuer registry")
     by_source = {}
     source_identity = {}
     observations = snapshot.get("observations", [])
@@ -41,6 +51,35 @@ def build_proposals(snapshot, comparison, ledger):
         expected = version_id(ob["companyId"], ob["reportId"], ob["sourceSha256"])
         if ob["reviewVersionId"] != expected:
             raise ValueError("Research evidence review version does not match source digest")
+        company = companies.get(ob["companyId"])
+        url = ob["sourceUrl"]
+        if (company is None or not isinstance(url, str)
+                or not safe_report_url(url, company) or canonical(url) != url):
+            raise ValueError("Research source URL is not an approved issuer document")
+        report_identity = "report:" + hashlib.sha256(
+            (ob["companyId"] + "|" + url).encode()).hexdigest()[:32]
+        if ob["reportId"] != report_identity:
+            raise ValueError("Research report identity does not match approved issuer URL")
+        start, end = ob.get("periodStart"), ob.get("periodEnd")
+        try:
+            if not isinstance(start, str) or not isinstance(end, str):
+                raise ValueError("Missing evidence dates")
+            start_date, end_date = dt.date.fromisoformat(start), dt.date.fromisoformat(end)
+            if start_date.isoformat() != start or end_date.isoformat() != end or start_date > end_date:
+                raise ValueError("Invalid financial period")
+        except (TypeError, ValueError) as exc:
+            raise ValueError("Invalid financial period") from exc
+        value = ob.get("value")
+        if (isinstance(value, bool) or not isinstance(value, (float, int))
+                or not math.isfinite(value)
+                or any(not isinstance(ob.get(k), str) or not 1 <= len(ob[k]) <= 1000
+                       for k in ("unit", "basis", "sourceRaw"))):
+            raise ValueError("Malformed or non-finite financial evidence")
+        observation_identity = "observation:" + hashlib.sha256(
+            (ob["reviewVersionId"] + "|" + ob["metricId"] + "|" + start + "|" + end).encode()
+        ).hexdigest()[:32]
+        if ob["id"] != observation_identity:
+            raise ValueError("Financial observation identity does not match source version and period")
         if ob["id"] in seen_observations:
             raise ValueError("Duplicate research observation identity")
         seen_observations.add(ob["id"])
@@ -127,7 +166,8 @@ def main():
     comparisons=json.loads(path.read_text()) if path.exists() else {}
     ledger_path=root/"financial-review-ledger.json"
     ledger=json.loads(ledger_path.read_text()) if ledger_path.exists() else {}
-    data=build_proposals(snap,comparisons,ledger)
+    registry=json.loads((root/"official-registry.json").read_text())
+    data=build_proposals(snap,comparisons,ledger,registry)
     dest=root/"research-update-proposals.json"
     temp=dest.with_suffix(".json.tmp")
     temp.write_text(json.dumps(data,indent=2,ensure_ascii=False)+"\n")
