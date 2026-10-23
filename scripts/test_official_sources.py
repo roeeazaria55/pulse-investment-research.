@@ -147,6 +147,7 @@ class PersistedIssuerIndexSecurityTests(unittest.TestCase):
             ('sourceId','unlisted-source'),
             ('ticker','OTHER'),
             ('url',self.item['url']+'?redirected=1'),
+            ('url','https://evil.example/newsroom/nebius-results'),
             ('kind','verified-approved'),
             ('collectedAt','2099-01-01T00:00:00+00:00'),
             ('lastSeenAt','2099-01-01T00:00:00+00:00'),
