@@ -102,6 +102,12 @@ def extract(intake, registry, previous=None):
     if not company:
         raise ValueError("Pilot company missing from registry")
     prior_entries = {e["id"]: e for e in previous.get("observations", []) if isinstance(e, dict) and isinstance(e.get("id"), str)}
+    # This public data-branch artifact is only a candidate observation store.
+    # An injected "approved" decision is NOT analyst authorization. Fail
+    # closed rather than propagating it into future public snapshots.
+    if any(e.get("reviewStatus") not in ("pending-review", "needs-reconciliation")
+           for e in prior_entries.values()):
+        raise ValueError("Untrusted approval state in persisted financial observations")
     entries = dict(prior_entries)
     issues = []
     detected = 0
@@ -111,6 +117,15 @@ def extract(intake, registry, previous=None):
         # Every numeric observation must be associated with a content SHA
         # from the real collector, not from a manually typed source summary.
         review_id = version_id(doc["companyId"], doc["id"], doc["sha256"])
+        # Never rely solely on the collector's mutable "revised" hint:
+        # a changed source digest is a new review obligation even when the
+        # issuer URL and report identity stay the same.
+        prior_digest_changed = any(
+            e.get("companyId") == doc["companyId"] and
+            e.get("reportId") == doc["id"] and
+            e.get("sourceSha256") != doc["sha256"]
+            for e in prior_entries.values()
+        )
         for key, label, heading, unit, basis, multiplier in PILOT["rules"]:
             try:
                 t = source_table(doc, heading, unit)
@@ -129,6 +144,10 @@ def extract(intake, registry, previous=None):
                     raise ValueError("Non-finite source value")
                 identifier = "observation:" + hashlib.sha256((review_id+"|"+key+"|"+start+"|"+end).encode()).hexdigest()[:32]
                 existing = entries.get(identifier)
+                revised_source = bool(doc.get("revised") or prior_digest_changed or
+                                      (existing and existing.get("revisedSource")))
+                needs_reconciliation = bool(revised_source or
+                                            (existing and existing.get("reviewStatus") == "needs-reconciliation"))
                 entries[identifier] = {
                     "id": identifier, "reviewVersionId": review_id, "companyId": doc["companyId"],
                     "reportId": doc["id"], "sourceUrl": doc["url"], "sourceSha256": doc["sha256"],
@@ -139,8 +158,8 @@ def extract(intake, registry, previous=None):
                     "periodKind": "three-month quarter", "basis": basis,
                     "publishedDate": doc.get("publishedDate"),
                     "collectedAt": doc.get("lastSuccessfulAt"),
-                    "revisedSource": bool(doc.get("revised")),
-                    "reviewStatus": "needs-reconciliation" if doc.get("revised") else "pending-review",
+                    "revisedSource": revised_source,
+                    "reviewStatus": "needs-reconciliation" if needs_reconciliation else "pending-review",
                     "originalObservedAt": existing.get("originalObservedAt", doc.get("lastSuccessfulAt")) if existing else doc.get("lastSuccessfulAt"),
                     "note": "Automatically parsed candidate from issuer collector; pending accounting and period review.",
                 }

@@ -47,6 +47,44 @@ class AutomaticFinancialObservationTests(unittest.TestCase):
         self.assertEqual(len({o["reviewVersionId"] for o in after["observations"]}), 2)
         self.assertTrue(all(o["reviewStatus"] in ("pending-review","needs-reconciliation") for o in after["observations"]))
 
+    def test_changed_sha_without_revised_hint_still_requires_reconciliation(self):
+        first_doc = copy.deepcopy(DLO)
+        first_doc["revised"] = False
+        first = self.run_extract(first_doc)
+        self.assertTrue(all(o["reviewStatus"] == "pending-review"
+                            for o in first["observations"]))
+        revised_doc = copy.deepcopy(first_doc)
+        revised_doc["sha256"] = "e" * 64
+        # Simulate lost collector revision metadata: digest remains authoritative.
+        revised_doc["revised"] = False
+        result = self.run_extract(revised_doc, first)
+        self.assertEqual(result["newProposals"], 4)
+        self.assertEqual(len(result["observations"]), 8)
+        new = [o for o in result["observations"] if o["sourceSha256"] == "e" * 64]
+        self.assertEqual(len(new), 4)
+        self.assertTrue(all(o["reviewStatus"] == "needs-reconciliation" and
+                            o["revisedSource"] for o in new))
+        self.assertTrue(all(o["reviewStatus"] == "pending-review"
+                            for o in result["observations"] if o["sourceSha256"] != "e" * 64))
+
+    def test_reconciliation_cannot_be_downgraded_by_replayed_collector_metadata(self):
+        first = self.run_extract()
+        self.assertTrue(all(o["reviewStatus"] == "needs-reconciliation"
+                            for o in first["observations"]))
+        replay = copy.deepcopy(DLO)
+        replay["revised"] = False
+        second = self.run_extract(replay, first)
+        self.assertEqual(second["newProposals"], 0)
+        self.assertEqual(second["observations"], first["observations"])
+
+    def test_injected_approval_in_public_data_branch_fails_closed(self):
+        first = self.run_extract()
+        poisoned = copy.deepcopy(first)
+        poisoned["observations"][0]["reviewStatus"] = "approved"
+        with self.assertRaisesRegex(ValueError, "Untrusted approval state"):
+            self.run_extract(previous=poisoned)
+        self.assertEqual(first["observations"][0]["reviewStatus"], "needs-reconciliation")
+
     def test_rejects_bogus_issuer_and_missing_headers(self):
         bad = copy.deepcopy(DLO)
         bad["companyId"] = "candidate-iren"
