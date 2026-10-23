@@ -2,11 +2,33 @@
 import datetime as dt
 import json
 import math
+import re
 from pathlib import Path
 
+# A date-only publication claim is not an archive timestamp. Validate each
+# representation in full: slicing [:10] would accept a forged timestamp such
+# as '2026-07-31-not-a-real-archive-time' as pre-publication evidence.
+_DATE = re.compile(r"\\d{4}-\\d{2}-\\d{2}\\Z")
+_INSTANT = re.compile(r"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?(?:Z|[+-]\\d{2}:\\d{2})\\Z")
+
 def calendar_date(iso):
-    try:return dt.date.fromisoformat(iso)
-    except (TypeError,ValueError):return None
+    if not isinstance(iso, str) or not _DATE.fullmatch(iso):
+        return None
+    try:
+        return dt.date.fromisoformat(iso)
+    except ValueError:
+        return None
+
+def archive_utc_day(value):
+    if not isinstance(value, str) or not _INSTANT.fullmatch(value):
+        return None
+    try:
+        instant = dt.datetime.fromisoformat(value.replace("Z", "+00:00"))
+        if instant.tzinfo is None or instant.utcoffset() is None:
+            return None
+        return instant.astimezone(dt.timezone.utc).date()
+    except (TypeError, ValueError, OverflowError):
+        return None
 
 def compare(forecast,actual,decisions,*,verified_review_authority=False):
     reasons=[]
@@ -15,6 +37,9 @@ def compare(forecast,actual,decisions,*,verified_review_authority=False):
     if forecast.get("metricId")!=actual.get("metricId"):
         reasons.append("metric mismatch")
     point=forecast.get("point",{})
+    if not isinstance(point,dict):
+        point={}
+        reasons.append("malformed forecast point")
     if point.get("period")!=actual.get("period"):
         reasons.append("period mismatch: no annualization or YTD substitution")
     if point.get("unit")!=actual.get("unit"):
@@ -23,11 +48,11 @@ def compare(forecast,actual,decisions,*,verified_review_authority=False):
         reasons.append("accounting-definition mismatch")
     # A recordDate is the conservative, verified boundary; a user-supplied
     # researchAsOf is never used as proof of a pre-publication forecast.
-    first=calendar_date((forecast.get("firstRecordedAt") or "")[:10])
+    first=archive_utc_day(forecast.get("firstRecordedAt"))
     published=calendar_date(actual.get("publishedDate"))
     if first is None or published is None or first>=published:
         reasons.append("forecast was not demonstrably archived before result publication")
-    current_approvals=[e for e in decisions if
+    current_approvals=[e for e in decisions if isinstance(e,dict) and
                        e.get("observationId")==actual.get("id") and
                        e.get("sourceSha256")==actual.get("sourceSha256")]
     if not current_approvals or current_approvals[-1].get("decision")!="approved":
