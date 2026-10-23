@@ -42,4 +42,34 @@ class ForecastActualTests(unittest.TestCase):
  def test_empty_approved_ledger_has_no_claimed_forecast_success(self):
   out=evaluate({"forecasts":[FORECAST]},{"observations":[ACTUAL]},{"decisions":[]})
   self.assertEqual(out["results"][0]["status"],"blocked")
+ def test_forged_or_incomplete_archive_time_cannot_claim_prepublication(self):
+  for timestamp in ("2026-07-31-not-an-archive-instant",
+                    "2026-07-31", "2026-07-31T00:00:00",
+                    "2026-07-31T00:00:00+99:00",
+                    "2026-07-31T00:00:00Zignored",
+                    20260731, ["2026-07-31"], None):
+   with self.subTest(timestamp=timestamp):
+    result=compare({**FORECAST,"firstRecordedAt":timestamp},ACTUAL,[APPROVAL],
+                   verified_review_authority=True)
+    self.assertEqual(result["status"],"blocked")
+    self.assertIsNone(result["difference"])
+    self.assertTrue(any("archived before" in reason for reason in result["reasons"]))
+ def test_timezone_is_normalized_to_utc_before_publication_cutoff(self):
+  # On the previous *local* calendar date, but on publication day in UTC.
+  late={**FORECAST,"firstRecordedAt":"2026-08-12T23:30:00-02:00"}
+  blocked=compare(late,ACTUAL,[APPROVAL],verified_review_authority=True)
+  self.assertEqual(blocked["status"],"blocked")
+  early={**FORECAST,"firstRecordedAt":"2026-08-12T23:30:00+02:00"}
+  allowed=compare(early,ACTUAL,[APPROVAL],verified_review_authority=True)
+  self.assertEqual(allowed["status"],"comparable")
+ def test_malformed_publication_date_and_point_fail_closed(self):
+  for published in ("20260813","2026-08-13-anything","2026-08-13T00:00:00Z",42,None):
+   with self.subTest(published=published):
+    result=compare(FORECAST,{**ACTUAL,"publishedDate":published},[APPROVAL],
+                   verified_review_authority=True)
+    self.assertEqual(result["status"],"blocked")
+  malformed=compare({**FORECAST,"point":["malicious","payload"]},ACTUAL,[APPROVAL],
+                    verified_review_authority=True)
+  self.assertEqual(malformed["status"],"blocked")
+  self.assertTrue(any("malformed" in reason for reason in malformed["reasons"]))
 if __name__=="__main__":unittest.main()
