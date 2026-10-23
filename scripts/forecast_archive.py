@@ -20,11 +20,59 @@ def valid_instant(value):
     try:return bool(value and dt.datetime.fromisoformat(value.replace("Z","+00:00")).tzinfo)
     except (ValueError,AttributeError):return False
 
+CHRONOLOGY = "research-asof-unverified; firstRecordedAt is verified archive boundary"
+
+def forecast_identity(body):
+    """Content-address a forecast's full definition; never its claimed timestamp."""
+    encoded=json.dumps(body,sort_keys=True,ensure_ascii=False,separators=(",",":"),allow_nan=False)
+    return "forecast:"+hashlib.sha256(encoded.encode()).hexdigest()[:32]
+
+def validated_history(previous,now):
+    """Fail closed on malformed persisted pulse-data instead of silently copying it.
+
+    The checksum is an integrity/consistency check, NOT proof that an attacker
+    could not re-hash a forged record. The data branch is not an approval source.
+    """
+    if not isinstance(previous,dict) or previous.get("version",VERSION)!=VERSION:
+        raise ValueError("Unsupported forecast archive version")
+    rows=previous.get("forecasts",[])
+    if not isinstance(rows,list):
+        raise ValueError("Malformed persisted forecast archive")
+    result={}
+    upper=dt.datetime.fromisoformat(now.replace("Z","+00:00"))
+    for row in rows:
+        if not isinstance(row,dict) or not isinstance(row.get("point"),dict):
+            raise ValueError("Malformed persisted forecast record")
+        point=row["point"]
+        if (set(point)!={"value","period","unit","basis"}
+            or isinstance(point["value"],bool)
+            or not isinstance(point["value"],(int,float))
+            or not math.isfinite(point["value"])
+            or any(not isinstance(point[k],str) or not point[k] or len(point[k])>200
+                   for k in ("period","unit","basis"))
+            or any(not isinstance(row.get(k),str) or not row[k] or len(row[k])>120
+                   for k in ("companyId","metricId"))
+            or (row.get("researchAsOf") is not None and not valid_day(row["researchAsOf"]))):
+            raise ValueError("Invalid persisted forecast definition")
+        body={k:row[k] for k in ("companyId","metricId","point","researchAsOf")}
+        expected=forecast_identity(body)
+        if row.get("id")!=expected or expected in result:
+            raise ValueError("Forecast archive identity mismatch or duplicate")
+        stamp=row.get("firstRecordedAt")
+        if not valid_instant(stamp) or dt.datetime.fromisoformat(stamp.replace("Z","+00:00"))>upper:
+            raise ValueError("Forecast first-recorded timestamp is invalid or future-dated")
+        if (row.get("canBeUsedForHistoricalBacktest") is not False
+            or row.get("chronologyStatus")!=CHRONOLOGY
+            or not isinstance(row.get("firstRecordedCommit"),str)
+            or not 1<=len(row["firstRecordedCommit"])<=80):
+            raise ValueError("Persisted forecast contains unsupported provenance or approval claims")
+        result[expected]=row
+    return result
+
 def snapshot(monitors,previous,now,source_commit):
     if not valid_instant(now) or not isinstance(monitors,list) or not isinstance(previous,dict):
         raise ValueError("Invalid input snapshot")
-    old={entry["id"]:entry for entry in previous.get("forecasts",[]) if isinstance(entry,dict) and isinstance(entry.get("id"),str)}
-    entries=dict(old);new_count=0
+    entries=validated_history(previous,now);new_count=0
     for monitor in monitors:
         if not isinstance(monitor,dict) or not isinstance(monitor.get("metrics"),list) or not monitor.get("companyId"):
             continue
@@ -42,13 +90,12 @@ def snapshot(monitors,previous,now,source_commit):
                 continue
             body={"companyId":monitor["companyId"],"metricId":m["id"],"point":target,
                   "researchAsOf":monitor.get("asOf") if valid_day(monitor.get("asOf")) else None}
-            encoded=json.dumps(body,sort_keys=True,ensure_ascii=False,separators=(",",":"))
-            ident="forecast:"+hashlib.sha256(encoded.encode()).hexdigest()[:32]
+            ident=forecast_identity(body)
             if ident in entries:
                 continue
             entries[ident]={**body,"id":ident,"ticker":monitor.get("ticker"),"firstRecordedAt":now,
                 "firstRecordedCommit":source_commit,
-                "chronologyStatus":"research-asof-unverified; firstRecordedAt is verified archive boundary",
+                "chronologyStatus":CHRONOLOGY,
                 "canBeUsedForHistoricalBacktest":False,
                 "notice":"Never claim the supplied research asOf is independently proven by this archive."}
             new_count+=1
