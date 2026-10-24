@@ -45,7 +45,7 @@ def validate_bundle(bundle):
             if (not isinstance(cid, str) or not cid or cid in seen
                     or not isinstance(digest, str) or not HEX64.fullmatch(digest)
                     or not isinstance(filename, str)
-                    or not re.fullmatch(r"[A-Za-z0-9_.-]+\\.pdf", filename)):
+                    or not re.fullmatch(r"[A-Za-z0-9_.-]+\.pdf", filename)):
                 raise ValueError("Invalid source metadata")
             pdf_destination = filename.casefold()
             if pdf_destination in pdf_destinations:
