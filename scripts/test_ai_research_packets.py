@@ -98,6 +98,7 @@ class AIResearchPacketTests(unittest.TestCase):
             {**self.dlo, "sources": "not-a-list"},
             {**self.dlo, "sources": [first, first]},
             {**self.dlo, "sources": [{**first, "label": "bad\\nlabel"}]},
+            {**self.dlo, "sources": [{**first, "label": "bad\nlabel"}]},
             {**self.dlo, "sources": [{**first, "id": "../escape"}]},
             {**self.dlo, "allowedHosts": "dlocal.gcs-web.com.evil.example"},
             {**self.dlo, "allowedHosts": ["dlocal.gcs-web.com", 1]},
