@@ -1,6 +1,7 @@
 import hashlib
 import tempfile
 import unittest
+import zipfile
 from pathlib import Path
 from unittest.mock import patch
 from test_research_bundle import ResearchBundleTests
@@ -50,6 +51,70 @@ class ResearchPdfImportTests(unittest.TestCase):
                 self.assertFalse((Path(t) / "escaped.pages.json").exists())
                 self.assertFalse((Path(t) / "pdf").exists())
                 self.assertFalse((Path(t) / "pages").exists())
+        finally:
+            package.unlink()
+
+
+
+    def test_rejects_symlinked_pdf_even_when_contents_match(self):
+        package = ResearchBundleTests().make_bundle()
+        try:
+            with tempfile.TemporaryDirectory() as t:
+                root = Path(t)
+                pdf = root / "pdf"
+                pdf.mkdir()
+                with zipfile.ZipFile(package) as archive:
+                    expected = archive.read("originals/Source0.pdf")
+                outside = root / "outside.pdf"
+                outside.write_bytes(expected)
+                (pdf / "Source0.pdf").symlink_to(outside)
+                with patch("import_research_pdfs.TARGET", pdf), patch(
+                    "import_research_pdfs.PAGES_TARGET", root / "pages"
+                ):
+                    with self.assertRaisesRegex(ValueError, "Symbolic link"):
+                        install(str(package), dry_run=False)
+                self.assertEqual(outside.read_bytes(), expected)
+                self.assertFalse((root / "pages").exists())
+        finally:
+            package.unlink()
+
+    def test_rejects_symlinked_page_text_before_any_pdf_write(self):
+        package = ResearchBundleTests().make_bundle()
+        try:
+            with tempfile.TemporaryDirectory() as t:
+                root = Path(t)
+                pages = root / "pages"
+                pages.mkdir()
+                with zipfile.ZipFile(package) as archive:
+                    expected = archive.read("extracted/T0.pages.json")
+                outside = root / "outside.pages.json"
+                outside.write_bytes(expected)
+                (pages / "T0.pages.json").symlink_to(outside)
+                with patch("import_research_pdfs.TARGET", root / "pdf"), patch(
+                    "import_research_pdfs.PAGES_TARGET", pages
+                ):
+                    with self.assertRaisesRegex(ValueError, "Symbolic link"):
+                        install(str(package), dry_run=False)
+                self.assertEqual(outside.read_bytes(), expected)
+                self.assertFalse((root / "pdf").exists())
+        finally:
+            package.unlink()
+
+    def test_rejects_symlinked_output_directory(self):
+        package = ResearchBundleTests().make_bundle()
+        try:
+            with tempfile.TemporaryDirectory() as t:
+                root = Path(t)
+                outside = root / "elsewhere"
+                outside.mkdir()
+                (root / "pdf").symlink_to(outside, target_is_directory=True)
+                with patch("import_research_pdfs.TARGET", root / "pdf"), patch(
+                    "import_research_pdfs.PAGES_TARGET", root / "pages"
+                ):
+                    with self.assertRaisesRegex(ValueError, "Symbolic link"):
+                        install(str(package), dry_run=False)
+                self.assertEqual(list(outside.iterdir()), [])
+                self.assertFalse((root / "pages").exists())
         finally:
             package.unlink()
 
