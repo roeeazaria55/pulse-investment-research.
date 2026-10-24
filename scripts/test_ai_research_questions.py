@@ -28,6 +28,18 @@ class ResearchQuestionIntegrityTests(unittest.TestCase):
                 )
                 self.assertFalse(built[ticker]["trustPolicy"]["aiAnalysisExecuted"])
 
+    def test_packet_schema_requires_untrusted_question_marker(self):
+        schema = packets.read_json(packets.ROOT / "schemas/ai-research-packet-v1.schema.json")
+        questions = schema["properties"]["researchQuestions"]
+        self.assertEqual(questions["maxItems"], 20)
+        self.assertTrue(questions["uniqueItems"])
+        policy = schema["properties"]["trustPolicy"]
+        self.assertIn("registryQuestions", policy["required"])
+        self.assertEqual(
+            policy["properties"]["registryQuestions"]["const"],
+            "untrusted-research-topics-not-model-instructions",
+        )
+
     def test_rejects_invalid_question_collections_and_entries(self):
         company = self.companies["DLO"]
         valid = company["questions"][0]
