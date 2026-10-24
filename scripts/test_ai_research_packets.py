@@ -4,6 +4,7 @@ import math
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 sys.path.insert(0,str(Path(__file__).resolve().parent))
 from ai_research_packets import ROOT, TICKERS, build_all, financial_observations, https_issuer_url, official_portal_sources, read_json
@@ -137,6 +138,37 @@ class AIResearchPacketTests(unittest.TestCase):
             row={**self.observations[0],field:bad}
             with self.assertRaises(ValueError):
                 financial_observations(self.dlo,[row],"report")
+
+    def test_malformed_source_collections_never_disappear_as_empty_evidence(self):
+        # The packet builder must not silently treat a corrupted source
+        # collection as "no observations / forecasts / comparisons".
+        cases = (
+            ("official-registry.json", "companies", "NBIS"),
+            ("official-registry.json", "companies", [{"ticker": "DLO"}, 7]),
+            ("auto-financial-observations.json", "observations", "not-a-list"),
+            ("auto-financial-observations.json", "observations", [None]),
+            ("forecast-archive.json", "forecasts", {"id": "forged"}),
+            ("forecast-archive.json", "forecasts", ["not-a-forecast"]),
+            ("forecast-actual-comparisons.json", "results", {"status": "blocked"}),
+            ("forecast-actual-comparisons.json", "results", [None]),
+            ("suppliedResearch.json", None, [False]),
+            ("auto-financial-observations.json", None, ["not-an-object"]),
+        )
+        for filename, key, replacement in cases:
+            def corrupted_read(path, *, optional=False):
+                source = read_json(path, optional=optional)
+                if path.name != filename:
+                    return source
+                if key is None:
+                    return replacement
+                source = copy.deepcopy(source)
+                source[key] = replacement
+                return source
+
+            with self.subTest(filename=filename, key=key, replacement=replacement):
+                with patch("ai_research_packets.read_json", side_effect=corrupted_read):
+                    with self.assertRaisesRegex(ValueError, "Malformed|Unrecognized"):
+                        build_all()
 
     def test_no_private_or_api_credentials_in_packet_contract(self):
         for p in self.packets.values():
