@@ -77,7 +77,12 @@ def retained_article(item, companies, providers):
             or item.get("originalTitle") != title or not relevant(title, company)):
         return None
     url = item.get("sourceUrl")
-    if not isinstance(url, str) or len(url) > 2048 or safe_link(url) != url:
+    if not isinstance(url, str) or len(url) > 2048:
+        return None
+    try:
+        if safe_link(url) != url:
+            return None
+    except ValueError:
         return None
     kind = "google-news-redirect" if provider == "google-news" else "publisher"
     if item.get("linkKind") != kind:
