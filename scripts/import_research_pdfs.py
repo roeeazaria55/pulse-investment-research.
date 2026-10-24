@@ -16,14 +16,30 @@ TARGET = ROOT / "public" / "research"
 PAGES_TARGET = ROOT / "public" / "research-pages"
 
 
+def reject_symlink_path(path: Path) -> None:
+    """Reject link-based escapes before reading or writing an import destination.
+
+    The import is a single-user manual operation, not a concurrent filesystem
+    security boundary. Exclusive file creation separately prevents overwrites.
+    """
+    if any(part.is_symlink() for part in (path, *path.parents)):
+        raise ValueError("Symbolic link in research import destination: " + str(path))
+    if path.exists() and not path.is_file() and path not in (TARGET, PAGES_TARGET):
+        raise ValueError("Non-file research import destination: " + str(path))
+
+
 def install(bundle: str, dry_run: bool = True) -> list[str]:
     validate_bundle(bundle)
+    # Check both output roots up front, even when the archive is a dry run.
+    reject_symlink_path(TARGET)
+    reject_symlink_path(PAGES_TARGET)
     with zipfile.ZipFile(bundle) as z:
         manifest = json.loads(z.read("manifest.json"))
         tasks = []
         for entry in manifest["research"]:
             source = z.read("originals/" + entry["filename"])
             destination = TARGET / entry["filename"]
+            reject_symlink_path(destination)
             if destination.exists():
                 prior = destination.read_bytes()
                 if hashlib.sha256(prior).hexdigest() != entry["sha256"]:
@@ -38,6 +54,7 @@ def install(bundle: str, dry_run: bool = True) -> list[str]:
             if len(pages) != entry["pages"]:
                 raise ValueError("Extracted page count mismatch")
             target = PAGES_TARGET / (entry["ticker"].replace(" ", "_") + ".pages.json")
+            reject_symlink_path(target)
             if target.exists() and target.read_bytes() != text:
                 raise ValueError("Conflicting page text: " + target.name)
             if not target.exists():
@@ -46,12 +63,15 @@ def install(bundle: str, dry_run: bool = True) -> list[str]:
             TARGET.mkdir(parents=True, exist_ok=True)
             PAGES_TARGET.mkdir(parents=True, exist_ok=True)
             for path, source in tasks:
-                path.write_bytes(source)
+                # "xb" refuses a file or symlink created after the preflight.
+                with path.open("xb") as output:
+                    output.write(source)
                 if hashlib.sha256(path.read_bytes()).hexdigest() != hashlib.sha256(source).hexdigest():
                     raise RuntimeError("Post-write checksum mismatch: " + path.name)
         if not dry_run:
             for path, text in page_tasks:
-                path.write_bytes(text)
+                with path.open("xb") as output:
+                    output.write(text)
         return [path.name for path, _ in tasks] + [path.name for path, _ in page_tasks]
 
 
