@@ -277,12 +277,28 @@ def research_for(company, sources):
     if not path.exists():
         return None
     raw = read_json(path)
+    if not isinstance(raw, dict):
+        raise ValueError("Malformed analyst research document")
     record = raw.get("analysis", raw)
+    if not isinstance(record, dict):
+        raise ValueError("Malformed analyst research record")
     if record.get("companyId") != company["id"]:
         raise ValueError("Cross-company research mismatch")
-    fields = record.get("fields") or {}
-    if not isinstance(fields, dict):
-        raise ValueError("Malformed analyst research")
+    # A missing, falsey or wrong-shaped collection must not silently erase
+    # analyst caveats or source narratives from an AI input packet.
+    fields = record.get("fields")
+    if not isinstance(fields, dict) or not any(key in fields for key in FIELDS):
+        raise ValueError("Malformed analyst research sections")
+    missing = record.get("missing", [])
+    if (not isinstance(missing, list) or len(missing) > 30
+            or any(not text(item, 1200) for item in missing)):
+        raise ValueError("Malformed analyst research limitations")
+    as_of = record.get("asOf")
+    if as_of is not None and not safe_period(as_of):
+        raise ValueError("Malformed analyst research date claim")
+    scope = raw.get("scope")
+    if scope is not None and not text(scope, 500):
+        raise ValueError("Malformed analyst research scope")
     excerpts = {}
     for key in FIELDS:
         if key in fields:
@@ -292,9 +308,9 @@ def research_for(company, sources):
                              "classification": "unverified-analyst-narrative",
                              "untrustedInstructions": True}
     sources.append(source_ref(path))
-    return {"researchAsOfClaim": record.get("asOf"), "reviewStatus": "analyst-research-unverified",
-            "sections": excerpts, "sourceFile": sources[-1], "scope": raw.get("scope"),
-            "limitations": list(record.get("missing") or [])[:30]}
+    return {"researchAsOfClaim": as_of, "reviewStatus": "analyst-research-unverified",
+            "sections": excerpts, "sourceFile": sources[-1], "scope": scope,
+            "limitations": list(missing)}
 
 def active_model_for(company, sources):
     path = ROOT / "src/data/models" / (company["ticker"].lower() + ".json")
