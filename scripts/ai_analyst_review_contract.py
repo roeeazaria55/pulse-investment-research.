@@ -57,6 +57,46 @@ def _validate_input_packet(packet):
     return digest
 
 
+def _evidence_candidates(packet):
+    """Index unique, typed evidence IDs; never let one source shadow another."""
+    candidates = {}
+
+    def add(evidence_id, kind):
+        if (not isinstance(evidence_id, str) or not evidence_id.strip()
+            or len(evidence_id) > 256):
+            raise ValueError("Invalid evidence identifier")
+        if evidence_id in candidates:
+            raise ValueError("Ambiguous duplicate evidence identifier")
+        candidates[evidence_id] = kind
+
+    for row in packet["financialObservations"]:
+        add(row.get("observationId"), "financial-observation")
+    forecasts = packet.get("archivedForecasts")
+    if not isinstance(forecasts, list):
+        raise ValueError("Malformed archived forecast evidence")
+    for row in forecasts:
+        if not isinstance(row, dict):
+            raise ValueError("Malformed archived forecast evidence")
+        add(row.get("id"), "archived-forecast")
+    research = packet.get("research")
+    if research is not None:
+        if not isinstance(research, dict) or not isinstance(research.get("sections"), dict):
+            raise ValueError("Malformed research evidence")
+        for name in research["sections"]:
+            if not isinstance(name, str) or not name.strip():
+                raise ValueError("Invalid research section identifier")
+            add("research-section:" + name, "research-section")
+    model = packet.get("valuationModel")
+    if model is not None:
+        if not isinstance(model, dict) or not isinstance(model.get("assumptions"), list):
+            raise ValueError("Malformed valuation evidence")
+        for row in model["assumptions"]:
+            if not isinstance(row, dict) or not isinstance(row.get("id"), str):
+                raise ValueError("Invalid valuation scenario identifier")
+            add("valuation-scenario:" + row["id"], "valuation-scenario")
+    return candidates
+
+
 def validate_ai_proposal(packet, proposed):
     verified_digest = _validate_input_packet(packet)
     if not isinstance(proposed,dict):
@@ -79,19 +119,15 @@ def validate_ai_proposal(packet, proposed):
         raise ValueError("AI provenance not attested; only deterministic-no-ai is allowed")
     if proposed["proposedValuationAction"]!="no-automatic-change":
         raise ValueError("Direct financial model edits are forbidden")
-    candidates={o["observationId"]:"financial-observation" for o in packet.get("financialObservations",[])}
-    candidates.update({f["id"]:"archived-forecast" for f in packet.get("archivedForecasts",[])})
-    for name in (packet.get("research") or {}).get("sections",{}):
-        candidates["research-section:"+name]="research-section"
-    for item in (packet.get("valuationModel") or {}).get("assumptions",[]):
-        candidates["valuation-scenario:"+str(item.get("id"))]="valuation-scenario"
+    candidates=_evidence_candidates(packet)
     refs=proposed["evidenceCitations"]
     if not isinstance(refs,list) or len(refs)>100:
         raise ValueError("Unbounded citations")
     for c in refs:
         if not isinstance(c,dict) or set(c)!={"evidenceId","kind","claim","uncertainty"}:
             raise ValueError("Missing source trace for claim")
-        if c["evidenceId"] not in candidates or candidates[c["evidenceId"]]!=c["kind"]:
+        if (not isinstance(c["evidenceId"], str) or c["evidenceId"] not in candidates
+            or candidates[c["evidenceId"]]!=c["kind"]):
             raise ValueError("Fabricated or mistyped evidence reference")
         if not _str(c["claim"]) or not _str(c["uncertainty"]):
             raise ValueError("Empty claim or uncertainty")
@@ -111,7 +147,7 @@ def validate_ai_proposal(packet, proposed):
             raise ValueError("Invalid inference text")
         if not isinstance(item["unknowns"],list) or not all(_str(v) for v in item["unknowns"]):
             raise ValueError("Missing limits")
-        if not isinstance(item["evidenceIds"],list) or not item["evidenceIds"] or not all(v in ids for v in item["evidenceIds"]):
+        if not isinstance(item["evidenceIds"],list) or not item["evidenceIds"] or not all(isinstance(v,str) and v in ids for v in item["evidenceIds"]):
             raise ValueError("Interpretation references unknown or uncited source")
     scenarios=proposed["suggestedScenarioReview"]
     if not isinstance(scenarios,list) or len(scenarios)>3:
@@ -126,7 +162,7 @@ def validate_ai_proposal(packet, proposed):
             raise ValueError("Invalid scenario probability")
         if s["status"]!="review-only" or not _str(s["reason"]):
             raise ValueError("Unjustified scenario or attempted promotion")
-        if not isinstance(s["evidenceIds"],list) or not s["evidenceIds"] or not all(v in ids for v in s["evidenceIds"]):
+        if not isinstance(s["evidenceIds"],list) or not s["evidenceIds"] or not all(isinstance(v,str) and v in ids for v in s["evidenceIds"]):
             raise ValueError("Uncited scenario rationale")
         weights.append(s["suggestedProbability"])
     if weights and abs(sum(weights)-100)>0.001:

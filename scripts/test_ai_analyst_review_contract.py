@@ -78,6 +78,66 @@ class AIAnalystProposalContractTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 validate_ai_proposal(changed,self.proposal())
 
+    def test_duplicate_evidence_identity_cannot_shadow_another_source(self):
+        import hashlib
+        import json
+
+        def rehash(packet, proposal):
+            unsigned={k:v for k,v in packet.items() if k!="contentSha256"}
+            packet["contentSha256"]=hashlib.sha256(json.dumps(
+                unsigned,sort_keys=True,ensure_ascii=False,
+                separators=(",",":"),allow_nan=False).encode("utf-8")).hexdigest()
+            proposal["packetContentSha256"]=packet["contentSha256"]
+
+        for collision in ("duplicate-observation", "forecast-shadow"):
+            packet=copy.deepcopy(self.packet)
+            proposal=self.proposal()
+            if collision=="duplicate-observation":
+                packet["financialObservations"].append(copy.deepcopy(packet["financialObservations"][0]))
+            else:
+                packet["archivedForecasts"].append(
+                    {"id":packet["financialObservations"][0]["observationId"]})
+            rehash(packet,proposal)
+            with self.subTest(collision=collision):
+                with self.assertRaisesRegex(ValueError,"Ambiguous duplicate evidence identifier"):
+                    validate_ai_proposal(packet,proposal)
+
+    def test_malformed_evidence_collections_fail_closed(self):
+        import hashlib
+        import json
+        for key,value in (("archivedForecasts","not-a-list"),
+                          ("research",{"sections":["thesis"]}),
+                          ("valuationModel",{"assumptions":"not-a-list"})):
+            packet=copy.deepcopy(self.packet)
+            packet[key]=value
+            unsigned={k:v for k,v in packet.items() if k!="contentSha256"}
+            packet["contentSha256"]=hashlib.sha256(json.dumps(
+                unsigned,sort_keys=True,ensure_ascii=False,
+                separators=(",",":"),allow_nan=False).encode("utf-8")).hexdigest()
+            proposal=self.proposal()
+            proposal["packetContentSha256"]=packet["contentSha256"]
+            with self.subTest(key=key):
+                with self.assertRaisesRegex(ValueError,"Malformed"):
+                    validate_ai_proposal(packet,proposal)
+
+    def test_unhashable_citation_ids_are_rejected_as_validation_errors(self):
+        for field in ("citation", "interpretation", "scenario"):
+            proposal=self.proposal()
+            if field=="citation":
+                proposal["evidenceCitations"][0]["evidenceId"]=["fake"]
+            elif field=="interpretation":
+                proposal["interpretations"][0]["evidenceIds"]=[["fake"]]
+            else:
+                ids=[proposal["evidenceCitations"][0]["evidenceId"]]
+                proposal["suggestedScenarioReview"]=[
+                    {"id":name,"suggestedProbability":weight,
+                     "reason":"Review only", "evidenceIds":[["fake"]],
+                     "status":"review-only"}
+                    for name,weight in (("bear",20),("base",50),("bull",30))]
+            with self.subTest(field=field):
+                with self.assertRaises(ValueError):
+                    validate_ai_proposal(self.packet,proposal)
+
     def test_untrusted_model_cannot_self_approve(self):
         base=self.proposal()
         for name,value in [("status","approved"),("proposedValuationAction","update-price-target"),
