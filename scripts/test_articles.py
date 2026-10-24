@@ -70,6 +70,7 @@ class ArticleTests(unittest.TestCase):
             ('sourceId','sec-submissions:candidate-nebius'),
             ('discoveryProvider','sec-submissions'),
             ('sourceUrl','javascript:alert(1)'),
+            ('sourceUrl','https://[invalid-ipv6/'),
             ('headline','Unrelated stock upgrade'),
             ('publishedAt','2026-10-18T10:00:00-forged'),
             ('collectedAt','2026-10-18T12:00:00'),
