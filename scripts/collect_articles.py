@@ -66,8 +66,11 @@ def retained_article(item, companies, providers):
     """
     if not isinstance(item, dict):
         return None
-    company = companies.get(item.get("securityId"))
+    security_id = item.get("securityId")
     provider = item.get("discoveryProvider")
+    if not isinstance(security_id, str) or not isinstance(provider, str):
+        return None
+    company = companies.get(security_id)
     if not company or provider not in providers or provider not in ("google-news", "gdelt"):
         return None
     if item.get("sourceId") != provider + ":" + company["id"]:
@@ -118,7 +121,11 @@ def collect(registry, previous, now, getter=fetch, pause=time.sleep):
     providers = {p["id"] for p in registry["providers"]}
     prior_items = [clean for item in previous.get("articles", [])
                    if (clean := retained_article(item, companies, providers)) is not None]
-    seen = set(old.get("seenIds", [])) | {a["id"] for a in prior_items}
+    old_seen = old.get("seenIds", [])
+    if not isinstance(old_seen, list) or len(old_seen) > 100000:
+        raise ValueError("Invalid discovery history; manual review required")
+    seen = {v for v in old_seen if isinstance(v, str) and re.fullmatch(r"article:[0-9a-f]{32}", v)}
+    seen.update(a["id"] for a in prior_items)
     if len(seen) > 100000:
         raise ValueError("Discovery state exceeds limit; manual compaction required")
     by_id = {a["id"]: a for a in prior_items}
