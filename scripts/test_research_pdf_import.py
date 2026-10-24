@@ -78,6 +78,26 @@ class ResearchPdfImportTests(unittest.TestCase):
         finally:
             package.unlink()
 
+    def test_rejects_broken_pdf_symlink_before_any_write(self):
+        package = ResearchBundleTests().make_bundle()
+        try:
+            with tempfile.TemporaryDirectory() as t:
+                root = Path(t)
+                pdf = root / "pdf"
+                pdf.mkdir()
+                outside = root / "not-created.pdf"
+                (pdf / "Source0.pdf").symlink_to(outside)
+                self.assertFalse((pdf / "Source0.pdf").exists())
+                with patch("import_research_pdfs.TARGET", pdf), patch(
+                    "import_research_pdfs.PAGES_TARGET", root / "pages"
+                ):
+                    with self.assertRaisesRegex(ValueError, "Symbolic link"):
+                        install(str(package), dry_run=False)
+                self.assertFalse(outside.exists())
+                self.assertFalse((root / "pages").exists())
+        finally:
+            package.unlink()
+
     def test_rejects_symlinked_page_text_before_any_pdf_write(self):
         package = ResearchBundleTests().make_bundle()
         try:
