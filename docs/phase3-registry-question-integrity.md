@@ -23,8 +23,8 @@ disclosures or trusted instructions.
 
 - Require an explicit list of 1–20 questions, each a nonblank string of at
   most 1,000 characters.
-- Reject duplicate questions and control characters instead of filtering or
-  truncating them.
+- Reject duplicate questions, control characters and backslash escape-like
+  sequences instead of filtering or truncating them.
 - Preserve valid questions verbatim for DLO, NBIS, IREN and SMCI.
 - Label the collection in `trustPolicy.registryQuestions` as
   `untrusted-research-topics-not-model-instructions`.
