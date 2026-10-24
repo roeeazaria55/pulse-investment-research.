@@ -321,17 +321,47 @@ def active_model_for(company, sources):
             "noAutomaticUpdate": True}
 
 def pdf_reference(company, supplied):
-    row = next((r for r in supplied if isinstance(r, dict) and r.get("companyId")==company["id"]), None)
-    if not row:
+    """Bind an unverified PDF pointer to one issuer and its declared file digest.
+
+    Missing PDFs remain unavailable; malformed identities, unsafe paths and
+    content changes are errors rather than silently missing evidence.
+    """
+    matches = [row for row in supplied
+               if row.get("companyId") == company["id"]
+               or row.get("ticker") == company["ticker"]]
+    if not matches:
         return None
-    filename=row.get("filename")
-    if not isinstance(filename,str) or "/" in filename or "\\" in filename or not filename.lower().endswith(".pdf"):
-        return None
-    path=ROOT/"public/research"/filename
-    return {"filename":filename,"sourceFile":source_ref(path) if path.exists() else None,
-            "availability":"repository" if path.exists() else "unavailable",
-            "reviewStatus":"unverified-supplied-analyst-research",
-            "note":"Document pointer only; no unverified PDF figures parsed into facts."}
+    if len(matches) != 1:
+        raise ValueError("Duplicate supplied PDF issuer identity")
+    row = matches[0]
+    if (row.get("companyId") != company["id"]
+            or row.get("ticker") != company["ticker"]):
+        raise ValueError("Cross-issuer supplied PDF identity")
+    filename, declared_sha = row.get("filename"), row.get("sha256")
+    if (not isinstance(filename, str)
+            or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,180}\.pdf",
+                                filename, flags=re.IGNORECASE)
+            or ".." in filename
+            or not isinstance(declared_sha, str)
+            or not SHA.fullmatch(declared_sha)):
+        raise ValueError("Malformed supplied PDF filename or digest")
+
+    research_dir = ROOT / "public/research"
+    path = research_dir / filename
+    if ((ROOT / "public").is_symlink()
+            or research_dir.is_symlink() or path.is_symlink()):
+        raise ValueError("Symlink in supplied PDF path")
+    reference = None
+    if path.exists():
+        if not path.is_file() or path.resolve().parent != research_dir.resolve():
+            raise ValueError("Unsafe supplied PDF file")
+        reference = source_ref(path)
+        if reference["sha256"] != declared_sha:
+            raise ValueError("Supplied PDF content digest mismatch")
+    return {"filename": filename, "sourceFile": reference,
+            "availability": "repository" if reference is not None else "unavailable",
+            "reviewStatus": "unverified-supplied-analyst-research",
+            "note": "Document pointer only; no unverified PDF figures parsed into facts."}
 
 def build_packet(company, files):
     registry, observations, archive, comparisons, supplied = files
