@@ -165,24 +165,54 @@ def financial_observations(company, observations, source_ref_name):
     return sorted(result, key=lambda x: x["observationId"])
 
 def forecast_history(company, archive):
+    """Preserve every matching forecast or reject the source; never hide bad rows.
+
+    Archive timestamps and commit hashes are *syntax checked*, not authenticated.
+    No archived forecast becomes an approved historical backtest or issuer fact.
+    """
     rows = []
+    seen = set()
     for f in archive:
-        if not isinstance(f, dict) or f.get("companyId") != company["id"]:
+        if not isinstance(f, dict):
+            raise ValueError("Malformed archived forecast record")
+        if f.get("companyId") != company["id"]:
+            if f.get("ticker") == company["ticker"]:
+                raise ValueError("Archived forecast issuer identity mismatch")
             continue
         point = f.get("point")
-        if not isinstance(point, dict) or not numeric(point.get("value")):
-            continue
+        required = ("id", "metricId", "ticker", "firstRecordedAt",
+                    "firstRecordedCommit", "researchAsOf", "chronologyStatus")
+        if (f.get("ticker") != company["ticker"]
+            or any(not text(f.get(key), 900) for key in required)
+            or not re.fullmatch(r"forecast:[0-9a-f]{32}", f["id"])
+            or not re.fullmatch(r"[0-9a-f]{40}", f["firstRecordedCommit"])
+            or not safe_period(f["researchAsOf"])
+            or not isinstance(point, dict)
+            or not numeric(point.get("value"))
+            or any(not text(point.get(key), 900) for key in ("unit", "basis", "period"))
+            or f.get("canBeUsedForHistoricalBacktest") is not False):
+            raise ValueError("Invalid archived forecast evidence for " + company["ticker"])
+        try:
+            recorded_at = dt.datetime.fromisoformat(
+                f["firstRecordedAt"].replace("Z", "+00:00"))
+        except ValueError as exc:
+            raise ValueError("Invalid archived forecast firstRecordedAt") from exc
+        if recorded_at.tzinfo is None or recorded_at.utcoffset() is None:
+            raise ValueError("Archived forecast timestamp must have timezone")
+        if f["id"] in seen:
+            raise ValueError("Duplicate archived forecast identifier")
+        seen.add(f["id"])
         rows.append({
-            "id": f.get("id"), "metricId": f.get("metricId"),
-            "point": {k:point[k] for k in ("value","unit","basis","period") if k in point},
-            "firstRecordedAt": f.get("firstRecordedAt"),
-            "firstRecordedCommit": f.get("firstRecordedCommit"),
-            "claimedResearchDate": f.get("researchAsOf"),
-            "chronologyStatus": f.get("chronologyStatus"),
+            "id": f["id"], "metricId": f["metricId"],
+            "point": {key: point[key] for key in ("value", "unit", "basis", "period")},
+            "firstRecordedAt": f["firstRecordedAt"],
+            "firstRecordedCommit": f["firstRecordedCommit"],
+            "claimedResearchDate": f["researchAsOf"],
+            "chronologyStatus": "research-asof-unverified",
             "historicalBacktestVerified": False,
             "role": "archived-analyst-forecast",
         })
-    return sorted(rows, key=lambda x: x["id"] or "")
+    return sorted(rows, key=lambda x: x["id"])
 
 def research_for(company, sources):
     ticker = company["ticker"].lower()
