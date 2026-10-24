@@ -27,11 +27,32 @@ def validate_bundle(bundle):
         if manifest.get("version") != 1 or not isinstance(manifest.get("research"), list):
             raise ValueError("Unexpected manifest")
         seen = set()
+        page_destinations = set()
+        pdf_destinations = set()
+        text_sources = set()
         for entry in manifest["research"]:
             cid, filename, digest = entry["companyId"], entry["filename"], entry["sha256"]
-            if cid in seen or not HEX64.fullmatch(digest) or not re.fullmatch(r"[A-Za-z0-9_.-]+\.pdf", filename):
+            ticker = entry.get("ticker")
+            # The importer derives a public filename from ticker. Reject path separators,
+            # traversal, whitespace ambiguity and collisions *before* any writes.
+            if (not isinstance(ticker, str)
+                    or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9 _.-]{0,63}", ticker)
+                    or ticker != ticker.strip()):
+                raise ValueError("Unsafe ticker for extracted page destination")
+            page_destination = (ticker.replace(" ", "_") + ".pages.json").casefold()
+            if page_destination in page_destinations:
+                raise ValueError("Duplicate extracted page destination")
+            if (not isinstance(cid, str) or not cid or cid in seen
+                    or not isinstance(digest, str) or not HEX64.fullmatch(digest)
+                    or not isinstance(filename, str)
+                    or not re.fullmatch(r"[A-Za-z0-9_.-]+\\.pdf", filename)):
                 raise ValueError("Invalid source metadata")
+            pdf_destination = filename.casefold()
+            if pdf_destination in pdf_destinations:
+                raise ValueError("Duplicate PDF destination")
             seen.add(cid)
+            page_destinations.add(page_destination)
+            pdf_destinations.add(pdf_destination)
             pdf_path = "originals/" + filename
             if pdf_path not in info:
                 raise ValueError("Missing original PDF")
@@ -39,8 +60,14 @@ def validate_bundle(bundle):
             if not pdf.startswith(b"%PDF") or hashlib.sha256(pdf).hexdigest() != digest or len(pdf) != entry["bytes"]:
                 raise ValueError("PDF integrity check failed")
             extracted_path = entry["extractedTextFilename"]
-            if extracted_path not in info or not extracted_path.startswith("extracted/") or not extracted_path.endswith(".pages.json"):
+            if (not isinstance(extracted_path, str)
+                    or extracted_path not in info
+                    or not extracted_path.startswith("extracted/")
+                    or not extracted_path.endswith(".pages.json")):
                 raise ValueError("Missing extracted text")
+            if extracted_path.casefold() in text_sources:
+                raise ValueError("Duplicate extracted text source")
+            text_sources.add(extracted_path.casefold())
             extracted = json.loads(archive.read(extracted_path))
             pages = extracted["pages"]
             if len(pages) != entry["pages"] or any(p["page"] != i + 1 or not p["text"].strip() for i, p in enumerate(pages)):
