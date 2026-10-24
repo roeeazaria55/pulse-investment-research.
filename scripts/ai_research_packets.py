@@ -113,6 +113,7 @@ def research_questions(company):
     seen = set()
     for question in questions:
         if (not text(question, 1000) or not question.strip()
+                or "\\" in question
                 or any(ord(ch) < 32 or ord(ch) == 127 for ch in question)
                 or question in seen):
             raise ValueError("Malformed issuer research question")
