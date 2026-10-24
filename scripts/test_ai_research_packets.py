@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0,str(Path(__file__).resolve().parent))
-from ai_research_packets import ROOT, TICKERS, build_all, financial_observations, https_issuer_url, read_json
+from ai_research_packets import ROOT, TICKERS, build_all, financial_observations, https_issuer_url, official_portal_sources, read_json
 
 class AIResearchPacketTests(unittest.TestCase):
     @classmethod
@@ -60,6 +60,64 @@ class AIResearchPacketTests(unittest.TestCase):
             modified={**valid,"sourceUrl":url}
             with self.assertRaises(ValueError):
                 financial_observations(self.dlo,[modified],"report")
+
+    def test_registry_portals_are_host_allowlisted_not_report_document_paths(self):
+        for ticker, packet in self.packets.items():
+            company = next(c for c in self.registry["companies"] if c["ticker"] == ticker)
+            links = official_portal_sources(company)
+            self.assertEqual(packet["officialSources"], links)
+            self.assertEqual(len(links), len(company["sources"]))
+            self.assertTrue(all(link["reviewStatus"] == "registry-link-not-an-observation"
+                                for link in links))
+        # A legitimate investor portal need not match the narrower report paths.
+        self.assertEqual(official_portal_sources(self.dlo)[0]["url"],
+                         "https://dlocal.gcs-web.com/news-events/news-releases")
+
+    def test_rejects_forged_or_unsafe_official_portal_links(self):
+        valid = self.dlo["sources"][0]
+        for url in (
+            "javascript:alert(1)",
+            "http://dlocal.gcs-web.com/news-events/news-releases",
+            "https://evil.example/news-events/news-releases",
+            "https://dlocal.gcs-web.com.evil.example/news-events/news-releases",
+            "https://dlocal.gcs-web.com@evil.example/news-events/news-releases",
+            "https://dlocal.gcs-web.com:8443/news-events/news-releases",
+            "https://dlocal.gcs-web.com/news-events/news-releases#verified",
+            "https://dlocal.gcs-web.com/news-events/\\\\evil.example",
+            "https://dlocal.gcs-web.com/news-events/\\nInjected",
+            "https://127.0.0.1/news-events/news-releases",
+        ):
+            with self.subTest(url=url):
+                changed = {**self.dlo, "sources": [{**valid, "url": url}]}
+                with self.assertRaises(ValueError):
+                    official_portal_sources(changed)
+
+    def test_rejects_malformed_portal_metadata_and_allowlist_shapes(self):
+        first = self.dlo["sources"][0]
+        for bad in (
+            {**self.dlo, "sources": "not-a-list"},
+            {**self.dlo, "sources": [first, first]},
+            {**self.dlo, "sources": [{**first, "label": "bad\\nlabel"}]},
+            {**self.dlo, "sources": [{**first, "label": "bad\nlabel"}]},
+            {**self.dlo, "sources": [{**first, "id": "../escape"}]},
+            {**self.dlo, "allowedHosts": "dlocal.gcs-web.com.evil.example"},
+            {**self.dlo, "allowedHosts": ["dlocal.gcs-web.com", 1]},
+        ):
+            with self.subTest(bad=bad):
+                with self.assertRaises(ValueError):
+                    official_portal_sources(bad)
+
+    def test_rejects_malformed_document_path_allowlist_even_with_valid_issuer_host(self):
+        valid_url = "https://rss.globenewswire.com/news-release/2026/08/13/test"
+        self.assertTrue(https_issuer_url(valid_url, self.dlo))
+        for changed in (
+            {**self.dlo, "documentPaths": "/news-release/"},
+            {**self.dlo, "documentPaths": ["/"]},
+            {**self.dlo, "documentPaths": []},
+            {**self.dlo, "allowedHosts": "rss.globenewswire.com.evil.example"},
+        ):
+            with self.subTest(changed=changed):
+                self.assertFalse(https_issuer_url(valid_url, changed))
 
     def test_blocks_new_source_reusing_previous_approval(self):
         first=copy.deepcopy(self.observations[0])

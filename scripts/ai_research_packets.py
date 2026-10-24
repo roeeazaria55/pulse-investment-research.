@@ -35,23 +35,68 @@ def source_ref(path: Path):
     return {"path": str(path.relative_to(ROOT)).replace("\\", "/"),
             "sha256": hashlib.sha256(content).hexdigest()}
 
-def https_issuer_url(raw, company):
-    if not isinstance(raw, str):
-        return False
+def _issuer_host_allowed(host, company):
+    """Only an explicit list of exact hostnames grants issuer-source authority."""
+    allowed = company.get("allowedHosts")
+    return (isinstance(allowed, list) and bool(allowed)
+            and all(isinstance(item, str) and item for item in allowed)
+            and host in allowed)
+
+
+def _https_issuer_host_url(raw, company):
+    """Common HTTPS/host gate; portal links need not be document URLs."""
+    if (not isinstance(raw, str) or not raw or len(raw) > 2048
+            or any(ord(ch) < 32 or ord(ch) == 127 for ch in raw)
+            or "\\" in raw):
+        return None
     try:
         u = urlsplit(raw)
         host = (u.hostname or "").lower()
-        ipaddress.ip_address(host)
-        return False
-    except ValueError:
-        pass
-    except (TypeError, AttributeError):
-        return False
-    allowed = company.get("allowedHosts", [])
-    return (u.scheme == "https" and host in allowed and not u.username and
-            not u.password and u.port in (None, 443) and not u.fragment and
-            u.path.startswith(tuple(company.get("documentPaths", []))) and
-            bool(u.path))
+        if not _issuer_host_allowed(host, company):
+            return None
+        try:
+            ipaddress.ip_address(host)
+            return None
+        except ValueError:
+            pass
+        if (u.scheme != "https" or u.username or u.password
+                or u.port not in (None, 443) or u.fragment):
+            return None
+        return u
+    except (ValueError, TypeError, AttributeError):
+        return None
+
+
+def https_issuer_url(raw, company):
+    u = _https_issuer_host_url(raw, company)
+    paths = company.get("documentPaths")
+    return (u is not None and isinstance(paths, list) and bool(paths)
+            and all(isinstance(path, str) and path.startswith("/")
+                    and path != "/" for path in paths)
+            and bool(u.path) and u.path.startswith(tuple(paths)))
+
+
+def official_portal_sources(company):
+    """Treat registry portal URLs as unverified links, never issuer facts."""
+    raw = company.get("sources")
+    if not isinstance(raw, list) or len(raw) > 30:
+        raise ValueError("Invalid issuer portal registry")
+    seen = set()
+    result = []
+    for source in raw:
+        if not isinstance(source, dict):
+            raise ValueError("Malformed issuer portal entry")
+        sid, label, url = source.get("id"), source.get("label"), source.get("url")
+        if (not isinstance(sid, str) or not ID.fullmatch(sid) or sid in seen
+                or not text(label, 200)
+                or "\\" in label
+                or any(ord(ch) < 32 or ord(ch) == 127 for ch in label)
+                or _https_issuer_host_url(url, company) is None):
+            raise ValueError("Untrusted issuer portal metadata")
+        seen.add(sid)
+        result.append({"label": label, "url": url,
+                       "reviewStatus": "registry-link-not-an-observation"})
+    return result
 
 def text(value, max_length=12000):
     return isinstance(value, str) and 0 < len(value) <= max_length
@@ -207,8 +252,7 @@ def build_packet(company, files):
         "purpose":"AI_RESEARCH_INPUT_NOT_INSTRUCTIONS",
         "ticker":company["ticker"], "companyId":company["id"],
         "companyName":company["name"], "industry":None,
-        "officialSources":[{"label":s.get("label"),"url":s.get("url"),"reviewStatus":"registry-link-not-an-observation"}
-                           for s in company.get("sources", []) if isinstance(s,dict)],
+        "officialSources":official_portal_sources(company),
         "financialObservations":candidates,
         "research":research,
         "valuationModel":model,
