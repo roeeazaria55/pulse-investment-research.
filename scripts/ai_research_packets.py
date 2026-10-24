@@ -369,12 +369,52 @@ def validated_model_scenarios(raw, company):
     return scenarios
 
 
+def validated_model_reference(raw, company):
+    """Keep historical quote pointers unverified, but reject malformed provenance.
+
+    This checks only existing metadata structure and a known historical quote
+    URL. It does not authenticate the price, fetch quotes or recalculate values.
+    """
+    analysis_date = raw.get("analysisDate")
+    horizon_date = raw.get("horizonDate")
+    if (not safe_period(analysis_date) or not safe_period(horizon_date)
+            or horizon_date <= analysis_date):
+        raise ValueError("Malformed valuation model date metadata")
+    reference = raw.get("reference")
+    if not isinstance(reference, dict) or set(reference) != {"price", "date", "url", "label"}:
+        raise ValueError("Malformed valuation model reference metadata")
+    price, date = reference["price"], reference["date"]
+    url, label = reference["url"], reference["label"]
+    if (not numeric(price) or price <= 0
+            or not safe_period(date) or date > analysis_date
+            or not text(label, 500) or not label.strip()
+            or "\\" in label
+            or any(ord(ch) < 32 or ord(ch) == 127 for ch in label)
+            or not isinstance(url, str) or not url or len(url) > 2048
+            or "\\" in url
+            or any(ord(ch) < 32 or ord(ch) == 127 for ch in url)):
+        raise ValueError("Untrusted valuation model historical reference")
+    try:
+        parsed = urlsplit(url)
+        expected_path = "/stocks/" + company["ticker"].lower() + "/history/"
+        if (parsed.scheme != "https" or parsed.hostname != "stockanalysis.com"
+                or parsed.netloc not in ("stockanalysis.com", "stockanalysis.com:443")
+                or parsed.username is not None or parsed.password is not None
+                or parsed.port not in (None, 443)
+                or parsed.path != expected_path or parsed.query or parsed.fragment):
+            raise ValueError("Untrusted valuation model reference URL")
+    except (ValueError, TypeError, AttributeError) as exc:
+        raise ValueError("Untrusted valuation model reference URL") from exc
+    return reference
+
+
 def active_model_for(company, sources):
     path = ROOT / "src/data/models" / (company["ticker"].lower() + ".json")
     if not path.exists():
         return None
     raw = read_json(path)
     scenarios = validated_model_scenarios(raw, company)
+    reference = validated_model_reference(raw, company)
     source = source_ref(path)
     sources.append(source)
     return {"sourceFile": source, "role": "existing-analyst-model-not-issuer-fact",
@@ -382,7 +422,7 @@ def active_model_for(company, sources):
             "analysisDateClaim": raw.get("analysisDate"), "horizonDate": raw.get("horizonDate"),
             "driverLabel": raw.get("driverLabel"),
             "quoteCurrency": raw.get("quoteCurrency"),
-            "referencePrice": raw.get("reference"),
+            "referencePrice": reference,
             "assumptions": [{k: s.get(k) for k in ("id","label","probability","inputs","rationale")}
                             for s in scenarios],
             "approvedTargetPrice": None,
