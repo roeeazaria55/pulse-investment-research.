@@ -332,16 +332,49 @@ def research_for(company, sources):
             "sections": excerpts, "sourceFile": sources[-1], "scope": scope,
             "limitations": list(missing)}
 
+def validated_model_scenarios(raw, company):
+    """Reject malformed model assumptions instead of exporting partial scenarios.
+
+    This is structural validation of existing analyst hypotheses, not approval
+    of the assumptions or a recalculation of targets/probabilities.
+    """
+    if (not isinstance(raw, dict) or raw.get("version") != 1
+            or raw.get("companyId") != company["id"]
+            or raw.get("ticker") != company["ticker"]):
+        raise ValueError("Malformed or cross-issuer valuation model identity")
+    scenarios = raw.get("scenarios")
+    if not isinstance(scenarios, list) or len(scenarios) != 3:
+        raise ValueError("Malformed valuation scenarios")
+    seen = set()
+    total = 0
+    for scenario in scenarios:
+        if not isinstance(scenario, dict):
+            raise ValueError("Malformed valuation scenario")
+        sid = scenario.get("id")
+        probability = scenario.get("probability")
+        inputs = scenario.get("inputs")
+        if (sid not in ("bear", "base", "bull") or sid in seen
+                or not text(scenario.get("label"), 200)
+                or not text(scenario.get("rationale"), 5000)
+                or not numeric(probability) or not 0 <= probability <= 100
+                or not isinstance(inputs, dict) or not inputs
+                or any(not text(key, 80) or not numeric(value)
+                       for key, value in inputs.items())):
+            raise ValueError("Malformed valuation scenario assumptions")
+        seen.add(sid)
+        total += probability
+    if seen != {"bear", "base", "bull"} or not math.isclose(
+            total, 100, rel_tol=0, abs_tol=1e-7):
+        raise ValueError("Incomplete or inconsistent valuation scenario probabilities")
+    return scenarios
+
+
 def active_model_for(company, sources):
     path = ROOT / "src/data/models" / (company["ticker"].lower() + ".json")
     if not path.exists():
         return None
     raw = read_json(path)
-    if raw.get("companyId") != company["id"]:
-        raise ValueError("Cross-company valuation mismatch")
-    scenarios = raw.get("scenarios", [])
-    if not isinstance(scenarios, list) or not all(isinstance(s, dict) for s in scenarios):
-        raise ValueError("Malformed valuation scenarios")
+    scenarios = validated_model_scenarios(raw, company)
     source = source_ref(path)
     sources.append(source)
     return {"sourceFile": source, "role": "existing-analyst-model-not-issuer-fact",
