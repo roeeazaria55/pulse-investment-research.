@@ -112,6 +112,20 @@ def safe_period(value):
 def numeric(value):
     return isinstance(value, (float, int)) and not isinstance(value, bool) and math.isfinite(value)
 
+def required_object_rows(source, key, description):
+    """Fail closed when a required evidence collection has been corrupted.
+
+    A missing list or a string/dict substituted for it must not silently
+    become an empty packet that claims no evidence was available.
+    """
+    if not isinstance(source, dict):
+        raise ValueError("Malformed " + description)
+    rows = source.get(key)
+    if not isinstance(rows, list) or any(not isinstance(row, dict) for row in rows):
+        raise ValueError("Malformed " + description)
+    return rows
+
+
 def financial_observations(company, observations, source_ref_name):
     result = []
     seen = set()
@@ -288,11 +302,16 @@ def build_all(root=ROOT):
     archive=read_json(root/"public/data/forecast-archive.json")
     comparisons=read_json(root/"public/data/forecast-actual-comparisons.json")
     supplied=read_json(root/"src/data/suppliedResearch.json")
+    if not all(isinstance(source, dict) for source in (registry, observations, archive, comparisons)):
+        raise ValueError("Malformed packet source document")
     if registry.get("version")!=1 or observations.get("version")!=1 or archive.get("version")!=1:
         raise ValueError("Source schema mismatch")
-    if not isinstance(supplied,list) or not isinstance(comparisons.get("results"),list):
+    if not isinstance(supplied, list) or any(not isinstance(row, dict) for row in supplied):
         raise ValueError("Unrecognized comparison/research sources")
-    companies=registry.get("companies",[])
+    companies=required_object_rows(registry, "companies", "issuer registry companies")
+    required_object_rows(observations, "observations", "financial observations")
+    required_object_rows(archive, "forecasts", "forecast archive")
+    required_object_rows(comparisons, "results", "forecast comparisons")
     packets={}
     for ticker in TICKERS:
         matching=[c for c in companies if c.get("ticker")==ticker]
