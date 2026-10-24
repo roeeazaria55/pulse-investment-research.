@@ -89,6 +89,7 @@ def official_portal_sources(company):
         sid, label, url = source.get("id"), source.get("label"), source.get("url")
         if (not isinstance(sid, str) or not ID.fullmatch(sid) or sid in seen
                 or not text(label, 200)
+                or "\\" in label
                 or any(ord(ch) < 32 or ord(ch) == 127 for ch in label)
                 or _https_issuer_host_url(url, company) is None):
             raise ValueError("Untrusted issuer portal metadata")
