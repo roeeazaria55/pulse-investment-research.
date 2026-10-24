@@ -271,6 +271,16 @@ class AIResearchPacketTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "comparison"):
                 build_all()
 
+        def incompatible_version(path, *, optional=False):
+            source = read_json(path, optional=optional)
+            if path.name == "forecast-actual-comparisons.json":
+                return {**source, "version": 999}
+            return source
+
+        with patch("ai_research_packets.read_json", side_effect=incompatible_version):
+            with self.assertRaisesRegex(ValueError, "schema mismatch"):
+                build_all()
+
     def test_no_private_or_api_credentials_in_packet_contract(self):
         for p in self.packets.values():
             self.assertNotIn("holdings",p)
