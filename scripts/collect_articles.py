@@ -56,9 +56,63 @@ def article(item, company, provider, now):
             "importance": importance, "classification": classification, "summary": "",
             "summaryKind": "metadata-only", "demo": False, "documentId": digest}
 
+def retained_article(item, companies, providers):
+    """Rebuild persisted headline records as unverified discovery metadata.
+
+    pulse-data is a writable collection snapshot, not an authority for
+    verifiedOfficial, ratings, SEC identities, summaries or new fields.
+    Reject mismatched identities instead of carrying them into enrichment.
+    This is structural validation, NOT authentication of a publisher.
+    """
+    if not isinstance(item, dict):
+        return None
+    company = companies.get(item.get("securityId"))
+    provider = item.get("discoveryProvider")
+    if not company or provider not in providers or provider not in ("google-news", "gdelt"):
+        return None
+    if item.get("sourceId") != provider + ":" + company["id"]:
+        return None
+    title = item.get("headline")
+    if (not isinstance(title, str) or not title.strip() or len(title) > 1000
+            or item.get("originalTitle") != title or not relevant(title, company)):
+        return None
+    url = item.get("sourceUrl")
+    if not isinstance(url, str) or len(url) > 2048 or safe_link(url) != url:
+        return None
+    kind = "google-news-redirect" if provider == "google-news" else "publisher"
+    if item.get("linkKind") != kind:
+        return None
+    publisher = item.get("publisher")
+    if publisher is not None and (not isinstance(publisher, str) or len(publisher) > 250):
+        return None
+    discovered = item.get("discoveredAt")
+    if discovered is not None and (not isinstance(discovered, str) or len(discovered) > 80):
+        return None
+    for stamp in (item.get("collectedAt"), item.get("publishedAt")):
+        if stamp is None:
+            continue
+        if not isinstance(stamp, str):
+            return None
+        try:
+            parsed = dt.datetime.fromisoformat(stamp)
+            if parsed.tzinfo is None or parsed.utcoffset() is None:
+                return None
+        except (ValueError, TypeError, OverflowError):
+            return None
+    if not item.get("collectedAt"):
+        return None
+    rebuilt = article({"title": title, "url": url, "publisher": publisher,
+                       "linkKind": kind, "publishedAt": item.get("publishedAt"),
+                       "discoveredAt": discovered}, company, provider, item["collectedAt"])
+    return rebuilt if rebuilt["id"] == item.get("id") else None
+
+
 def collect(registry, previous, now, getter=fetch, pause=time.sleep):
     old = previous.get("discovery", {})
-    prior_items = previous.get("articles", [])
+    companies = {c["id"]: c for c in registry["companies"]}
+    providers = {p["id"] for p in registry["providers"]}
+    prior_items = [clean for item in previous.get("articles", [])
+                   if (clean := retained_article(item, companies, providers)) is not None]
     seen = set(old.get("seenIds", [])) | {a["id"] for a in prior_items}
     if len(seen) > 100000:
         raise ValueError("Discovery state exceeds limit; manual compaction required")
