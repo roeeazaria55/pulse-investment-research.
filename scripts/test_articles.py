@@ -67,6 +67,8 @@ class ArticleTests(unittest.TestCase):
         def blocked(_):raise ValueError('offline')
         for field,value in (
             ('id','article:'+'0'*32),
+            ('securityId',['candidate-nebius']),
+            ('discoveryProvider',['google-news']),
             ('sourceId','sec-submissions:candidate-nebius'),
             ('discoveryProvider','sec-submissions'),
             ('sourceUrl','javascript:alert(1)'),
@@ -80,6 +82,15 @@ class ArticleTests(unittest.TestCase):
             with self.subTest(field=field):
                 result=self.run_collect(poisoned,blocked)
                 self.assertEqual(result['articles'],[])
+
+    def test_malformed_persisted_seen_ids_do_not_crash_collection(self):
+        prior=self.run_collect()
+        poisoned=copy.deepcopy(prior)
+        poisoned['discovery']['seenIds']=[{'unhashable':'object'}, None, 4, prior['articles'][0]['id']]
+        def blocked(_):raise ValueError('offline')
+        result=self.run_collect(poisoned,blocked)
+        self.assertEqual(result['articles'],prior['articles'])
+        self.assertEqual(result['discovery']['seenIds'],[prior['articles'][0]['id']])
 
     def test_rejects_extra_persisted_article_with_valid_looking_id(self):
         prior=self.run_collect()
