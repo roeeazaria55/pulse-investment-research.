@@ -408,6 +408,32 @@ def validated_model_reference(raw, company):
     return reference
 
 
+
+def validated_model_metadata(raw):
+    """Fail closed on malformed model labels, methods and currency metadata.
+
+    These are unverified analyst descriptions, not instructions or approval.
+    Only the currently supported model methods are recognized; introducing
+    another method requires an explicit reviewed code change.
+    """
+    if not isinstance(raw, dict) or raw.get("method") not in ("earnings", "funded-ev"):
+        raise ValueError("Malformed valuation model method")
+    for key, limit in (("methodNote", 5000), ("driverLabel", 500)):
+        value = raw.get(key)
+        if (not text(value, limit) or not value.strip()
+                or "\\" in value
+                or any(ord(ch) < 32 or ord(ch) == 127
+                       or ch in "\u202a\u202b\u202c\u202d\u202e\u2066\u2067\u2068\u2069"
+                       for ch in value)):
+            raise ValueError("Untrusted valuation model description: " + key)
+    for key in ("quoteCurrency", "reportCurrency"):
+        value = raw.get(key)
+        if not isinstance(value, str) or re.fullmatch(r"[A-Z]{3}", value) is None:
+            raise ValueError("Malformed valuation model currency: " + key)
+    return {key: raw[key] for key in
+            ("method", "methodNote", "driverLabel", "quoteCurrency")}
+
+
 def active_model_for(company, sources):
     path = ROOT / "src/data/models" / (company["ticker"].lower() + ".json")
     if not path.exists():
@@ -415,13 +441,14 @@ def active_model_for(company, sources):
     raw = read_json(path)
     scenarios = validated_model_scenarios(raw, company)
     reference = validated_model_reference(raw, company)
+    metadata = validated_model_metadata(raw)
     source = source_ref(path)
     sources.append(source)
     return {"sourceFile": source, "role": "existing-analyst-model-not-issuer-fact",
-            "method": raw.get("method"), "methodNote": raw.get("methodNote"),
+            "method": metadata["method"], "methodNote": metadata["methodNote"],
             "analysisDateClaim": raw.get("analysisDate"), "horizonDate": raw.get("horizonDate"),
-            "driverLabel": raw.get("driverLabel"),
-            "quoteCurrency": raw.get("quoteCurrency"),
+            "driverLabel": metadata["driverLabel"],
+            "quoteCurrency": metadata["quoteCurrency"],
             "referencePrice": reference,
             "assumptions": [{k: s.get(k) for k in ("id","label","probability","inputs","rationale")}
                             for s in scenarios],
