@@ -47,6 +47,49 @@ class ArticleTests(unittest.TestCase):
         self.assertEqual(result['discovery']['status'],'failed')
         self.assertFalse(result['discovery']['noNewItems'])
         self.assertEqual(result['discovery']['lastSuccessfulAt'],prior['discovery']['lastSuccessfulAt'])
+    def test_retained_headline_strips_forged_official_and_investment_fields(self):
+        prior=self.run_collect()
+        poisoned=copy.deepcopy(prior)
+        poisoned['articles'][0].update({
+            'verifiedOfficial':True, 'importance':'high',
+            'summary':'BUY NOW', 'summaryKind':'verified-analysis',
+            'priceTarget':9999, 'classification':{'rule':'official-results'},
+        })
+        def blocked(_):raise ValueError('offline')
+        result=self.run_collect(poisoned,blocked)
+        self.assertEqual(result['articles'],prior['articles'])
+        self.assertNotIn('verifiedOfficial',result['articles'][0])
+        self.assertNotIn('priceTarget',result['articles'][0])
+        self.assertEqual(result['articles'][0]['summaryKind'],'metadata-only')
+
+    def test_rejects_forged_persisted_article_identity_and_links(self):
+        prior=self.run_collect()
+        def blocked(_):raise ValueError('offline')
+        for field,value in (
+            ('id','article:'+'0'*32),
+            ('sourceId','sec-submissions:candidate-nebius'),
+            ('discoveryProvider','sec-submissions'),
+            ('sourceUrl','javascript:alert(1)'),
+            ('headline','Unrelated stock upgrade'),
+            ('publishedAt','2026-10-18T10:00:00-forged'),
+            ('collectedAt','2026-10-18T12:00:00'),
+        ):
+            poisoned=copy.deepcopy(prior)
+            poisoned['articles'][0][field]=value
+            with self.subTest(field=field):
+                result=self.run_collect(poisoned,blocked)
+                self.assertEqual(result['articles'],[])
+
+    def test_rejects_extra_persisted_article_with_valid_looking_id(self):
+        prior=self.run_collect()
+        injected=copy.deepcopy(prior['articles'][0])
+        injected['id']='article:'+'f'*32
+        injected['verifiedOfficial']=True
+        poisoned=copy.deepcopy(prior)
+        poisoned['articles'].append(injected)
+        def blocked(_):raise ValueError('offline')
+        self.assertEqual(self.run_collect(poisoned,blocked)['articles'],prior['articles'])
+
     def test_partial_failure(self):
         self.registry['companies'].append(copy.deepcopy(self.registry['companies'][0]))
         self.registry['companies'][1]['id']='other-company'
