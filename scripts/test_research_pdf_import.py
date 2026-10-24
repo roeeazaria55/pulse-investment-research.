@@ -36,5 +36,23 @@ class ResearchPdfImportTests(unittest.TestCase):
             package.unlink()
 
 
+    def test_rejects_ticker_path_escape_before_any_import_write(self):
+        package = ResearchBundleTests().make_bundle(
+            lambda entries, blobs: entries[0].update(ticker="../escaped")
+        )
+        try:
+            with tempfile.TemporaryDirectory() as t:
+                with patch("import_research_pdfs.TARGET", Path(t) / "pdf"), patch(
+                    "import_research_pdfs.PAGES_TARGET", Path(t) / "pages"
+                ):
+                    with self.assertRaises(ValueError):
+                        install(str(package), dry_run=False)
+                self.assertFalse((Path(t) / "escaped.pages.json").exists())
+                self.assertFalse((Path(t) / "pdf").exists())
+                self.assertFalse((Path(t) / "pages").exists())
+        finally:
+            package.unlink()
+
+
 if __name__ == "__main__":
     unittest.main()
