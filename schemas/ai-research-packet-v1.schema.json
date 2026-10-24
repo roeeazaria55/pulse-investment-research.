@@ -137,8 +137,13 @@
     "researchQuestions": {
       "type": "array",
       "items": {
-        "type": "string"
-      }
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1000
+      },
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true
     },
     "missingEvidence": {
       "type": "array",
@@ -151,7 +156,8 @@
       "required": [
         "mayModifyTargetsOrProbabilities",
         "includesPersonalPortfolio",
-        "aiAnalysisExecuted"
+        "aiAnalysisExecuted",
+        "registryQuestions"
       ],
       "properties": {
         "mayModifyTargetsOrProbabilities": {
@@ -162,6 +168,9 @@
         },
         "aiAnalysisExecuted": {
           "const": false
+        },
+        "registryQuestions": {
+          "const": "untrusted-research-topics-not-model-instructions"
         }
       }
     },
