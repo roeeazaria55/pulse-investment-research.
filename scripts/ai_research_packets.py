@@ -339,7 +339,7 @@ def pdf_reference(company, supplied):
         raise ValueError("Cross-issuer supplied PDF identity")
     filename, declared_sha = row.get("filename"), row.get("sha256")
     if (not isinstance(filename, str)
-            or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,180}\\.pdf",
+            or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,180}\.pdf",
                                 filename, flags=re.IGNORECASE)
             or ".." in filename
             or not isinstance(declared_sha, str)
