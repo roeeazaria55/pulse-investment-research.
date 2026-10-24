@@ -392,7 +392,7 @@ def build_all(root=ROOT):
     supplied=read_json(root/"src/data/suppliedResearch.json")
     if not all(isinstance(source, dict) for source in (registry, observations, archive, comparisons)):
         raise ValueError("Malformed packet source document")
-    if registry.get("version")!=1 or observations.get("version")!=1 or archive.get("version")!=1:
+    if any(source.get("version") != 1 for source in (registry, observations, archive, comparisons)):
         raise ValueError("Source schema mismatch")
     if not isinstance(supplied, list) or any(not isinstance(row, dict) for row in supplied):
         raise ValueError("Unrecognized comparison/research sources")
