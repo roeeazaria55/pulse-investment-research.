@@ -35,3 +35,10 @@ Run `python3 -m unittest discover -s scripts -p 'test_*.py'`, `npm test`, `npm r
 ## Constraints
 
 No changes to user localStorage, portfolio, watchlist or personal notes. No direct copy of user files into publicly deployed assets without review that they are appropriate for a public GitHub Pages website. The uploader/reviewer must verify permission to distribute PDF bytes publicly before using `--apply`; extracted page text can remain in local staging while this is resolved.
+
+
+## Safe staging directory (Phase 2C)
+
+The staging command now requires a **new, nonexistent** output directory. It refuses to overwrite an earlier review, even if the prior directory is empty; choose a new name for each attempt (for example, `work/research-staging-2`). Within this repository, only a child of `work/` may be used; an external scratch directory is also permitted. The ZIP is fully validated before staging starts. Files are prepared in a temporary sibling directory and renamed into place only after all writes finish, so ordinary extraction or filesystem errors do not leave a partially staged result. The final rename is not a substitute for locking against concurrent hostile writers.
+
+A successful stage only means the ZIP passed structural/hash checks. It **does not** authenticate issuer facts, verify the author, establish redistribution rights, approve a valuation, or authorize `--apply`. Keep the staged directory local and review its contents before any separate import.
