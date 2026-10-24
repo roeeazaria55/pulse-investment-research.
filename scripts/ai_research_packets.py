@@ -214,6 +214,61 @@ def forecast_history(company, archive):
         })
     return sorted(rows, key=lambda x: x["id"])
 
+# A comparison is a derived, unverified claim, not approval or a backtest.
+# These are the fixed reasons emitted by forecast_actual_comparison.compare().
+BLOCKED_REASONS = frozenset((
+    "company mismatch",
+    "metric mismatch",
+    "period mismatch: no annualization or YTD substitution",
+    "unit mismatch: no unreviewed conversion",
+    "accounting-definition mismatch",
+    "forecast was not demonstrably archived before result publication",
+    "observation is not approved by a merged analyst review",
+    "Review Decision Recorded; analyst approval is not verified by an enforced repository policy",
+    "invalid numeric value",
+))
+
+
+def validate_comparison_evidence(rows, observations, forecasts):
+    """Reject forged comparison authority and orphan/duplicate evidence links.
+
+    Even a well-formed blocked result is only an unverified derived claim.
+    The source file and its hash must be carried in the research packet.
+    """
+    actual_by_id = {}
+    forecast_by_id = {}
+    for source_rows, target, name in (
+        (observations, actual_by_id, "observation"),
+        (forecasts, forecast_by_id, "forecast"),
+    ):
+        for item in source_rows:
+            identifier = item.get("id")
+            if not text(identifier, 150) or identifier in target:
+                raise ValueError("Ambiguous comparison " + name + " identity")
+            target[identifier] = item
+    seen = set()
+    for row in rows:
+        actual_id, forecast_id = row.get("observationId"), row.get("forecastId")
+        pair = (forecast_id, actual_id)
+        reasons = row.get("reasons")
+        if (not isinstance(actual_id, str) or not isinstance(forecast_id, str)
+            or actual_id not in actual_by_id or forecast_id not in forecast_by_id
+            or pair in seen
+            or row.get("status") != "blocked"
+            or row.get("difference", "missing") is not None
+            or row.get("percent", "missing") is not None
+            or not isinstance(reasons, list) or not reasons or len(reasons) > len(BLOCKED_REASONS)
+            or any(not isinstance(reason, str) or reason not in BLOCKED_REASONS
+                   for reason in reasons)
+            or len(set(reasons)) != len(reasons)):
+            raise ValueError("Invalid or overpromoted comparison evidence")
+        actual, forecast = actual_by_id[actual_id], forecast_by_id[forecast_id]
+        if (actual.get("companyId") != forecast.get("companyId")
+            or actual.get("metricId") != forecast.get("metricId")):
+            raise ValueError("Cross-issuer or cross-metric comparison identity")
+        seen.add(pair)
+
+
 def research_for(company, sources):
     ticker = company["ticker"].lower()
     path = ROOT / "src/data/research" / (ticker + ".json")
@@ -282,14 +337,16 @@ def build_packet(company, files):
     registry, observations, archive, comparisons, supplied = files
     refs = [source_ref(ROOT/"public/data/official-registry.json"),
             source_ref(ROOT/"public/data/auto-financial-observations.json"),
-            source_ref(ROOT/"public/data/forecast-archive.json")]
+            source_ref(ROOT/"public/data/forecast-archive.json"),
+            source_ref(ROOT/"public/data/forecast-actual-comparisons.json"),
+            source_ref(ROOT/"src/data/suppliedResearch.json")]
     research = research_for(company, refs)
     model = active_model_for(company, refs)
     forecasts = forecast_history(company, archive.get("forecasts", []))
     candidates = financial_observations(company, observations.get("observations", []),
                                         "public/data/auto-financial-observations.json")
-    matching = [r for r in comparisons.get("results", []) if
-                isinstance(r,dict) and r.get("observationId") in {v["observationId"] for v in candidates}]
+    candidate_ids = {v["observationId"] for v in candidates}
+    matching = [r for r in comparisons["results"] if r["observationId"] in candidate_ids]
     questions = [q for q in company.get("questions", []) if text(q,1000)][:20]
     packet = {
         "contractVersion":1,
@@ -301,9 +358,10 @@ def build_packet(company, files):
         "research":research,
         "valuationModel":model,
         "archivedForecasts":forecasts,
-        "forecastComparisons":[{"forecastId":r.get("forecastId"),"observationId":r.get("observationId"),
-                                "status":"blocked","reasons":r.get("reasons",[])}
-                               for r in matching if r.get("status")=="blocked"],
+        "forecastComparisons":[{"forecastId":r["forecastId"],"observationId":r["observationId"],
+                                "status":"blocked","reasons":r["reasons"],
+                                "verification":"unverified-derived-comparison","modelEligible":False}
+                               for r in matching],
         "legacyResearchPdf":pdf_reference(company,supplied),
         "sourceRefs":sorted(refs,key=lambda r:r["path"]),
         "researchQuestions":questions,
@@ -341,7 +399,8 @@ def build_all(root=ROOT):
     companies=required_object_rows(registry, "companies", "issuer registry companies")
     required_object_rows(observations, "observations", "financial observations")
     required_object_rows(archive, "forecasts", "forecast archive")
-    required_object_rows(comparisons, "results", "forecast comparisons")
+    comparison_rows = required_object_rows(comparisons, "results", "forecast comparisons")
+    validate_comparison_evidence(comparison_rows, observations["observations"], archive["forecasts"])
     packets={}
     for ticker in TICKERS:
         matching=[c for c in companies if c.get("ticker")==ticker]
