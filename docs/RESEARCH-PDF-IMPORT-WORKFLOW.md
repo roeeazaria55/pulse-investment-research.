@@ -35,3 +35,7 @@ Run `python3 -m unittest discover -s scripts -p 'test_*.py'`, `npm test`, `npm r
 ## Constraints
 
 No changes to user localStorage, portfolio, watchlist or personal notes. No direct copy of user files into publicly deployed assets without review that they are appropriate for a public GitHub Pages website. The uploader/reviewer must verify permission to distribute PDF bytes publicly before using `--apply`; extracted page text can remain in local staging while this is resolved.
+
+## ZIP member integrity (Phase 2C)
+
+Validation requires exactly one `manifest.json`, seven referenced `originals/*.pdf` files, and seven referenced `extracted/*.pages.json` files. Explicit empty `originals/` and `extracted/` directory entries are permitted. Unreferenced files or directories and ZIP members marked as symbolic links or other special filesystem types are rejected, even when the referenced PDF hashes match. This prevents hidden payloads or misleading filesystem metadata from passing a manual research package check; it does **not** authenticate research claims, authorship, or redistribution rights.

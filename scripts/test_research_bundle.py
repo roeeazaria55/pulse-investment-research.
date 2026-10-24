@@ -1,6 +1,7 @@
 import hashlib
 import io
 import json
+import stat
 import tempfile
 import unittest
 import zipfile
@@ -102,6 +103,53 @@ class ResearchBundleTests(unittest.TestCase):
                     validate_bundle(path)
             finally:
                 path.unlink()
+
+    def test_rejects_unreferenced_archive_payload(self):
+        path = self.make_bundle()
+        try:
+            with zipfile.ZipFile(path, "a") as archive:
+                archive.writestr("extracted/hidden.pages.json", b'{"approved":true}')
+            with self.assertRaisesRegex(ValueError, "Unexpected unreferenced"):
+                validate_bundle(path)
+        finally:
+            path.unlink()
+
+    def test_rejects_symlink_disguised_as_pdf(self):
+        path = self.make_bundle()
+        rewritten = path.with_name(path.stem + "-symlink.zip")
+        try:
+            with zipfile.ZipFile(path) as original, zipfile.ZipFile(rewritten, "w") as changed:
+                for member in original.infolist():
+                    data = original.read(member.filename)
+                    if member.filename == "originals/Source0.pdf":
+                        member.create_system = 3
+                        member.external_attr = (stat.S_IFLNK | 0o777) << 16
+                    changed.writestr(member, data)
+            with self.assertRaisesRegex(ValueError, "Unsupported archive member type"):
+                validate_bundle(rewritten)
+        finally:
+            path.unlink()
+            rewritten.unlink(missing_ok=True)
+
+    def test_allows_explicit_standard_directory_entries(self):
+        path = self.make_bundle()
+        try:
+            with zipfile.ZipFile(path, "a") as archive:
+                archive.writestr("originals/", b"")
+                archive.writestr("extracted/", b"")
+            self.assertEqual(validate_bundle(path), 7)
+        finally:
+            path.unlink()
+
+    def test_rejects_unreferenced_directory(self):
+        path = self.make_bundle()
+        try:
+            with zipfile.ZipFile(path, "a") as archive:
+                archive.writestr("hidden/", b"")
+            with self.assertRaisesRegex(ValueError, "Unexpected unreferenced"):
+                validate_bundle(path)
+        finally:
+            path.unlink()
 
 
 if __name__ == "__main__":
