@@ -25,6 +25,9 @@ export interface ModelComparison {
 export interface LatestSnapshot {
  version:1;generatedAt:string;reports:LatestReport[];aiStatus:'not-enabled';notice:string;
 }
+export interface HistoryEntry {companyId:string;ticker:string;contentId:string;firstSeenAt:string;reportPeriod:string|null;publishedDate:string|null;sourceVersion:string|null;status:string;report:LatestReport}
+export interface ResearchHistory {version:1;updatedAt:string;entries:HistoryEntry[]}
+
 const allowed:Record<string,string[]>={
  'us-dlo-nasdaq-a':['rss.globenewswire.com','www.globenewswire.com','dlocal.gcs-web.com'],
  'candidate-iren':['iren.gcs-web.com'],
@@ -109,6 +112,27 @@ export function parseLatestSnapshot(x:unknown):LatestSnapshot {
  return data;
 }
 
+export function parseResearchHistory(x:unknown):ResearchHistory {
+ if(!x||typeof x!=='object')throw Error('היסטוריית המחקר אינה זמינה');
+ const data=x as ResearchHistory;
+ if(data.version!==1||!Array.isArray(data.entries)||data.entries.length>48||!Number.isFinite(Date.parse(data.updatedAt)))throw Error('מבנה ארכיון מחקר אינו תקין');
+ const unique=new Set<string>(),count:Record<string,number>={};
+ for(const row of data.entries){
+  if(!row||!Object.prototype.hasOwnProperty.call(companyStatuses,row.companyId)||typeof row.contentId!=='string'||!/^[0-9a-f]{24}$/.test(row.contentId)||
+   !Number.isFinite(Date.parse(row.firstSeenAt))||!row.report||row.report.companyId!==row.companyId||
+   row.report.contentId!==row.contentId||row.status!==row.report.status||
+   row.report.reviewRequired!==true||row.report.aiAnalysisEnabled!==false||!Array.isArray(row.report.metrics)||!row.report.metrics.length||
+   row.report.sourceVersion!==row.sourceVersion||row.report.publishedDate!==row.publishedDate||
+   row.report.sourceUrl===null||!verifiedLink(row.report.sourceUrl,row.companyId))
+   throw Error('גרסת מחקר היסטורית אינה תקינה');
+  const key=row.companyId+':'+row.contentId;
+  if(unique.has(key))throw Error('גרסת מחקר כפולה');
+  unique.add(key);
+  count[row.companyId]=(count[row.companyId]||0)+1;
+  if(count[row.companyId]>12)throw Error('יותר מדי גרסאות לחברה');
+ }
+ return data;
+}
 const formatAmount=(n:number)=>n.toLocaleString('en-US',{maximumFractionDigits:3});
 const date=(s:string|null)=>s?new Date(s+'T12:00:00Z').toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'numeric',timeZone:'UTC'}):'לא זמין';
 const stateText:Record<string,string>={
@@ -120,15 +144,28 @@ const stateText:Record<string,string>={
 export function LatestResearchUpdate({companyId,onPrepare}:{companyId:string;onPrepare?:(text:string)=>void}){
  const [snapshot,setSnapshot]=useState<LatestSnapshot|null>(null);
  const [error,setError]=useState('');
+ const [history,setHistory]=useState<HistoryEntry[]>([]);
+ const [offline,setOffline]=useState(!navigator.onLine);
  useEffect(()=>{
   let active=true;setSnapshot(null);setError('');
   fetch(import.meta.env.BASE_URL+'data/latest-research-updates.json',{cache:'no-store'})
    .then(async response=>{if(!response.ok)throw Error('עדכון המחקר טרם פורסם');return parseLatestSnapshot(await response.json());})
    .then(data=>{if(active)setSnapshot(data);})
    .catch(e=>{if(active)setError(e instanceof Error?e.message:'העדכון אינו זמין');});
+  setHistory([]);
+  fetch(import.meta.env.BASE_URL+'data/research-update-history.json',{cache:'no-store'})
+   .then(async r=>{if(!r.ok)throw Error('History not published');return parseResearchHistory(await r.json());})
+   .then(data=>{if(active)setHistory(data.entries);})
+   .catch(()=>{/* History is optional for older/offline builds; never overwrite live research. */});
   return ()=>{active=false;};
  },[companyId]);
+ useEffect(()=>{
+  const connected=()=>setOffline(!navigator.onLine);
+  window.addEventListener('offline',connected);window.addEventListener('online',connected);
+  return ()=>{window.removeEventListener('offline',connected);window.removeEventListener('online',connected);};
+ },[]);
  const report=snapshot?.reports.find(r=>r.companyId===companyId);
+ const revisions=history.filter(item=>item.companyId===companyId).sort((a,b)=>b.firstSeenAt.localeCompare(a.firstSeenAt));
  const prompt=()=>{
   if(!report||!onPrepare||!report.metrics.length)return;
   const facts=report.metrics.map(m=>m.label+': '+m.value+' '+m.unit+' ('+m.periodStart+'–'+m.periodEnd+'; '+m.accountingBasis+'); '+m.sourceUrl+'; ביקורת: '+m.reviewStatus).join('\n');
@@ -137,6 +174,7 @@ export function LatestResearchUpdate({companyId,onPrepare}:{companyId:string;onP
  return <section className="report-intake" dir="rtl" aria-label="עדכון המחקר האחרון" data-testid="latest-research-update">
   <h3>עדכון המחקר האחרון שנקלט</h3>
   <p>מבוסס על ראיות פיננסיות שמורות, לא על שערים חיים. עדכון מחקר דטרמיניסטי — <strong>לא ניתוח AI</strong>, ולא אישור חשבונאי.</p>
+  {offline&&<p role="status"><strong>מצב לא מקוון:</strong> הנתונים עשויים להגיע מהמטמון ואינם עדכון חי.</p>}
   {!snapshot&&!error&&<p role="status">טוען תוצאות מחקר…</p>}
   {error&&<p role="status">{error}. נתוני המחקר הקיימים נשארים זמינים במסך.</p>}
   {snapshot&&<p><small>הפקת מצב נתונים: <bdi>{new Date(snapshot.generatedAt).toLocaleString('he-IL')}</bdi> · אנליסט AI: טרם הופעל</small></p>}
@@ -144,7 +182,7 @@ export function LatestResearchUpdate({companyId,onPrepare}:{companyId:string;onP
   {report&&<>
    <article className="thesis-metric">
     <h4>{report.ticker} · {stateText[report.status]||'נדרש אימות'}</h4>
-    <p>תקופת דוח: <bdi>{report.reportPeriod||'לא זמינה'}</bdi> · פורסם: {date(report.publishedDate)}</p>
+    <p>תקופת דוח: <bdi>{report.reportPeriod||'לא זמינה'}</bdi> · פורסם: {date(report.publishedDate)}. מועד יצירת קובץ הנתונים אינו מועד פרסום דוח חדש.</p>
     {report.status==='needs-reconciliation'&&<p role="status"><strong>זהירות: מקור DLO דורש בירור. המדדים אינם מאושרים ואין להסיק מהם הפתעה או שינוי בשווי.</strong></p>}
     {report.status==='historical-baseline-pending-review'&&<p>נתוני FY2026 של IREN הם בסיס היסטורי מול FY2025; אין מדובר בדוח חדש או בהשוואה לתחזית מאוקטובר.</p>}
     {report.metrics.length===0?<p>אין עדכון פיננסי מבוסס מקור שניתן להציג בבטחה לחברה זו.</p>:
@@ -185,6 +223,16 @@ export function LatestResearchUpdate({companyId,onPrepare}:{companyId:string;onP
     </details>
     {verifiedLink(report.sourceUrl,report.companyId)&&<p><a href={verifiedLink(report.sourceUrl,report.companyId)!} target="_blank" rel="noopener noreferrer">פתיחת מסמך החברה</a></p>}
     {report.metrics.length>0&&onPrepare&&<button type="button" onClick={prompt}>הכנת שאלות למחקר ב־ChatGPT (ידני)</button>}
+    {revisions.length>0&&<details><summary>היסטוריית גרסאות מחקר ({revisions.length})</summary>
+     <p><small>הרשומות נשמרות לפי שינוי תוכן המקור/המחקר, ולא כל חצי שעה. מידע מתאריך מאוחר אינו בהכרח תחזית חדשה.</small></p>
+     <ol>{revisions.map(item=><li key={item.contentId}>
+      <strong>{item.reportPeriod||'תקופה חסרה'}</strong> · פרסום מקור: {date(item.publishedDate)} · זוהה לראשונה: <bdi>{new Date(item.firstSeenAt).toLocaleDateString('he-IL')}</bdi>
+      <details><summary>צפייה במדדי גרסה {item.contentId.slice(0,8)}</summary>
+       <ul>{item.report.metrics.map(m=><li key={m.id}>{m.label}: <bdi>{formatAmount(m.value)} {m.unit}</bdi> · {m.reviewStatus} · {m.periodStart}–{m.periodEnd}</li>)}</ul>
+       {verifiedLink(item.report.sourceUrl,item.companyId)&&<a href={verifiedLink(item.report.sourceUrl,item.companyId)!} target="_blank" rel="noopener noreferrer">דוח המקור</a>}
+      </details>
+     </li>)}</ol>
+    </details>}
     <small>גרסת מחקר: <bdi>{report.contentId||'ללא נתונים'}</bdi> · מקור: <bdi>{report.sourceDigestKind||'לא קיים'}</bdi> · SHA של תמצית IREN אינו SHA של ה־PDF המקורי. אין עדכון אוטומטי למחירי יעד, לתיק או לתרחישים.</small>
    </article>
   </>}
