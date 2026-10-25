@@ -41,8 +41,8 @@ class CoverageTests(unittest.TestCase):
         self.assertEqual(len(nbis["typedMetrics"]), 1)
         revenue=nbis["typedMetrics"][0]
         self.assertEqual(revenue["id"], "revenue")
-        self.assertEqual(revenue["value"], 399.0)
-        self.assertEqual(revenue["previousValue"], 50.9)
+        self.assertEqual(revenue["value"], 582.3)
+        self.assertEqual(revenue["previousValue"], 105.1)
         self.assertEqual(revenue["sourcePage"], 7)
         self.assertEqual(revenue["sourceSha256"], nbis["report"]["sha256"])
         self.assertIsNotNone(nbis["report"])
