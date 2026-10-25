@@ -185,6 +185,23 @@ def extract(body,content_type,url,company):
 
 def candidates(snapshot,company):
  items=[i for i in snapshot.get('items',[]) if i['companyId']==company['id'] and i.get('kind') in ('results','document') and not SCHEDULE.search(i['title']) and FINANCIAL_TITLE.search(i['title']+' '+(i.get('documentPeriod') or '')) and safe_report_url(i['url'],company)]
+ # Curated official pointers are *candidates* only; not documents, not
+ # timestamps of a successful fetch and not analyst-approved numbers.
+ # They are intentionally bound to issuer allowlisted domains before use.
+ for r in company.get('curatedReportCandidates',[]):
+  if not isinstance(r,dict) or not safe_report_url(r.get('url'),company) or not FINANCIAL_TITLE.search(str(r.get('title',''))+' '+str(r.get('documentPeriod') or '')):
+   raise ValueError('Invalid curated issuer document URL/title')
+  if r.get('publishedDate') is not None and not valid_day(r['publishedDate']):
+   raise ValueError('Curated source publication date invalid')
+  if not isinstance(r.get('evidence'),str) or not r['evidence'].startswith('https://'):
+   raise ValueError('Curated source must cite verified issuer index')
+  if not any(i['url']==r['url'] for i in items):
+   items.append({'id':'curated:'+hashlib.sha256((company['id']+'|'+r['url']).encode()).hexdigest()[:32],
+                 'companyId':company['id'],'url':r['url'],'title':r['title'],
+                 'kind':'document','documentPeriod':r.get('documentPeriod'),
+                 'periodBasis':'curated-issuer-title-unverified',
+                 'publishedDate':r['publishedDate'],'publishedDateBasis':'curated-reference-only',
+                 'sourceId':'curated-official-pointer','evidenceUrl':r['evidence']})
  def rank(item):
   period=item.get('documentPeriod') or item['title'];year=re.search(r'20\d{2}',period);fiscal=FISCAL_YEAR.search(period);quarter=re.search(r'Q([1-4])',period,re.I);word=re.search(r'(first|second|third|fourth)\s+(?:fiscal\s+)?quarter',period,re.I)
   q=int(quarter[1]) if quarter else {'first':1,'second':2,'third':3,'fourth':4}.get(word[1].lower(),0) if word else 0
@@ -202,7 +219,7 @@ def collect(snapshot,registry,previous,now,fetcher=fetch_document,limit=8,budget
  ordered=sorted((c for c in registry['companies'] if c['id'] in PILOTS),
                 key=lambda c: (previous_status.get(c['id'],{}).get('lastAttemptAt') or '',c['id']))
  for company in ordered:
-  todo=candidates(snapshot,company)[:4]
+  todo=candidates(snapshot,company)[:6]
   def priority(item):
    ident='report:'+hashlib.sha256((company['id']+'|'+canonical(item['url'])).encode()).hexdigest()[:32]
    return (ident in records,records.get(ident,{}).get('lastSuccessfulAt',''))
