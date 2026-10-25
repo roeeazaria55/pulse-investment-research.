@@ -38,9 +38,20 @@ with sync_playwright() as pw:
         checked_assets.append({'pdf':pdf_url,'sha256':item['sha256'],'pages':pages_url})
     latest_asset=assets.get(urljoin(URL,'data/latest-research-updates.json'),timeout=30000)
     history_asset=assets.get(urljoin(URL,'data/research-update-history.json'),timeout=30000)
-    assert latest_asset.status==200 and history_asset.status==200,'Research JSON assets unavailable'
+    coverage_asset=assets.get(urljoin(URL,'data/issuer-coverage.json'),timeout=30000)
+    assert latest_asset.status==200 and history_asset.status==200 and coverage_asset.status==200,'Research JSON assets unavailable'
     published=latest_asset.json()
     archive=history_asset.json()
+    coverage=coverage_asset.json()
+    registry=json.loads(Path('public/data/official-registry.json').read_text(encoding='utf-8'))
+    registered_ids={c['id'] for c in registry['companies']}
+    assert len(coverage['coverage'])==len(published['reports'])==12,'Not every issuer covered'
+    assert {r['companyId'] for r in coverage['coverage']}==registered_ids,'Coverage identity mismatch'
+    assert {r['companyId'] for r in published['reports']}==registered_ids,'Report identity mismatch'
+    assert len([r for r in coverage['coverage'] if r['report']])>=6,'Unexpected loss of retained reports'
+    assert all(r['metricCoverage'] in ('no-document','report-only','provisional-xbrl')
+               for r in coverage['coverage'])
+
     assert published['version']==1 and archive['version']==1,'Research JSON version mismatch'
     current_by_ticker={r['ticker']:r for r in published['reports']}
     for ticker,ids in [('DLO',{'revenue','grossProfit','operatingCash','capex'}),
@@ -52,9 +63,19 @@ with sync_playwright() as pw:
                    for item in archive['entries']),f'Published {ticker} history does not match latest source'
     assert current_by_ticker['DLO']['status']=='needs-reconciliation'
     assert current_by_ticker['IREN']['status']=='historical-baseline-pending-review'
+    assert current_by_ticker['SMCI']['status']=='pending-review'
+    smci={m['id']:m for m in current_by_ticker['SMCI']['metrics']}
+    assert smci['revenue']['value']==39063.072
+    assert smci['revenue']['previousValue']==21972.042
+    assert smci['revenue']['reviewStatus']=='pending-review'
+    assert any(item['companyId']=='us-smci-nasdaq-common' and item['contentId']==current_by_ticker['SMCI']['contentId']
+               for item in archive['entries']),'No SEC XBRL history for SMCI'
+
     Path('work/mobile-published-research.json').write_text(
         json.dumps({'url':URL,'companyStatuses':{k:r['status'] for k,r in current_by_ticker.items()},
-                    'historyEntries':len(archive['entries']),'verifiedAgainstActualPublishedJson':True},ensure_ascii=False,indent=2))
+                    'historyEntries':len(archive['entries']),
+                    'companies':len(published['reports']), 'retainedDocCompanies':len([r for r in coverage['coverage'] if r['report']]),
+                    'verifiedAgainstActualPublishedJson':True},ensure_ascii=False,indent=2))
     assets.dispose()
     Path('work/mobile-research-assets.json').write_text(json.dumps({'url':URL,'checked':checked_assets},ensure_ascii=False))
     for width in (320,390,430):
@@ -129,8 +150,21 @@ with sync_playwright() as pw:
                 expect(latest).to_contain_text('היסטוריית גרסאות מחקר (1)')
                 latest.scroll_into_view_if_needed()
                 page.screenshot(path=f'work/mobile-{width}-latest-research-iren.png',full_page=False)
-            if label in ('NBIS','SMCI'):
+            if label=='NBIS':
                 expect(latest).to_contain_text('אין עדכון פיננסי מבוסס מקור')
+                expect(latest).to_contain_text('מסמך מקור שמור')
+                latest.scroll_into_view_if_needed()
+                page.screenshot(path=f'work/mobile-{width}-issuer-nbis.png',full_page=False)
+            if label in ('SNDK','בריינסוויי'):
+                expect(latest).to_contain_text('מסמך מקור שמור')
+                latest.scroll_into_view_if_needed()
+                page.screenshot(path=f'work/mobile-{width}-issuer-{("sndk" if label=="SNDK" else "brainsway")}.png',full_page=False)
+            if label=='SMCI':
+                expect(latest).to_contain_text('39,063.072 USD million')
+                expect(latest).to_contain_text('21,972.042 USD million')
+                expect(latest).to_contain_text('ממתין לבדיקת אנליסט')
+                latest.scroll_into_view_if_needed()
+                page.screenshot(path=f'work/mobile-{width}-issuer-smci.png',full_page=False)
             if label=='IREN':
                 actuals=exchange.get_by_role('region',name='נתוני בסיס IREN FY2026 מהדוח הרשמי',exact=True)
                 expect(actuals).to_contain_text('$707.0M')
