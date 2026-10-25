@@ -63,6 +63,7 @@ jobs:
             public/data/research-update-proposals.json
             public/data/latest-research-updates.json
             public/data/research-update-history.json
+            public/data/issuer-coverage.json
             public/data/ai-research-packets/*.json
           retention-days: 7
       - uses: actions/upload-artifact@v4
