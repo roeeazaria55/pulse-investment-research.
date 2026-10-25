@@ -3,7 +3,7 @@ import {validDate,safeSource} from '../research/exchange';
 export interface IntakeFact {concept:string;value:number;unit:string;start:string|null;end:string;context:string;status:'structured-source';definition:string}
 export interface IntakeTable {rows:string[][];spans:boolean;scope:string;page:number|null}
 export interface IntakeDocument {id:string;companyId:string;ticker:string;title:string;url:string;finalUrl:string;publishedDate:string|null;documentPeriod:string|null;periodBasis:string;sha256:string;bytes:number;format:'html'|'pdf';pages:number|null;readScope:'full-body'|'partial-pages';charactersRead:number;status:'extracted'|'read-no-supported-data';tables:IntakeTable[];tableCount:number;tablesTruncated:boolean;facts:IntakeFact[];reviewStatus:'pending-review';firstDetectedAt:string;lastSuccessfulAt:string;lastAttemptAt:string;revised:boolean;revisions:{sha256:string;firstDetectedAt:string;lastSuccessfulAt:string}[];parserVersion:string;error:string|null;notice:string}
-export interface IntakeSource {companyId:string;lastAttemptAt:string;status:'ok'|'partial'|'failed'|'deferred'|'no-candidates';error:string|null}
+export interface IntakeSource {companyId:string;lastAttemptAt:string|null;status:'ok'|'partial'|'failed'|'deferred'|'no-candidates';error:string|null}
 export interface ReportIntakeSnapshot {version:1;generatedAt:string;parserVersion:string;documents:IntakeDocument[];sources:IntakeSource[];notice:string}
 const stamp=(x:unknown):x is string=>typeof x==='string'&&/^\d{4}-\d{2}-\d{2}T/.test(x)&&Number.isFinite(Date.parse(x));
 const text=(x:unknown,max=600):x is string=>typeof x==='string'&&x.length>0&&x.length<=max;
