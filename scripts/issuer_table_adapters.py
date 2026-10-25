@@ -71,11 +71,41 @@ def sandisk_q4(doc):
     return result
 
 
-def nebius_q1(doc):
-    """Reviewed first-quarter NBIS original PDF consolidated statement, USD m."""
+def nebius_quarter(doc):
+    """Original Nebius PDF consolidated statement, selected Q2 or Q1 layout.
+
+    Q2 PDF extraction contains one 250-character statement cell. The original
+    page/issuer/table/year heading and unambiguous revenue line are mandatory;
+    free-form earnings headlines alone must not supply a financial metric.
+    """
     if doc.get("companyId") != "candidate-nebius" or doc.get("format") != "pdf":
         return []
-    if not re.search(r"reports first quarter 2026 financial results",doc.get("title",""),re.I):
+    headline=doc.get("title","").lower()
+    if "reports second quarter 2026 financial results" in headline:
+        matches=[]
+        for table in doc.get("tables",[]):
+            if table.get("page") != 7:
+                continue
+            for row in table.get("rows",[]):
+                if not isinstance(row,list) or len(row)!=1:
+                    continue
+                text=row[0]
+                pattern=(r"Nebius Group N\.V\.\s+Unaudited condensed consolidated statements "
+                         r"of operations\s+\(in millions of U\.S\. dollars, except share and per share data\)"
+                         r"\s+Three months ended June 30,\s+Six months ended June 30,\s+"
+                         r"2025 2026 2025 2026\s+Revenues\s+([\d,.]+)\s+([\d,.]+)\s+([\d,.]+)\s+([\d,.]+)")
+                match=re.search(pattern,text)
+                if not match:continue
+                prior=_number(match[1]);current=_number(match[2])
+                result=_proposal(doc,"revenue","הכנסות",current,prior,match[2],match[1],
+                    "2026-04-01","2026-06-30","2025-04-01","2025-06-30",
+                    "USD million",
+                    "Nebius unaudited consolidated statement of operations Q2 2026/Q2 2025, USD million",
+                    "Nebius original Q2 PDF, statements of operations: Revenues",
+                    table["page"],"retained-issuer-pdf-table")
+                if result:matches.append(result)
+        return matches if len(matches)==1 else []
+    if "reports first quarter 2026 financial results" not in headline:
         return []
     found=[]
     for table in doc.get("tables",[]):
@@ -99,8 +129,7 @@ def nebius_q1(doc):
         if metric: found.append(metric)
     return found if len(found)==1 else []
 
-
 def adapted_issuer_facts(doc):
-    results=[sandisk_q4(doc),nebius_q1(doc)]
+    results=[sandisk_q4(doc),nebius_quarter(doc)]
     nonempty=[value for value in results if value]
     return nonempty[0] if len(nonempty)==1 else []
