@@ -27,6 +27,22 @@ class ResearchHistoryTests(unittest.TestCase):
         self.assertEqual(h, again)
         self.assertEqual(len(again["entries"]), 1)
 
+    def test_health_check_changes_never_create_false_research_version(self):
+        item = self.report()
+        item["intakeStatus"] = "failed"
+        item["intakeAttemptAt"] = "2026-10-25T08:00:00Z"
+        item["reportEvidence"] = {"lastSuccessfulAt": "2026-10-22T00:00:00Z"}
+        original, count = combine(None, self.snapshot([item]))
+        self.assertEqual(count, 1)
+        altered = copy.deepcopy(item)
+        altered["intakeStatus"] = "ok"
+        altered["intakeAttemptAt"] = "2026-10-26T08:00:00Z"
+        altered["reportEvidence"]["lastSuccessfulAt"] = "2026-10-26T08:00:00Z"
+        again, added = combine(original, self.snapshot([altered], "2026-10-26T08:00:00Z"))
+        self.assertEqual(added, 0)
+        self.assertEqual(again, original)
+        self.assertNotIn("reportEvidence", again["entries"][0]["report"])
+
     def test_report_revision_preserves_prior_version(self):
         original, _ = combine(None, self.snapshot([self.report()]))
         changed = self.report("c"*24)
