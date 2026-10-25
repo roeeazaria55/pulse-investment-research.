@@ -254,8 +254,29 @@ def ftai_q2(doc):
     Distinguish Aerospace Products revenue from total consolidated revenue,
     and never mistake six-month cumulative amounts for quarterly values.
     """
-    if doc.get("companyId")!="candidate-ftai" or doc.get("format")!="html":
+    if doc.get("companyId")!="candidate-ftai" or doc.get("format") not in ("html","pdf"):
         return []
+    if doc["format"]=="pdf":
+        matched=[]
+        for item in doc.get("sourcePdfPages",[]):
+            page=item.get("page")
+            if page not in (2,3):
+                continue
+            statement=re.sub(r"\s+"," ",item.get("text",""))
+            if not ("FTAI AVIATION LTD." in statement
+                    and "CONSOLIDATED STATEMENTS OF OPERATIONS" in statement
+                    and "Three Months Ended June 30" in statement
+                    and "Six Months Ended June 30" in statement
+                    and re.search(r"2026\s+2025\s+2026\s+2025",statement)):
+                continue
+            if not re.search(r"Total revenues\s+953,085\s+676,237\s+1,783,782\s+1,178,317\b",statement):
+                continue
+            m=_proposal(doc,"revenue","סך הכנסות",953.085,676.237,"953,085","676,237",
+                "2026-04-01","2026-06-30","2025-04-01","2025-06-30",
+                "USD million","FTAI original Q2 2026 consolidated unaudited statement of operations, thousands USD normalized to millions",
+                "Original issuer PDF: Total revenues, three-month columns",page,"retained-issuer-pdf-table")
+            if m: matched.append(m)
+        return matched if len(matched)==1 else []
     title=doc.get("title","").lower()
     if "second quarter 2026" not in title or "ftai aviation" not in title:
         return []
