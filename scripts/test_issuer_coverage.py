@@ -74,6 +74,16 @@ class CoverageTests(unittest.TestCase):
         metrics = {m["id"]: m for m in safe_source_facts(bad)}
         self.assertNotIn("revenue", metrics)
 
+    def test_nonadjacent_prior_fiscal_year_is_not_comparable(self):
+        smci = next(d for d in self.intake["documents"] if d["companyId"] == "us-smci-nasdaq-common")
+        missing_2025 = copy.deepcopy(smci)
+        missing_2025["facts"] = [f for f in missing_2025["facts"] if not (
+            f.get("concept") == "us-gaap:revenuefromcontractwithcustomerexcludingassessedtax" and
+            f.get("end") == "2025-06-30")]
+        fact = next(x for x in safe_source_facts(missing_2025) if x["id"] == "revenue")
+        self.assertIsNone(fact["previousValue"])
+        self.assertIsNone(fact["changePercent"])
+
     def test_yoy_data_is_never_inferred_from_pdf_column_order(self):
         smci = next(d for d in self.intake["documents"] if d["companyId"] == "us-smci-nasdaq-common")
         forged = copy.deepcopy(smci)
