@@ -137,11 +137,26 @@ def safe_source_facts(doc):
 
 
 def report_rank(doc):
-    # Date/period from issuer metadata, never from time of download alone.
-    period = doc.get("documentPeriod") or ""
-    hint = re.search(r"(?:FY|Q[1-4]\s*)\s*(20\d\d)", period, re.I)
-    return (doc.get("publishedDate") if iso_date(doc.get("publishedDate")) else "",
-            hint.group(1) if hint else "", doc.get("lastSuccessfulAt") or "")
+    # Fiscal / quarter text is only a *candidate ordering hint*, not a
+    # fabricated reported period or publication date.
+    period = str(doc.get("documentPeriod") or "")
+    headline = str(doc.get("title") or "")[:500]
+    combined = period + " " + headline
+    y = re.search(r"\b(20\d{2})\b", combined)
+    label = re.search(r"\bQ([1-4])\s*(?:FY)?\s*(20\d{2})\b", combined, re.I)
+    words = re.search(r"\b(first|second|third|fourth)\s+(?:fiscal\s+)?quarter\s+(20\d{2})\b", combined, re.I)
+    fy = re.search(r"\b(?:FY|fiscal\s+(?:year\s+)?)\s*(?:20)?(2[0-9])\b", combined, re.I)
+    if label:
+        year, quarter = int(label[2]), int(label[1])
+    elif words:
+        year, quarter = int(words[2]), {"first":1,"second":2,"third":3,"fourth":4}[words[1].lower()]
+    elif fy:
+        year, quarter = 2000 + int(fy[1]), 4
+    else:
+        year, quarter = int(y[1]) if y else 0, 0
+    return (year, quarter,
+            doc.get("publishedDate") if iso_date(doc.get("publishedDate")) else "",
+            doc.get("lastSuccessfulAt") or "")
 
 
 def build(registry, intake):
