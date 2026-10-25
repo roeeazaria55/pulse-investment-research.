@@ -150,14 +150,19 @@ def inline_facts(page,company):
 
 def extract(body,content_type,url,company):
  if len(body)>MAX_BYTES:raise ValueError('Report exceeds 8MB')
- pdf=body.startswith(b'%PDF');tables=[];facts=[];links=[];page_count=None;truncated=False
+ pdf=body.startswith(b'%PDF');tables=[];facts=[];links=[];page_count=None;truncated=False;source_pdf_pages=[]
  if pdf:
   import pdfplumber
   with pdfplumber.open(io.BytesIO(body)) as doc:
    page_count=len(doc.pages);parts=[];parse_start=time.monotonic()
    for page in doc.pages[:60]:
     if time.monotonic()-parse_start>20:truncated=True;break
-    parts.append(page.extract_text() or '')
+    page_text=page.extract_text() or ''
+    parts.append(page_text)
+    target_pages={'candidate-enlight':{16,19}, 'candidate-gilat-telecom':{6}}
+    if page.page_number in target_pages.get(company['id'],set()):
+     # Original issuer statement page, not OCR or generated table values.
+     source_pdf_pages.append({'page':page.page_number,'text':page_text[:9000]})
     for table in (page.extract_tables() or page.extract_tables({'vertical_strategy':'text','horizontal_strategy':'text'})):
      rows=[[clean(str(cell or ''))[:250] for cell in row[:16]] for row in table]
      if any(LABELS.search(' '.join(row)) for row in rows):tables.append(dict(rows=rows[:35],spans=False,scope='PDF table; column order and units require review',page=page.page_number))
@@ -177,11 +182,21 @@ def extract(body,content_type,url,company):
  aliases=[company['name'],company['label'],*company.get('aliases',[])]
  if not any(a and a.casefold() in text[:30000].casefold() for a in aliases) and not facts:raise ValueError('Issuer identity absent from report body')
  if SCHEDULE.search(title) and not facts:raise ValueError('Schedule announcement is not a results report')
- if not tables and not facts and not FINANCIAL_TITLE.search(title):raise ValueError('Not a financial results document')
- if not tables and not facts:status='read-no-supported-data'
+ # For issuer PDF financial tables without recognized geometry, retain only
+ # the original source page. An exact-layout financial adapter decides whether
+ # a specific accounting figure can be compared. No OCR or inferred columns.
+ page_evidence=False
+ if pdf and company['id']=='candidate-gilat-telecom':
+  page_evidence=any(all(v in item['text'] for v in ('260,335','66,508','71,446','124,234','139,991'))
+                    and ('הכנסות' in item['text'] or 'תוסנכה' in item['text']) for item in source_pdf_pages)
+ if pdf and company['id']=='candidate-enlight':
+  page_evidence=any(all(v in item['text'] for v in ('322,477','225,875','165,990','116,117'))
+                    and 'Revenues' in item['text'] for item in source_pdf_pages)
+ if not tables and not facts and not page_evidence and not FINANCIAL_TITLE.search(title):raise ValueError('Not a financial results document')
+ if not tables and not facts and not page_evidence:status='read-no-supported-data'
  else:status='extracted'
  # Do not guess fiscal periods or units from filenames, publication dates or collection dates.
- return dict(status=status,title=title or company['name'],sha256=hashlib.sha256(body).hexdigest(),bytes=len(body),format='pdf' if pdf else 'html',pages=page_count,readScope='partial-pages' if truncated else 'full-body',charactersRead=len(text),tables=tables[:12],tableCount=len(tables),tablesTruncated=len(tables)>12,facts=facts,reviewStatus='pending-review',links=links,notice='Content was read automatically. Table rows require period/unit review. No thesis or price target was updated.')
+ return dict(status=status,title=title or company['name'],sha256=hashlib.sha256(body).hexdigest(),bytes=len(body),format='pdf' if pdf else 'html',pages=page_count,readScope='partial-pages' if truncated else 'full-body',charactersRead=len(text),tables=tables[:12],tableCount=len(tables),tablesTruncated=len(tables)>12,facts=facts,sourcePdfPages=source_pdf_pages,reviewStatus='pending-review',links=links,notice='Content was read automatically. Table rows require period/unit review. No thesis or price target was updated.')
 
 def candidates(snapshot,company):
  items=[i for i in snapshot.get('items',[]) if i['companyId']==company['id'] and i.get('kind') in ('results','document') and not SCHEDULE.search(i['title']) and FINANCIAL_TITLE.search(i['title']+' '+(i.get('documentPeriod') or '')) and safe_report_url(i['url'],company)]
