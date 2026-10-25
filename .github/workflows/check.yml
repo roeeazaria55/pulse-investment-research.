@@ -31,6 +31,8 @@ jobs:
           python3 scripts/forecast_actual_comparison.py
           python3 scripts/research_update_proposals.py
           python3 scripts/latest_research_updates.py
+          python3 scripts/ai_research_packets.py
+          python3 scripts/run_optional_ai_review.py --ticker DLO
       - run: npm test
       - run: npm run build
         env:
@@ -58,6 +60,7 @@ jobs:
             public/data/forecast-actual-comparisons.json
             public/data/research-update-proposals.json
             public/data/latest-research-updates.json
+            public/data/ai-research-packets/*.json
           retention-days: 7
       - uses: actions/upload-artifact@v4
         if: always()
