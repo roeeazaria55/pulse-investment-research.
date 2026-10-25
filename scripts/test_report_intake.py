@@ -41,6 +41,23 @@ class IntakeTests(unittest.TestCase):
    return (parent,'text/html',url) if url==URL else (HTML,'text/html',url)
   result=collect({'items':[ITEM]},{'companies':[C]}, {},'2026-10-20T12:00:00Z',fetcher=fetch)
   self.assertEqual(len(calls),2);self.assertTrue(result['documents'][0]['finalUrl'].endswith('attached.htm.pdf'));self.assertEqual(result['documents'][0]['facts'][0]['value'],39100000000)
+ def test_first_issuer_403_falls_back_to_second_official_document(self):
+  alternative={**ITEM,'id':'official:backup','url':'https://www.sec.gov/Archives/edgar/data/1375365/backup.htm',
+               'lastSeenAt':'2026-10-19'}
+  first={**ITEM,'lastSeenAt':'2026-10-25'}
+  calls=[]
+  def fetch(url,c):
+   calls.append(url)
+   if url==URL:raise PermissionError('HTTP Error 403: Forbidden')
+   return HTML,'text/html',url
+  result=collect({'items':[first,alternative]},{'companies':[C]}, {},
+                 '2026-10-25T12:00:00Z',fetcher=fetch,limit=3)
+  self.assertEqual(calls,[URL,alternative['url']])
+  self.assertEqual(result['sources'][0]['status'],'partial')
+  self.assertEqual(len(result['documents']),1)
+  self.assertEqual(result['documents'][0]['url'],alternative['url'])
+  self.assertEqual(result['documents'][0]['status'],'extracted')
+
  def test_clinical_results_are_not_financial_candidates(self):
   item={**ITEM,'title':'SMCI Reports Promising Pilot Study Results','kind':'results'}
   def fail(u,c):self.fail('Clinical release should not be fetched')
