@@ -104,6 +104,8 @@ with sync_playwright() as pw:
                 expect(latest).to_contain_text('נתוני בסיס היסטוריים')
                 expect(latest).to_contain_text('707 USD million')
                 expect(latest).to_contain_text('4,333.1 USD million')
+                expect(latest).to_contain_text('4,500 USD million')
+                expect(latest).to_contain_text('אין הפתעת תחזית מוכחת')
                 latest.scroll_into_view_if_needed()
                 page.screenshot(path=f'work/mobile-{width}-latest-research-iren.png',full_page=False)
             if label in ('NBIS','SMCI'):
