@@ -59,12 +59,87 @@ def identity(payload):
     return sha256(json.dumps(payload, sort_keys=True, ensure_ascii=False, separators=(",", ":")).encode()).hexdigest()[:24]
 
 
+
+def model_context(report):
+    """Compare issuer observations with the *existing* dated PULSE research and
+    base-scenario assumptions. Distinct accounting periods/definitions must
+    NEVER be labeled forecast beats or misses."""
+    company = report["companyId"]
+    if company not in ("us-dlo-nasdaq-a", "candidate-iren"):
+        return report
+    ticker = COMPANIES[company].lower()
+    model = load(ROOT / "src/data/models" / (ticker + ".json"))
+    research = load(ROOT / "src/data/research" / (ticker + ".json"))["analysis"]
+    if model.get("companyId") != company or research.get("companyId") != company:
+        raise ValueError("Issuer research/model identity mismatch")
+    base_rows = [x for x in model["scenarios"] if x.get("id") == "base"]
+    if len(base_rows) != 1:
+        raise ValueError("Missing or duplicate base-scenario valuation")
+    base = base_rows[0]["inputs"]
+    mapping = {
+        "us-dlo-nasdaq-a": {
+            "grossProfit": ("driver", "רווח גולמי שנתי בתחזית 2027",
+                            "רבעון Q2 2026 מול שנת 2027; אין להשוות מספרית לשנה או להסיק הפתעת תחזית.",
+                            "יש לבדוק GP/TPV ברבעונים הבאים ואת הרווח התפעולי לפני שינוי שיעור המרה ומכפיל."),
+            "revenue": (None, "הכנסות Q2 במחקר קודם",
+                        "בדיקת התאמה לערך 399.7 במחקר שסופק; מקור המחקר אינו ראיה עצמאית.",
+                        "אין שינוי תזה מוכח; דרושה בדיקת מכירות ורווח גולמי מאושרות."),
+        },
+        "candidate-iren": {
+            "revenue": ("revenue", "תחזית הכנסות לשנה הקלנדרית 2027",
+                        "FY2026 שהסתיימה ביוני מול שנת 2027 קלנדרית; תקופות שונות.",
+                        "יש לעקוב אחר קצב הכנסות AI מוכרות, מסירות וקצב הפעלה; לא להתייחס ל־ARR כהכנסות."),
+            "operatingCash": ("operatingCash", "תחזית תזרים מיולי 2026 עד אוקטובר 2027",
+                              "FY2026 לפני התקופה במודל; התזרים המדווח כולל מקדמות לקוחות לעומת גישור נפרד במודל.",
+                              "נדרש גישור מקדמות, מימון, ריבית ותזרים מתוקנן."),
+            "capex": ("capex", "תחזית CAPEX ביולי 2026 עד אוקטובר 2027",
+                      "FY2026 ושני סעיפי מזומן בלבד, לעומת CAPEX רחב ותקופה עתידית במודל.",
+                      "לבדוק תשלומי GPU, התחייבויות ופיקדונות מחוץ לשני סעיפי המזומן."),
+        },
+    }
+    comparisons = []
+    for metric in report["metrics"]:
+        info = mapping.get(company, {}).get(metric["id"])
+        if not info:
+            continue
+        input_key, label, reason, implication = info
+        current_assumption = base.get(input_key) if input_key else None
+        if input_key and (isinstance(current_assumption, bool) or
+                          not isinstance(current_assumption, (float, int)) or
+                          not math.isfinite(current_assumption)):
+            raise ValueError("Malformed base scenario " + input_key)
+        # DLO contemporaneous supplied analyst baseline must match exactly to
+        # be labeled a research-text match; no data scraped from prose as truth.
+        text_match = None
+        if company == "us-dlo-nasdaq-a" and metric["id"] == "revenue":
+            text_match = "399.7" in research["fields"]["revenue"] and abs(metric["value"] - 399.7) < 1e-8
+        comparisons.append({
+            "metricId": metric["id"], "status": "not-comparable-period-or-definition",
+            "modelScenario": "base" if input_key else None,
+            "modelInput": input_key, "modelValue": current_assumption,
+            "modelUnit": "USD million" if input_key else None,
+            "modelPeriod": "calendar-2027" if input_key == "revenue" or company == "us-dlo-nasdaq-a" and input_key == "driver"
+                           else "2026-07-01/2027-10-19" if input_key else None,
+            "modelLabel": label, "modelAsOf": model["analysisDate"],
+            "modelSource": "src/data/models/" + ticker + ".json",
+            "researchAsOf": research["asOf"],
+            "researchSource": "src/data/research/" + ticker + ".json",
+            "researchTextMatch": text_match,
+            "reason": reason, "analystReview": implication,
+            "automaticChange": False,
+        })
+    report["modelReview"] = comparisons
+    report["findings"].append("נבדק מודל הבסיס ומחקר PULSE השמור. אין מדידה תואמת בתקופה ובהגדרה שניתן לפרש כהפתעת תחזית.")
+    report["missing"].append("השוואות אלה הן בדיקת התאמה בין מקורות והנחות — לא תחזית חדשה ולא אישור לנתוני המקור.")
+    report["contentId"] = identity({k: v for k, v in report.items() if k != "contentId"})
+    return report
+
 def missing(company, detail):
     return {
         "companyId": company, "ticker": COMPANIES[company], "status": "insufficient-evidence",
         "kind": "no-verified-new-report", "reportPeriod": None, "publishedDate": None,
-        "sourceUrl": None, "sourceVersion": None, "metrics": [], "findings": [],
-        "questions": [detail], "missing": [detail], "aiAnalysisEnabled": False,
+        "sourceUrl": None, "sourceVersion": None, "sourceDigestKind": None, "metrics": [], "findings": [],
+        "questions": [detail], "missing": [detail], "modelReview": [], "aiAnalysisEnabled": False,
         "reviewRequired": True, "modelChange": "אין שינוי בהנחות או במחירי יעד.",
         "contentId": None,
     }
@@ -110,7 +185,8 @@ def dlo_update(observations):
             "id": r["metricId"], "label": METRICS[r["metricId"]],
             "value": r["value"], "unit": r["unit"], "periodStart": r["periodStart"],
             "periodEnd": r["periodEnd"], "accountingBasis": r["basis"],
-            "sourceRaw": r["sourceRaw"], "sourceRow": r["sourceRow"],
+            "sourceRaw": r["sourceRaw"], "sourceRow": r["sourceRow"], "sourcePreviousRaw": None,
+            "sourcePage": None, "sourceDocumentUrl": None,
             "sourceUrl": r["sourceUrl"], "reviewStatus": r["reviewStatus"],
             "previousValue": None, "changePercent": None,
             "comparison": "אין נתון קודם מאושר, תואם בתקופה ובהגדרה.",
@@ -126,7 +202,7 @@ def dlo_update(observations):
         "kind": "automatically-extracted-issuer-data",
         "reportPeriod": rows[0].get("period") or f'{rows[0]["periodStart"]}/{rows[0]["periodEnd"]}',
         "publishedDate": rows[0].get("publishedDate"), "sourceUrl": key[2],
-        "sourceVersion": key[1], "metrics": metrics,
+        "sourceVersion": key[1], "sourceDigestKind": "retained-issuer-html-sha256", "metrics": metrics,
         "findings": ["המערכת חילצה נתוני מקור מדוח DLO; לא נקבע שינוי בתזת ההשקעה.",
                      "לא זוהתה הפתעת תחזית: דוח Q2 קדם לתחזיות PULSE שנשמרו באוקטובר."],
         "questions": ["האם הגדרות IFRS, ה־CAPEX ותזרים המזומנים תואמות למודל ולדוח המקורי?"],
@@ -157,6 +233,11 @@ def iren_update(source):
     cash_ppe = row(cash, "Payments for property, plant and equipment net of computer hardware")
     hardware = row(cash, "Payments for computer hardware")
     cash_capex = (-(cash_ppe[0] + hardware[0]), -(cash_ppe[1] + hardware[1]))
+    if cash_capex[0] < 0 or cash_capex[1] < 0:
+        raise ValueError("Unexpected CAPEX cash sign")
+    cell_raw = {m["label"]: m for t in (operations, cash) for m in t["rows"]}
+    if not trusted_url(source.get("pdfUrl"), IREN_HOSTS):
+        return missing(company, "כתובת מסמך IREN PDF אינה תואמת למנפיק.")
     raw_metrics = [
         ("revenue", revenue, "consolidated revenue (GAAP)", "Total Revenue"),
         ("operatingCash", operating, "reported cash from operations including customer advances", "Net cash from (used in) operating activities"),
@@ -165,11 +246,23 @@ def iren_update(source):
     metrics = []
     for metric_id, (current, previous), basis, source_row in raw_metrics:
         pct = round((current - previous) / abs(previous) * 100, 2) if previous != 0 else None
+        if metric_id == "capex":
+            raw_current = cell_raw["Payments for property, plant and equipment net of computer hardware"]["current"] + " + " + cell_raw["Payments for computer hardware"]["current"]
+            raw_previous = cell_raw["Payments for property, plant and equipment net of computer hardware"]["prior"] + " + " + cell_raw["Payments for computer hardware"]["prior"]
+            pdf_page = cash["pdfPage"]
+        else:
+            raw_current = cell_raw[source_row]["current"]
+            raw_previous = cell_raw[source_row]["prior"]
+            pdf_page = operations["pdfPage"] if metric_id == "revenue" else cash["pdfPage"]
+        if not isinstance(pdf_page, int) or not 1 <= pdf_page <= 100:
+            raise ValueError("Malformed issuer source PDF page")
         metrics.append({
             "id": metric_id, "label": METRICS[metric_id], "value": round(current, 6),
             "previousValue": round(previous, 6), "changePercent": pct,
             "unit": "USD million", "periodStart": "2025-07-01", "periodEnd": "2026-06-30",
-            "accountingBasis": basis, "sourceRaw": "curated issuer FY2026 vs FY2025 table cells",
+            "accountingBasis": basis, "sourceRaw": raw_current,
+            "sourcePreviousRaw": raw_previous, "sourcePage": pdf_page,
+            "sourceDocumentUrl": source["pdfUrl"],
             "sourceRow": source_row, "sourceUrl": source["sourceUrl"],
             "reviewStatus": "pending-review",
             "comparison": "FY2026 מול FY2025 באותה שורת מקור. שינוי היסטורי, לא הפתעה ביחס לתחזית PULSE.",
@@ -178,7 +271,8 @@ def iren_update(source):
         "companyId": company, "ticker": "IREN", "status": "historical-baseline-pending-review",
         "kind": "bounded-curated-issuer-table-extract", "reportPeriod": "FY2026",
         "publishedDate": source.get("publishedDate"), "sourceUrl": source["sourceUrl"],
-        "sourceVersion": identity(source), "metrics": metrics,
+        "sourceVersion": sha256(json.dumps(source,sort_keys=True,ensure_ascii=False,separators=(",",":")).encode("utf-8")).hexdigest(),
+        "sourceDigestKind": "curated-extract-json-sha256-not-original-pdf", "metrics": metrics,
         "findings": ["קיימת השוואה שנתית FY2026/FY2025 לשלוש קבוצות מדדים מתוך טבלאות המנפיק.",
                      "הדוח פורסם לפני מחקר PULSE באוקטובר; השינוי השנתי אינו הפתעה ואינו מחייב שינוי מודל."],
         "questions": ["מהו תזרים המזומנים המתוקנן ללא מקדמות לקוחות?",
@@ -195,8 +289,8 @@ def iren_update(source):
 
 def build(observations, iren_source):
     reports = [
-        dlo_update(observations),
-        iren_update(iren_source),
+        model_context(dlo_update(observations)),
+        model_context(iren_update(iren_source)),
         missing("candidate-nebius", "לא קיימת קליטה אוטומטית מאושרת חדשה לצורך עדכון המחקר של NBIS."),
         missing("us-smci-nasdaq-common", "לא קיימת קליטה אוטומטית מאושרת חדשה לצורך עדכון המחקר של SMCI."),
     ]
