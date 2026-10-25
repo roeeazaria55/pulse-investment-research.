@@ -44,6 +44,17 @@ class AIAnalystProposalContractTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"AI provenance not attested"):
             validate_ai_proposal(self.packet,p)
 
+    def test_real_model_mode_requires_trusted_runner_attestation(self):
+        candidate=self.proposal()
+        candidate["analysisMode"]="model-generated-unverified"
+        with self.assertRaisesRegex(ValueError,"provenance"):
+            validate_ai_proposal(self.packet,candidate)
+        approved=validate_ai_proposal(self.packet,candidate,model_execution_attested=True)
+        self.assertTrue(approved["valid"])
+        self.assertEqual(approved["modelChanges"],0)
+        with self.assertRaisesRegex(ValueError,"provenance"):
+            validate_ai_proposal(self.packet,self.proposal(),model_execution_attested=True)
+
     def test_packet_digest_is_recomputed_before_evidence_is_accepted(self):
         p=self.proposal()
         for edit in (
