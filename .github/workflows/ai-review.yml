@@ -1,0 +1,37 @@
+name: Private opt-in analyst verification (no artifact)
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_paid:
+        description: 'Explicit opt-in: choose APPROVE_SINGLE_PAID_AI_REQUEST to allow one paid API request'
+        required: true
+        type: choice
+        options: [NO_PAID_CALL, APPROVE_SINGLE_PAID_AI_REQUEST]
+        default: NO_PAID_CALL
+      ticker:
+        description: 'One issuer'
+        required: true
+        type: choice
+        options: [DLO, IREN, NBIS, SMCI]
+        default: DLO
+permissions:
+  contents: read
+concurrency:
+  group: pulse-one-time-ai-review
+  cancel-in-progress: false
+jobs:
+  analyst:
+    if: github.ref == 'refs/heads/main' && inputs.confirm_paid == 'APPROVE_SINGLE_PAID_AI_REQUEST'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify data packet without incurring costs
+        run: python3 scripts/run_optional_ai_review.py --ticker "${{ inputs.ticker }}"
+      - name: Paid single request, validated in memory and never published
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          PULSE_PAID_AI_APPROVED: 'YES'
+        run: python3 scripts/run_optional_ai_review.py --ticker "${{ inputs.ticker }}" --execute
