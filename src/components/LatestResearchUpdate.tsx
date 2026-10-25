@@ -22,8 +22,11 @@ export interface ModelComparison {
  modelLabel:string;modelAsOf:string;modelSource:string;researchAsOf:string;researchSource:string;
  researchTextMatch:boolean|null;reason:string;analystReview:string;automaticChange:false;
 }
+export interface SourceCheck {status:'ok'|'partial'|'failed'|'unconfigured'|'not-checked';sourcesConfigured:number;
+ sourcesHealthy:number;sourcesFailed:number;lastAttemptAt:string|null;lastSuccessfulAt:string|null;note:string}
 export interface LatestSnapshot {
  version:1;generatedAt:string;reports:LatestReport[];aiStatus:'not-enabled';notice:string;
+ sourceChecks?:Record<string,SourceCheck>;
 }
 export interface HistoryEntry {companyId:string;ticker:string;contentId:string;firstSeenAt:string;reportPeriod:string|null;publishedDate:string|null;sourceVersion:string|null;status:string;report:LatestReport}
 export interface ResearchHistory {version:1;updatedAt:string;entries:HistoryEntry[]}
@@ -58,6 +61,20 @@ export function parseLatestSnapshot(x:unknown):LatestSnapshot {
  if(!x||typeof x!=='object')throw Error('עדכוני מחקר אינם זמינים');
  const data=x as LatestSnapshot;
  if(data.version!==1||data.aiStatus!=='not-enabled'||!Array.isArray(data.reports)||data.reports.length!==4||!Number.isFinite(Date.parse(data.generatedAt)))throw Error('מבנה עדכוני המחקר אינו תקין');
+ if(data.sourceChecks!==undefined){
+  if(!data.sourceChecks||typeof data.sourceChecks!=='object'||Array.isArray(data.sourceChecks))throw Error('מצב מקורות אינו תקין');
+  for(const [company,c] of Object.entries(data.sourceChecks)){
+   if(!Object.prototype.hasOwnProperty.call(companyStatuses,company)||!c||
+    !['ok','partial','failed','unconfigured','not-checked'].includes(c.status)||
+    !Number.isInteger(c.sourcesConfigured)||c.sourcesConfigured<0||
+    !Number.isInteger(c.sourcesHealthy)||c.sourcesHealthy<0||
+    !Number.isInteger(c.sourcesFailed)||c.sourcesFailed<0||
+    c.sourcesHealthy+c.sourcesFailed>c.sourcesConfigured||
+    c.lastAttemptAt!==null&&!Number.isFinite(Date.parse(c.lastAttemptAt))||
+    c.lastSuccessfulAt!==null&&!Number.isFinite(Date.parse(c.lastSuccessfulAt))||
+    !shortText(c.note,240))throw Error('בדיקת מקור אינה תקינה');
+  }
+ }
  const ids=new Set<string>();
  for(const r of data.reports){
   if(!r||!Object.prototype.hasOwnProperty.call(companyStatuses,r.companyId)||ids.has(r.companyId)||
@@ -135,6 +152,11 @@ export function parseResearchHistory(x:unknown):ResearchHistory {
 }
 const formatAmount=(n:number)=>n.toLocaleString('en-US',{maximumFractionDigits:3});
 const date=(s:string|null)=>s?new Date(s+'T12:00:00Z').toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'numeric',timeZone:'UTC'}):'לא זמין';
+const healthText:Record<SourceCheck['status'],string>={
+ ok:'בדיקת אינדקס מקורות הצליחה',partial:'חלק מהמקורות נכשלו',
+ failed:'בדיקת המקורות נכשלה',unconfigured:'לא הוגדר איסוף מקורות',
+ 'not-checked':'עדיין לא בוצעה בדיקה',
+};
 const stateText:Record<string,string>={
  'needs-reconciliation':'נדרש בירור גרסת מקור',
  'pending-review':'ממתין לבדיקת אנליסט',
@@ -165,6 +187,7 @@ export function LatestResearchUpdate({companyId,onPrepare}:{companyId:string;onP
   return ()=>{window.removeEventListener('offline',connected);window.removeEventListener('online',connected);};
  },[]);
  const report=snapshot?.reports.find(r=>r.companyId===companyId);
+ const sourceCheck=snapshot?.sourceChecks?.[companyId];
  const revisions=history.filter(item=>item.companyId===companyId).sort((a,b)=>b.firstSeenAt.localeCompare(a.firstSeenAt));
  const prompt=()=>{
   if(!report||!onPrepare||!report.metrics.length)return;
@@ -178,6 +201,10 @@ export function LatestResearchUpdate({companyId,onPrepare}:{companyId:string;onP
   {!snapshot&&!error&&<p role="status">טוען תוצאות מחקר…</p>}
   {error&&<p role="status">{error}. נתוני המחקר הקיימים נשארים זמינים במסך.</p>}
   {snapshot&&<p><small>הפקת מצב נתונים: <bdi>{new Date(snapshot.generatedAt).toLocaleString('he-IL')}</bdi> · אנליסט AI: טרם הופעל</small></p>}
+  {sourceCheck&&<p role="status"><strong>מקורות רשמיים:</strong> {healthText[sourceCheck.status]} ({sourceCheck.sourcesHealthy}/{sourceCheck.sourcesConfigured}).
+   בדיקה אחרונה: {sourceCheck.lastAttemptAt?new Date(sourceCheck.lastAttemptAt).toLocaleString('he-IL'):'לא זמינה'} · הצלחה אחרונה: {sourceCheck.lastSuccessfulAt?new Date(sourceCheck.lastSuccessfulAt).toLocaleString('he-IL'):'לא קיימת'}.
+   <small> זוהי בדיקת אינדקס מקורות, לא אישור שנקלט דוח כספי חדש.</small>
+  </p>}
   {snapshot&&!report&&<p role="status">אין עדכון מחקר אוטומטי לחברה זו. המחקר הקודם נשאר זמין; לא בוצעה קליטת נתונים חדשים עבורה.</p>}
   {report&&<>
    <article className="thesis-metric">
