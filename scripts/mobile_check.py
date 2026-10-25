@@ -151,12 +151,18 @@ with sync_playwright() as pw:
                 latest.scroll_into_view_if_needed()
                 page.screenshot(path=f'work/mobile-{width}-latest-research-iren.png',full_page=False)
             if label=='NBIS':
-                expect(latest).to_contain_text('אין עדכון פיננסי מבוסס מקור')
+                expect(latest).to_contain_text('399 USD million')
+                expect(latest).to_contain_text('50.9 USD million')
+                expect(latest).to_contain_text('ממתין לבדיקה')
                 expect(latest).to_contain_text('מסמך מקור שמור')
                 latest.scroll_into_view_if_needed()
                 page.screenshot(path=f'work/mobile-{width}-issuer-nbis.png',full_page=False)
             if label in ('SNDK','בריינסוויי'):
                 expect(latest).to_contain_text('מסמך מקור שמור')
+                if label=='SNDK':
+                    expect(latest).to_contain_text('8,965 USD million')
+                    expect(latest).to_contain_text('1,901 USD million')
+                    expect(latest).to_contain_text('2026-07-03')
                 latest.scroll_into_view_if_needed()
                 page.screenshot(path=f'work/mobile-{width}-issuer-{("sndk" if label=="SNDK" else "brainsway")}.png',full_page=False)
             if label=='SMCI':
