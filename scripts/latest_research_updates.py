@@ -332,7 +332,37 @@ def iren_update(source):
     return body
 
 
-def build(observations, iren_source):
+def source_check_summary(source_inventory):
+    """Source *index* polling health. Does not certify financial extraction."""
+    if source_inventory is None:
+        return {}
+    rows = source_inventory.get("sources")
+    if not isinstance(rows, list):
+        raise ValueError("Malformed official source inventory")
+    result = {}
+    for company in COMPANIES:
+        entries = [r for r in rows if isinstance(r, dict) and r.get("companyId") == company]
+        statuses = [r.get("status") for r in entries]
+        if any(status not in ("ok", "failed", "partial", "no-change", "skipped") for status in statuses):
+            raise ValueError("Unknown issuer polling status")
+        success = sum(status in ("ok", "no-change") for status in statuses)
+        failures = sum(status in ("failed", "partial") for status in statuses)
+        overall = ("unconfigured" if not entries else
+                   "partial" if success and failures else
+                   "failed" if failures else "ok" if success else "not-checked")
+        attempts = [v for r in entries if isinstance((v := r.get("lastAttemptAt")), str) and v]
+        successful = [v for r in entries if isinstance((v := r.get("lastSuccessfulAt")), str) and v]
+        result[company] = {
+            "status": overall, "sourcesConfigured": len(entries),
+            "sourcesHealthy": success, "sourcesFailed": failures,
+            "lastAttemptAt": max(attempts, default=None),
+            "lastSuccessfulAt": max(successful, default=None),
+            "note": "Issuer source-index polling only, not confirmation of a new or approved financial report.",
+        }
+    return result
+
+
+def build(observations, iren_source, source_inventory=None):
     reports = [
         model_context(dlo_update(observations)),
         model_context(iren_update(iren_source)),
@@ -341,6 +371,7 @@ def build(observations, iren_source):
     ]
     return {
         "version": 1, "generatedAt": datetime.now(timezone.utc).isoformat(),
+        "sourceChecks": source_check_summary(source_inventory),
         "reports": reports, "aiStatus": "not-enabled",
         "notice": "Deterministic review-only research. Curated IREN FY2026 baseline is not fresh collection. No AI run, auto-approval, price-target change or historical forecast surprise.",
     }
@@ -349,7 +380,8 @@ def build(observations, iren_source):
 def main():
     observations = load(ROOT / "public/data/auto-financial-observations.json")
     iren = load(ROOT / "public/data/iren-fy26-source.json")
-    data = build(observations, iren)
+    inventory = load(ROOT / "public/data/official-sources.json")
+    data = build(observations, iren, inventory)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     temp = OUT.with_suffix(".json.tmp")
     temp.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
