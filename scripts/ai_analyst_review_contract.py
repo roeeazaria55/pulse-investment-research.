@@ -57,7 +57,11 @@ def _validate_input_packet(packet):
     return digest
 
 
-def validate_ai_proposal(packet, proposed):
+def validate_ai_proposal(packet, proposed, *, model_execution_attested=False):
+    """Only a trusted API caller may label an actual completed Responses run
+    model-generated. An untrusted JSON input cannot attest its own provenance.
+    This flag does not approve an investment thesis or allow model changes.
+    """
     verified_digest = _validate_input_packet(packet)
     if not isinstance(proposed,dict):
         raise ValueError("Missing proposed review")
@@ -72,11 +76,9 @@ def validate_ai_proposal(packet, proposed):
         raise ValueError("Stale packet version; no evidence binding")
     if proposed["status"]!="requires-human-review":
         raise ValueError("AI cannot approve its own output")
-    if proposed["analysisMode"] != "deterministic-no-ai":
-        # There is no trusted, server-side model-execution attestation yet.
-        # Accepting a model's self-declared analysisMode would let a caller
-        # misrepresent deterministic output as actual AI research.
-        raise ValueError("AI provenance not attested; only deterministic-no-ai is allowed")
+    expected_mode = "model-generated-unverified" if model_execution_attested is True else "deterministic-no-ai"
+    if proposed["analysisMode"] != expected_mode:
+        raise ValueError("AI provenance not attested or proposal mislabeled")
     if proposed["proposedValuationAction"]!="no-automatic-change":
         raise ValueError("Direct financial model edits are forbidden")
     candidates={o["observationId"]:"financial-observation" for o in packet.get("financialObservations",[])}
