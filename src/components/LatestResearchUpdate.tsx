@@ -3,6 +3,7 @@ import issuerRegistry from '../../public/data/official-registry.json';
 
 export interface ResearchMetric {
  id:string;label:string;value:number;previousValue:number|null;changePercent:number|null;
+ previousPeriodStart?:string|null;previousPeriodEnd?:string|null;
  unit:string;periodStart:string;periodEnd:string;accountingBasis:string;
  sourceRow:string;sourceRaw:string;sourcePreviousRaw?:string|null;sourcePage?:number|null;sourceDocumentUrl?:string|null;sourceUrl:string;reviewStatus:string;comparison:string;
 }
@@ -129,6 +130,13 @@ export function parseLatestSnapshot(x:unknown):LatestSnapshot {
     !validDay(m.periodStart)||!validDay(m.periodEnd)||m.periodStart>m.periodEnd||
     !shortText(m.accountingBasis,500)||!shortText(m.sourceRow,500)||!shortText(m.sourceRaw,200)||!shortText(m.comparison,500)||
     !['pending-review','needs-reconciliation'].includes(m.reviewStatus))throw Error('נתון פיננסי לא תקין');
+   if((m.previousPeriodStart!==undefined||m.previousPeriodEnd!==undefined)&&
+    (m.previousPeriodStart===null&&m.previousPeriodEnd!==null||
+     m.previousPeriodEnd===null&&m.previousPeriodStart!==null||
+     m.previousPeriodStart!==null&&m.previousPeriodStart!==undefined&&!validDay(m.previousPeriodStart)||
+     m.previousPeriodEnd!==null&&m.previousPeriodEnd!==undefined&&!validDay(m.previousPeriodEnd)||
+     m.previousPeriodStart&&m.previousPeriodEnd&&m.previousPeriodStart>m.previousPeriodEnd))
+      throw Error('תקופת השוואה היסטורית אינה תקינה');
    metricIds.add(m.id);
    if(r.companyId==='us-dlo-nasdaq-a'&&(m.previousValue!==null||m.changePercent!==null||m.reviewStatus==='needs-reconciliation'&&r.status!=='needs-reconciliation'))throw Error('השוואת DLO לא מאושרת');
    if(r.companyId==='candidate-iren'&&(!shortText(m.sourcePreviousRaw,200)||!Number.isInteger(m.sourcePage)||!(m.sourcePage!>=1&&m.sourcePage!<=100)||!verifiedLink(m.sourceDocumentUrl||null,r.companyId)||m.previousValue===null))throw Error('חסרה ראיית מקור IREN');
@@ -266,7 +274,7 @@ export function LatestResearchUpdate({companyId,onPrepare}:{companyId:string;onP
       {report.metrics.map(m=><div key={m.id} className="thesis-metric">
        <h5>{m.label}</h5>
        <p><strong dir="ltr">{formatAmount(m.value)} {m.unit}</strong></p>
-       {m.previousValue!==null&&<p>בסיס קודם FY2025: <bdi>{formatAmount(m.previousValue)} {m.unit}</bdi>
+       {m.previousValue!==null&&<p>בסיס תקופה קודמת <bdi>{m.previousPeriodStart&&m.previousPeriodEnd?m.previousPeriodStart+'–'+m.previousPeriodEnd:'FY2025 (כאשר רלוונטי)'}</bdi>: <bdi>{formatAmount(m.previousValue)} {m.unit}</bdi>
         {m.changePercent!==null&&<> · שינוי שנתי: <bdi>{m.changePercent>0?'+':''}{formatAmount(m.changePercent)}%</bdi></>}</p>}
        <p><small>{m.comparison}</small></p>
        <details><summary>הגדרה, מקור ומצב אימות</summary>
