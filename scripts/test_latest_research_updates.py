@@ -137,6 +137,21 @@ class LatestResearchUpdateTests(unittest.TestCase):
         self.assertTrue(smci["reviewRequired"])
         self.assertEqual(smci["modelReview"], [])
 
+    def test_generic_research_content_id_not_affected_by_fetch_health(self):
+        from latest_research_updates import other_issuer_update
+        from issuer_coverage import build as build_coverage, read as read_coverage
+        import copy
+        coverage = build_coverage(
+            read_coverage(ROOT / "public/data/official-registry.json"),
+            read_coverage(ROOT / "public/data/report-intake.json"))
+        row = next(c for c in coverage["coverage"] if c["companyId"] == "us-smci-nasdaq-common")
+        first = other_issuer_update(row)
+        changed = copy.deepcopy(row)
+        changed["intakeStatus"] = "ok" if row["intakeStatus"] != "ok" else "failed"
+        changed["report"]["lastSuccessfulAt"] = "2026-10-27T08:00:00Z"
+        changed["report"]["sourceIsCurrentlyReachable"] = not row["report"]["sourceIsCurrentlyReachable"]
+        self.assertEqual(first["contentId"], other_issuer_update(changed)["contentId"])
+
     def test_issuer_model_identity_is_checked_not_silently_combined(self):
         from unittest.mock import patch
         from latest_research_updates import model_context
