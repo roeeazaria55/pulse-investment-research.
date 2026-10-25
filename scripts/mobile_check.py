@@ -151,8 +151,8 @@ with sync_playwright() as pw:
                 latest.scroll_into_view_if_needed()
                 page.screenshot(path=f'work/mobile-{width}-latest-research-iren.png',full_page=False)
             if label=='NBIS':
-                expect(latest).to_contain_text('399 USD million')
-                expect(latest).to_contain_text('50.9 USD million')
+                expect(latest).to_contain_text('582.3 USD million')
+                expect(latest).to_contain_text('105.1 USD million')
                 expect(latest).to_contain_text('ממתין לבדיקה')
                 expect(latest).to_contain_text('מסמך מקור שמור')
                 latest.scroll_into_view_if_needed()
