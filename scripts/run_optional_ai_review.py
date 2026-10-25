@@ -73,7 +73,7 @@ def save_private(candidate, target):
     fd = os.open(target, flags, 0o600)
     with os.fdopen(fd, "w", encoding="utf-8") as handle:
         json.dump(candidate, handle, ensure_ascii=False, indent=2, allow_nan=False)
-        handle.write("\\n")
+        handle.write("\n")
 
 
 def main():
