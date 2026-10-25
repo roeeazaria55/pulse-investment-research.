@@ -106,6 +106,7 @@ def safe_source_facts(doc):
         end, start, concept, value, context = current[0]
         length = (date.fromisoformat(end) - date.fromisoformat(start)).days + 1
         candidates = [r for r in rows if r[2] == concept and r[0] < end
+                      and 364 <= (date.fromisoformat(end)-date.fromisoformat(r[0])).days <= 367
                       and abs(((date.fromisoformat(r[0])-date.fromisoformat(r[1])).days+1)-length) <= 2]
         candidates.sort(key=lambda r: r[0], reverse=True)
         previous = candidates[0] if candidates and len([r for r in candidates if r[0] == candidates[0][0]]) == 1 else None
