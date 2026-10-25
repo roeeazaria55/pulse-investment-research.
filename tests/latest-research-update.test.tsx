@@ -22,8 +22,9 @@ function snapshot(){
   periodStart:'2026-04-01',periodEnd:'2026-06-30',accountingBasis:'IFRS',sourceRow:'Revenue',sourceRaw:'399.7',
   sourceUrl:dlo.sourceUrl,reviewStatus:'needs-reconciliation',comparison:'אין בסיס קודם מאושר'
  }];
+ dlo.activeValuationContext={status:'unverified-supplied-research',scenario:'base',baseTargetPerShare:21.14,weight:50,currency:'USD',asOf:'2026-10-20',source:'src/data/suppliedResearch.json',pdfFilename:'PULSE_DLO_Full_Research_HE.pdf',isComparableFinancialActual:false,note:'מחקר שסופק'};
  dlo.modelReview=[{metricId:'revenue',status:'not-comparable-period-or-definition',modelScenario:null,
-  modelInput:null,modelValue:null,modelUnit:null,modelPeriod:null,modelLabel:'הכנסות Q2 במחקר קודם',
+  modelStatus:'archived-secondary',modelInput:null,modelValue:null,modelUnit:null,modelPeriod:null,modelLabel:'הכנסות Q2 במחקר קודם',
   modelAsOf:'2026-10-19',modelSource:'src/data/models/dlo.json',researchAsOf:'2026-10-20',
   researchSource:'src/data/research/dlo.json',researchTextMatch:true,reason:'תקופה שונה',
   analystReview:'אין שינוי שווי',automaticChange:false}];
