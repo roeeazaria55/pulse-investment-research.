@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import {afterEach, expect, it, vi} from 'vitest';
 import {cleanup, render, screen, fireEvent} from '@testing-library/react';
-import {LatestResearchUpdate, parseLatestSnapshot, verifiedLink, type LatestReport} from '../src/components/LatestResearchUpdate';
+import {LatestResearchUpdate, parseLatestSnapshot, parseResearchHistory, verifiedLink, type LatestReport} from '../src/components/LatestResearchUpdate';
 
 const missing=(companyId:string,ticker:string):LatestReport=>({
  companyId,ticker,status:'insufficient-evidence',kind:'no-verified-new-report',
@@ -68,4 +68,30 @@ it('rejects inconsistent issuer digest and unauthorized automatic update',()=>{
  const other=snapshot();
  other.reports[0].sourceDigestKind='curated-extract-json-sha256-not-original-pdf';
  expect(()=>parseLatestSnapshot(other)).toThrow();
+});
+
+it('shows source-bound public research history without promoting it to new forecasts',async()=>{
+ const data=snapshot();
+ const original=data.reports[0];
+ original.contentId='f'.repeat(24);
+ const entry={companyId:original.companyId,ticker:'DLO',contentId:original.contentId,
+  firstSeenAt:'2026-10-25T10:00:00Z',reportPeriod:original.reportPeriod,publishedDate:original.publishedDate,
+  sourceVersion:original.sourceVersion,status:original.status,report:original};
+ vi.stubGlobal('fetch',vi.fn().mockImplementation(async(url:string)=>({ok:true,json:async()=>url.includes('research-update-history')?
+  {version:1,updatedAt:'2026-10-25T10:00:00Z',entries:[entry]}:data})));
+ render(<LatestResearchUpdate companyId="us-dlo-nasdaq-a"/>);
+ expect(await screen.findByText(/היסטוריית גרסאות מחקר \(1\)/)).toBeTruthy();
+ expect(screen.getByText(/מועד יצירת קובץ הנתונים אינו מועד פרסום/)).toBeTruthy();
+});
+it('rejects duplicated or identity-swapped historical evidence',()=>{
+ const data=snapshot();
+ const original=data.reports[0];
+ original.contentId='f'.repeat(24);
+ const entry={companyId:original.companyId,ticker:'DLO',contentId:original.contentId,
+  firstSeenAt:'2026-10-25T10:00:00Z',reportPeriod:original.reportPeriod,publishedDate:original.publishedDate,
+  sourceVersion:original.sourceVersion,status:original.status,report:original};
+ const h={version:1,updatedAt:'2026-10-25T10:00:00Z',entries:[entry]};
+ expect(parseResearchHistory(h).entries).toHaveLength(1);
+ expect(()=>parseResearchHistory({...h,entries:[entry,entry]})).toThrow();
+ expect(()=>parseResearchHistory({...h,entries:[{...entry,companyId:'candidate-iren'}]})).toThrow();
 });
