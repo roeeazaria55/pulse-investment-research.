@@ -63,6 +63,13 @@ with sync_playwright() as pw:
                    for item in archive['entries']),f'Published {ticker} history does not match latest source'
     assert current_by_ticker['DLO']['status']=='needs-reconciliation'
     assert current_by_ticker['IREN']['status']=='historical-baseline-pending-review'
+    for ticker, expected, unit in [('אנלייט','165.99','USD million'),('גילת טלקום','71.446','ILS million')]:
+        r=current_by_ticker[ticker]
+        selfmetric=next((m for m in r['metrics'] if m['id']=='revenue'),None)
+        assert selfmetric and str(selfmetric['value'])==expected and selfmetric['unit']==unit,ticker
+        assert r['reviewRequired'] is True and r['aiAnalysisEnabled'] is False
+        assert any(item['companyId']==r['companyId'] and item['contentId']==r['contentId'] for item in archive['entries'])
+    assert not current_by_ticker['FTAI']['metrics'], 'Unretrieved FTAI report must not be fabricated'
     assert current_by_ticker['SMCI']['status']=='pending-review'
     smci={m['id']:m for m in current_by_ticker['SMCI']['metrics']}
     assert smci['revenue']['value']==39063.072
@@ -165,6 +172,20 @@ with sync_playwright() as pw:
                     expect(latest).to_contain_text('2026-07-03')
                 latest.scroll_into_view_if_needed()
                 page.screenshot(path=f'work/mobile-{width}-issuer-{("sndk" if label=="SNDK" else "brainsway")}.png',full_page=False)
+            if label=='אנלייט':
+                expect(latest).to_contain_text('165.99 USD million')
+                expect(latest).to_contain_text('209.691 USD million')
+                expect(latest).to_contain_text('מסמך מקור שמור')
+                latest.scroll_into_view_if_needed()
+                page.screenshot(path=f'work/mobile-{width}-issuer-enlight.png',full_page=False)
+            if label=='גילת טלקום':
+                expect(latest).to_contain_text('71.446 ILS million')
+                expect(latest).to_contain_text('66.508 ILS million')
+                expect(latest).to_contain_text('מסמך מקור שמור')
+                latest.scroll_into_view_if_needed()
+                page.screenshot(path=f'work/mobile-{width}-issuer-gilat-telecom.png',full_page=False)
+            if label=='FTAI':
+                expect(latest).to_contain_text('אין עדכון פיננסי מבוסס מקור')
             if label=='SMCI':
                 expect(latest).to_contain_text('39,063.072 USD million')
                 expect(latest).to_contain_text('21,972.042 USD million')
