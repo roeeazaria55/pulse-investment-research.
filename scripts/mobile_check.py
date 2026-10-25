@@ -95,6 +95,8 @@ with sync_playwright() as pw:
             if label=='DLO':
                 expect(latest).to_contain_text('נדרש בירור גרסת מקור')
                 expect(latest).to_contain_text('399.7 USD million')
+                expect(latest).to_contain_text('21.14')
+                expect(latest).to_contain_text('מודל משני בארכיון')
                 expect(latest).to_contain_text('לא ניתוח AI')
                 latest.scroll_into_view_if_needed()
                 page.screenshot(path=f'work/mobile-{width}-latest-research-dlo.png',full_page=False)
