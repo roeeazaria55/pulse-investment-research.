@@ -35,6 +35,16 @@ jobs:
           python3 scripts/research_update_history.py
           python3 scripts/ai_research_packets.py
           python3 scripts/run_optional_ai_review.py --ticker DLO
+      - name: Retain newly collected official issuer evidence before slow browser tests
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pr-issuer-source-probe
+          path: |
+            public/data/report-intake.json
+            public/data/issuer-coverage.json
+            public/data/latest-research-updates.json
+          retention-days: 3
       - run: npm test
       - run: npm run build
         env:
