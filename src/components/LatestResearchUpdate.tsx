@@ -156,7 +156,7 @@ export function parseLatestSnapshot(x:unknown):LatestSnapshot {
 export function parseResearchHistory(x:unknown):ResearchHistory {
  if(!x||typeof x!=='object')throw Error('היסטוריית המחקר אינה זמינה');
  const data=x as ResearchHistory;
- if(data.version!==1||!Array.isArray(data.entries)||data.entries.length>48||!Number.isFinite(Date.parse(data.updatedAt)))throw Error('מבנה ארכיון מחקר אינו תקין');
+ if(data.version!==1||!Array.isArray(data.entries)||data.entries.length>issuerRegistry.companies.length*12||!Number.isFinite(Date.parse(data.updatedAt)))throw Error('מבנה ארכיון מחקר אינו תקין');
  const unique=new Set<string>(),count:Record<string,number>={};
  for(const row of data.entries){
   if(!row||!Object.prototype.hasOwnProperty.call(companyStatuses,row.companyId)||typeof row.contentId!=='string'||!/^[0-9a-f]{24}$/.test(row.contentId)||
