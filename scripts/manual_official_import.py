@@ -83,8 +83,9 @@ def stage(source, issuer, url, period, published, output_dir, *,
     docs = [d for d in previous["documents"] if d.get("id") != identity] + [record]
     feed = dict(previous, generatedAt=moment, documents=docs)
     sources = [s for s in previous["sources"] if s.get("companyId") != issuer]
-    sources.append({"companyId": issuer, "lastAttemptAt": moment, "status": "ok",
-                    "error": None, "provenance": "local-original-upload-not-live-http-fetch"})
+    sources.append({"companyId": issuer, "lastAttemptAt": moment, "status": "deferred",
+                    "error": "Locally supplied official original; no new automated download",
+                    "provenance": "local-original-upload-not-live-http-fetch"})
     feed["sources"] = sources
     feed["notice"] = (
         "Private staged issuer-source import; original PDF was supplied locally, not downloaded "
