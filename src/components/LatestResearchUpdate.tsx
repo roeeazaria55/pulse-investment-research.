@@ -1,15 +1,23 @@
 import {useEffect, useState} from 'react';
+import issuerRegistry from '../../public/data/official-registry.json';
 
 export interface ResearchMetric {
  id:string;label:string;value:number;previousValue:number|null;changePercent:number|null;
  unit:string;periodStart:string;periodEnd:string;accountingBasis:string;
  sourceRow:string;sourceRaw:string;sourcePreviousRaw?:string|null;sourcePage?:number|null;sourceDocumentUrl?:string|null;sourceUrl:string;reviewStatus:string;comparison:string;
 }
+export interface RetainedIssuerReport {
+ id:string;url:string;sha256:string;title:string;format:'pdf'|'html';publishedDate:string|null;
+ documentPeriod:string|null;firstDetectedAt:string|null;lastSuccessfulAt:string|null;
+ reviewStatus:'pending-review';sourceIsCurrentlyReachable:boolean;note:string;
+}
 export interface LatestReport {
  companyId:string;ticker:string;status:string;kind:string;
  reportPeriod:string|null;publishedDate:string|null;sourceUrl:string|null;sourceVersion:string|null;
  metrics:ResearchMetric[];findings:string[];questions:string[];missing:string[];
  sourceDigestKind?:string|null;modelReview?:ModelComparison[];
+ reportEvidence?:RetainedIssuerReport|null;intakeStatus?:'ok'|'partial'|'failed'|'unconfigured'|'no-candidates';
+ analystQuestions?:string[];
  activeValuationContext?:{status:'unverified-supplied-research'|'existing-quantified-scenario-model';
  scenario:'base';baseTargetPerShare:number|null;weight:number;currency:string;asOf:string;
  source:string;pdfFilename:string|null;isComparableFinancialActual:false;note:string};
@@ -27,14 +35,18 @@ export interface SourceCheck {status:'ok'|'partial'|'failed'|'unconfigured'|'not
 export interface LatestSnapshot {
  version:1;generatedAt:string;reports:LatestReport[];aiStatus:'not-enabled';notice:string;
  sourceChecks?:Record<string,SourceCheck>;
+ coverage?:{companyCount:number;financialMetricCompanies:string[];retainedDocumentCompanies:string[]};
 }
 export interface HistoryEntry {companyId:string;ticker:string;contentId:string;firstSeenAt:string;reportPeriod:string|null;publishedDate:string|null;sourceVersion:string|null;status:string;report:LatestReport}
 export interface ResearchHistory {version:1;updatedAt:string;entries:HistoryEntry[]}
 
-const allowed:Record<string,string[]>={
- 'us-dlo-nasdaq-a':['rss.globenewswire.com','www.globenewswire.com','dlocal.gcs-web.com'],
- 'candidate-iren':['iren.gcs-web.com'],
-};
+const allowed:Record<string,string[]> = Object.fromEntries(issuerRegistry.companies.map(c=>[c.id,c.allowedHosts]));
+const companyStatuses:Record<string,string[]> = Object.fromEntries(issuerRegistry.companies.map(c=>[
+ c.id, c.id==='us-dlo-nasdaq-a'?['needs-reconciliation','pending-review','insufficient-evidence']:
+ c.id==='candidate-iren'?['historical-baseline-pending-review','insufficient-evidence']:
+ ['pending-review','insufficient-evidence']
+]));
+
 export function verifiedLink(url:string|null,companyId:string):string|null {
  if(!url)return null;
  try {
@@ -42,12 +54,7 @@ export function verifiedLink(url:string|null,companyId:string):string|null {
   return u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&allowed[companyId]?.includes(u.hostname)?u.href:null;
  } catch {return null;}
 }
-const companyStatuses:Record<string,string[]>={
- 'us-dlo-nasdaq-a':['needs-reconciliation','pending-review','insufficient-evidence'],
- 'candidate-iren':['historical-baseline-pending-review','insufficient-evidence'],
- 'candidate-nebius':['insufficient-evidence'],
- 'us-smci-nasdaq-common':['insufficient-evidence'],
-};
+
 const knownMetrics=new Set(['revenue','grossProfit','operatingCash','capex']);
 const hash=/^[a-f0-9]{64}$/;
 const day=/^\d{4}-\d{2}-\d{2}$/;
@@ -60,7 +67,7 @@ function validDay(value:unknown):value is string{
 export function parseLatestSnapshot(x:unknown):LatestSnapshot {
  if(!x||typeof x!=='object')throw Error('עדכוני מחקר אינם זמינים');
  const data=x as LatestSnapshot;
- if(data.version!==1||data.aiStatus!=='not-enabled'||!Array.isArray(data.reports)||data.reports.length!==4||!Number.isFinite(Date.parse(data.generatedAt)))throw Error('מבנה עדכוני המחקר אינו תקין');
+ if(data.version!==1||data.aiStatus!=='not-enabled'||!Array.isArray(data.reports)||data.reports.length!==issuerRegistry.companies.length||!Number.isFinite(Date.parse(data.generatedAt)))throw Error('מבנה עדכוני המחקר אינו תקין');
  if(data.sourceChecks!==undefined){
   if(!data.sourceChecks||typeof data.sourceChecks!=='object'||Array.isArray(data.sourceChecks))throw Error('מצב מקורות אינו תקין');
   for(const [company,c] of Object.entries(data.sourceChecks)){
@@ -83,14 +90,30 @@ export function parseLatestSnapshot(x:unknown):LatestSnapshot {
    !r.findings.every(v=>shortText(v))||!r.questions.every(v=>shortText(v))||!r.missing.every(v=>shortText(v))||
    r.aiAnalysisEnabled!==false||r.reviewRequired!==true||!shortText(r.modelChange))throw Error('רשומת מחקר לא תקינה');
   ids.add(r.companyId);
+  const evidence=r.reportEvidence;
+  if(evidence!==undefined&&evidence!==null){
+   if(!/^report:[a-f0-9]{32}$/.test(evidence.id)||!hash.test(evidence.sha256)||
+    !verifiedLink(evidence.url,r.companyId)||!shortText(evidence.title,250)||
+    !['pdf','html'].includes(evidence.format)||evidence.reviewStatus!=='pending-review'||
+    !(evidence.publishedDate===null||validDay(evidence.publishedDate))||
+    !(evidence.documentPeriod===null||shortText(evidence.documentPeriod,120))||
+    typeof evidence.sourceIsCurrentlyReachable!=='boolean'||!shortText(evidence.note,300))
+    throw Error('ראיית דוח אינה תקינה');
+  }
+  if(r.intakeStatus!==undefined&&!['ok','partial','failed','unconfigured','no-candidates'].includes(r.intakeStatus))throw Error('סטטוס הורדת דוח לא מוכר');
   if(r.sourceUrl!==null&&!verifiedLink(r.sourceUrl,r.companyId))throw Error('קישור מקור לא תקין');
   const insufficient=r.status==='insufficient-evidence';
   if(insufficient){
    if(r.metrics.length||r.modelReview.length||r.sourceUrl!==null||r.sourceVersion!==null)throw Error('אין מקור מאושר, אך מוצגים נתונים');
-  } else if(!r.sourceUrl||!r.sourceVersion||!hash.test(r.sourceVersion)||!validDay(r.publishedDate))throw Error('ייחוס מקור חסר');
+  } else if(!r.sourceUrl||!r.sourceVersion||!hash.test(r.sourceVersion)||
+   (['us-dlo-nasdaq-a','candidate-iren'].includes(r.companyId)&&!validDay(r.publishedDate))||
+   (r.publishedDate!==null&&!validDay(r.publishedDate)))throw Error('ייחוס מקור חסר');
   if(r.metrics.length>8||r.modelReview.length>8)throw Error('יותר מדי מדדים');
   if(r.companyId==='us-dlo-nasdaq-a'&&!insufficient&&r.sourceDigestKind!=='retained-issuer-html-sha256')throw Error('סוג גרסת DLO שגוי');
   if(r.companyId==='candidate-iren'&&!insufficient&&r.sourceDigestKind!=='curated-extract-json-sha256-not-original-pdf')throw Error('זהות ראיית IREN שגויה');
+  if(!['us-dlo-nasdaq-a','candidate-iren'].includes(r.companyId)&&!insufficient&&(
+    r.sourceDigestKind!=='retained-sec-inline-xbrl-sha256'||!evidence||
+    r.sourceUrl!==evidence.url||r.sourceVersion!==evidence.sha256))throw Error('נתוני XBRL אינם קשורים למקור');
   const metricIds=new Set<string>();
   for(const m of r.metrics){
    if(!knownMetrics.has(m.id)||metricIds.has(m.id)||!shortText(m.label,100)||typeof m.value!=='number'||!Number.isFinite(m.value)||
@@ -104,7 +127,7 @@ export function parseLatestSnapshot(x:unknown):LatestSnapshot {
    if(r.companyId==='us-dlo-nasdaq-a'&&(m.previousValue!==null||m.changePercent!==null||m.reviewStatus==='needs-reconciliation'&&r.status!=='needs-reconciliation'))throw Error('השוואת DLO לא מאושרת');
    if(r.companyId==='candidate-iren'&&(!shortText(m.sourcePreviousRaw,200)||!Number.isInteger(m.sourcePage)||!(m.sourcePage!>=1&&m.sourcePage!<=100)||!verifiedLink(m.sourceDocumentUrl||null,r.companyId)||m.previousValue===null))throw Error('חסרה ראיית מקור IREN');
   }
-  if(!insufficient){
+  if(!insufficient&&['us-dlo-nasdaq-a','candidate-iren'].includes(r.companyId)){
    const v=r.activeValuationContext;
    const isSupplied=r.companyId==='us-dlo-nasdaq-a';
    if(!v||v.isComparableFinancialActual!==false||v.scenario!=='base'||!validDay(v.asOf)||
@@ -114,6 +137,7 @@ export function parseLatestSnapshot(x:unknown):LatestSnapshot {
     (!isSupplied&&(v.status!=='existing-quantified-scenario-model'||v.source!=='src/data/models/iren.json'||v.baseTargetPerShare!==null)))
      throw Error('הקשר הערכת השווי אינו מאומת');
   }
+  if(!['us-dlo-nasdaq-a','candidate-iren'].includes(r.companyId)&&r.modelReview.length)throw Error('השוואת מודל לא מאושרת לחברה זו');
   for(const cmp of r.modelReview){
    if(!metricIds.has(cmp.metricId)||cmp.status!=='not-comparable-period-or-definition'||cmp.automaticChange!==false||
     cmp.modelStatus!==(r.companyId==='us-dlo-nasdaq-a'?'archived-secondary':'existing-quantified-scenario-model')||
@@ -125,7 +149,7 @@ export function parseLatestSnapshot(x:unknown):LatestSnapshot {
     !(cmp.researchTextMatch===null||typeof cmp.researchTextMatch==='boolean'))throw Error('השוואת מודל אינה מבוססת');
   }
  }
- if(!Object.keys(companyStatuses).every(id=>ids.has(id)))throw Error('כיסוי חברות חסר');
+ if(!issuerRegistry.companies.every(c=>ids.has(c.id)))throw Error('כיסוי חברות חסר');
  return data;
 }
 
@@ -188,6 +212,7 @@ export function LatestResearchUpdate({companyId,onPrepare}:{companyId:string;onP
  },[]);
  const report=snapshot?.reports.find(r=>r.companyId===companyId);
  const sourceCheck=snapshot?.sourceChecks?.[companyId];
+ const evidence=report?.reportEvidence;
  const revisions=history.filter(item=>item.companyId===companyId).sort((a,b)=>b.firstSeenAt.localeCompare(a.firstSeenAt));
  const prompt=()=>{
   if(!report||!onPrepare||!report.metrics.length)return;
@@ -210,6 +235,18 @@ export function LatestResearchUpdate({companyId,onPrepare}:{companyId:string;onP
    <article className="thesis-metric">
     <h4>{report.ticker} · {stateText[report.status]||'נדרש אימות'}</h4>
     <p>תקופת דוח: <bdi>{report.reportPeriod||'לא זמינה'}</bdi> · פורסם: {date(report.publishedDate)}. מועד יצירת קובץ הנתונים אינו מועד פרסום דוח חדש.</p>
+    <p><strong>גישה לתוכן דוחות:</strong> {report.intakeStatus==='ok'?'הקריאה האחרונה הצליחה':
+      report.intakeStatus==='failed'?'הקריאה האחרונה נכשלה; מופיע רק מסמך שמור':
+      report.intakeStatus==='partial'?'חלק מהדוחות נקראו וחלקם נכשלו':
+      report.intakeStatus==='no-candidates'?'לא זוהו מסמכי דוח מועמדים':'לא הוגדרה או לא בוצעה קריאת דוח לחברה זו'}.
+      זהו סטטוס קריאת הדוח, בנפרד מסריקת אינדקס המקורות.</p>
+    {evidence&&<div className="thesis-metric">
+      <h5>מסמך מקור שמור (לא בהכרח הדוח האחרון של החברה)</h5>
+      <p>{evidence.title} · תקופה שזוהתה: <bdi>{evidence.documentPeriod||'לא ידועה'}</bdi> · תאריך פרסום: {date(evidence.publishedDate)}</p>
+      <p>זוהה לראשונה: <bdi>{evidence.firstDetectedAt||'לא זמין'}</bdi> · SHA-256 של תוכן שנשמר: <bdi>{evidence.sha256.slice(0,16)}…</bdi></p>
+      {verifiedLink(evidence.url,report.companyId)&&<a href={verifiedLink(evidence.url,report.companyId)!} target="_blank" rel="noopener noreferrer">פתיחת מסמך המקור השמור</a>}
+      <p><small>קישור למסמך אינו אישור שקריאתו האחרונה הצליחה או שכל המדדים חולצו.</small></p>
+    </div>}
     {report.status==='needs-reconciliation'&&<p role="status"><strong>זהירות: מקור DLO דורש בירור. המדדים אינם מאושרים ואין להסיק מהם הפתעה או שינוי בשווי.</strong></p>}
     {report.status==='historical-baseline-pending-review'&&<p>נתוני FY2026 של IREN הם בסיס היסטורי מול FY2025; אין מדובר בדוח חדש או בהשוואה לתחזית מאוקטובר.</p>}
     {report.metrics.length===0?<p>אין עדכון פיננסי מבוסס מקור שניתן להציג בבטחה לחברה זו.</p>:
