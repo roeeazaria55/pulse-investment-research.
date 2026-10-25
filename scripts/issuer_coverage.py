@@ -248,15 +248,17 @@ def build(registry, intake):
                 "documentPeriod": latest.get("documentPeriod") or None,
                 "firstDetectedAt": latest.get("firstDetectedAt"),
                 "lastSuccessfulAt": latest.get("lastSuccessfulAt"),
-                "reviewStatus": "pending-review", "sourceIsCurrentlyReachable": fetch_state == "ok",
+                "reviewStatus": "pending-review", "sourceIsCurrentlyReachable": False,
                 "note": "Latest retained eligible document by available metadata; not proof of latest issuer filing.",
             }
         covered.append({
             "companyId": c["id"], "ticker": c.get("label") or c.get("ticker") or c["name"],
             "intakeStatus": fetch_state, "intakeAttemptAt": max(
                 (s.get("lastAttemptAt") for s in checks if isinstance(s.get("lastAttemptAt"), str)), default=None),
+            # Intake polling status has no per-source success timestamp;
+            # the retained document itself carries the last successful read.
             "intakeSuccessAt": max(
-                (s.get("lastSuccessfulAt") for s in checks if isinstance(s.get("lastSuccessfulAt"), str)), default=None),
+                (d.get("lastSuccessfulAt") for d in company_docs if isinstance(d.get("lastSuccessfulAt"), str)), default=None),
             "lastError": next((s.get("error") for s in checks if s.get("error")), None),
             "retainedDocumentCount": len(company_docs),
             "report": candidate, "typedMetrics": proposal,
