@@ -112,7 +112,7 @@ export function parseLatestSnapshot(x:unknown):LatestSnapshot {
   if(r.companyId==='us-dlo-nasdaq-a'&&!insufficient&&r.sourceDigestKind!=='retained-issuer-html-sha256')throw Error('סוג גרסת DLO שגוי');
   if(r.companyId==='candidate-iren'&&!insufficient&&r.sourceDigestKind!=='curated-extract-json-sha256-not-original-pdf')throw Error('זהות ראיית IREN שגויה');
   if(!['us-dlo-nasdaq-a','candidate-iren'].includes(r.companyId)&&!insufficient&&(
-    r.sourceDigestKind!=='retained-sec-inline-xbrl-sha256'||!evidence||
+    !['retained-sec-inline-xbrl-sha256','retained-issuer-html-table-sha256'].includes(r.sourceDigestKind||'')||!evidence||
     r.sourceUrl!==evidence.url||r.sourceVersion!==evidence.sha256))throw Error('נתוני XBRL אינם קשורים למקור');
   const metricIds=new Set<string>();
   for(const m of r.metrics){
