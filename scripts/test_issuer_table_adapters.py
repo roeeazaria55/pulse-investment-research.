@@ -5,7 +5,7 @@ Fixture cells are transcribed verbatim from GitHub Action issuer intake artifact
 """
 import copy
 import unittest
-from issuer_table_adapters import lemonade_q2, nextvision_fy25
+from issuer_table_adapters import lemonade_q2, nextvision_fy25, meta_q3
 
 
 class IssuerDocumentAdapterTests(unittest.TestCase):
@@ -70,6 +70,38 @@ class IssuerDocumentAdapterTests(unittest.TestCase):
         self.assertEqual(m["revenue"]["periodEnd"],"2025-12-31")
         self.assertEqual(m["revenue"]["sourcePage"],9)
         self.assertIn("historical baseline",m["revenue"]["accountingBasis"])
+
+    def test_meta_q3_gaap_three_month_vs_year_to_date(self):
+        doc={
+            "companyId":"us-meta-nasdaq-a","format":"html",
+            "title":"Meta Reports Third Quarter 2026 Results",
+            "id":"report:"+"c"*32,
+            "url":"https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Third-Quarter-2026-Results/default.aspx",
+            "sha256":"c180a34ae3a8e19acebcb053a48cffebb8f41a18929dc5ae94f6cb8897576a60",
+            "tables":[{"page":None,"rows":[
+                ["META PLATFORMS, INC."],
+                ["CONDENSED CONSOLIDATED STATEMENTS OF INCOME"],
+                ["(In millions, except per share amounts)"],
+                ["(Unaudited)"],
+                ["","Three Months Ended September 30,","","Nine Months Ended September 30,"],
+                ["","2026","","2025","","2026","","2025"],
+                ["Revenue","$ 64,601","", "$ 51,242","", "$ 181,712","", "$ 141,073"],
+                ["Cost of revenue","13,369","","9,206","","34,917","","25,269"]
+            ]}]
+        }
+        rows=meta_q3(doc)
+        self.assertEqual(len(rows),1)
+        self.assertEqual(rows[0]["value"],64601)
+        self.assertEqual(rows[0]["previousValue"],51242)
+        self.assertEqual(rows[0]["periodEnd"],"2026-09-30")
+        self.assertEqual(rows[0]["sourceSha256"],doc["sha256"])
+        self.assertEqual(rows[0]["reviewStatus"],"pending-review")
+        bad=copy.deepcopy(doc)
+        bad["tables"][0]["rows"][5][1]="2025"
+        self.assertEqual(meta_q3(bad),[])
+        bad=copy.deepcopy(doc)
+        bad["tables"][0]["rows"][6][1]="$ 74,601"
+        self.assertEqual(meta_q3(bad),[])
 
     def test_nextvision_wrong_currency_or_years_never_used(self):
         item=self.nextvision()
