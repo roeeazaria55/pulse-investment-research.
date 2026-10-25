@@ -78,6 +78,8 @@ class LatestResearchUpdateTests(unittest.TestCase):
         self.assertEqual(dlo["grossProfit"]["modelValue"], 650)
         self.assertTrue(dlo["revenue"]["researchTextMatch"])
         self.assertEqual(reports["DLO"]["status"], "needs-reconciliation")
+        self.assertEqual(reports["DLO"]["activeValuationContext"]["baseTargetPerShare"], 21.14)
+        self.assertEqual(dlo["grossProfit"]["modelStatus"], "archived-secondary")
 
     def test_malformed_pdf_pointer_fails_closed(self):
         changed = json.loads(json.dumps(self.iren))
