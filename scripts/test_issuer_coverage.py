@@ -59,6 +59,21 @@ class CoverageTests(unittest.TestCase):
         self.assertEqual(metrics["operatingIncome"]["previousValue"], 18)
         self.assertTrue(all(m["reviewStatus"]=="pending-review" for m in metrics.values()))
 
+    def test_conference_remarks_not_financial_filing(self):
+        registry = next(c for c in self.registry["companies"] if c["id"] == "candidate-enlight")
+        dummy = {
+            "companyId": registry["id"],
+            "status": "extracted", "sha256": "a"*64,
+            "id": "report:"+"b"*32, "format": "pdf",
+            "title": "Enlight Renewable Energy Q2 2026 conference call prepared remarks",
+            "url": "https://enlightenergy.com/wp-content/uploads/2026/08/Enlight-prepared-remarks-Q2-2026-1.pdf",
+            "tables": [{"rows": [["Revenues", "210"]]}],
+        }
+        self.assertFalse(document_usable(dummy, registry))
+        self.assertEqual(build(self.registry, {
+            "documents": [dummy], "sources": [],
+        })["coverage"][8]["metricCoverage"], "no-document")
+
     def test_brainsway_three_months_matched_in_exact_issuer_table(self):
         rows = build(self.registry, self.intake)["coverage"]
         bway = next(r for r in rows if r["companyId"] == "candidate-brainsway")
