@@ -17,13 +17,13 @@ class CoverageTests(unittest.TestCase):
                          {c["id"] for c in self.registry["companies"]})
         for r in rows:
             self.assertIn(r["intakeStatus"], ("ok", "partial", "failed", "no-candidates", "unconfigured"))
-            self.assertIn(r["metricCoverage"], ("no-document", "report-only", "provisional-xbrl"))
-            self.assertEqual(bool(r["typedMetrics"]), r["metricCoverage"] == "provisional-xbrl")
+            self.assertIn(r["metricCoverage"], ("no-document", "report-only", "provisional-structured"))
+            self.assertEqual(bool(r["typedMetrics"]), r["metricCoverage"] == "provisional-structured")
 
     def test_structured_smci_duration_and_prior_comparable_in_same_tag(self):
         rows = build(self.registry, self.intake)["coverage"]
         smci = next(r for r in rows if r["companyId"] == "us-smci-nasdaq-common")
-        self.assertEqual(smci["metricCoverage"], "provisional-xbrl")
+        self.assertEqual(smci["metricCoverage"], "provisional-structured")
         actual = {m["id"]: m for m in smci["typedMetrics"]}
         self.assertEqual(actual["revenue"]["value"], 39063.072)
         self.assertEqual(actual["revenue"]["previousValue"], 21972.042)
