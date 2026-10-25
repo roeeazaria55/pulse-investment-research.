@@ -34,12 +34,30 @@ class CoverageTests(unittest.TestCase):
         self.assertEqual(actual["revenue"]["reviewStatus"], "pending-review")
         self.assertTrue(all("surprise" not in m["id"] for m in smci["typedMetrics"]))
 
-    def test_fetched_pdf_tables_do_not_become_unreviewed_numbers(self):
+    def test_strict_pdf_adapter_never_confuses_unreviewed_layouts(self):
         rows = build(self.registry, self.intake)["coverage"]
         nbis = next(r for r in rows if r["companyId"] == "candidate-nebius")
-        self.assertEqual(nbis["metricCoverage"], "report-only")
-        self.assertEqual(nbis["typedMetrics"], [])
+        self.assertEqual(nbis["metricCoverage"], "provisional-structured")
+        self.assertEqual(len(nbis["typedMetrics"]), 1)
+        revenue=nbis["typedMetrics"][0]
+        self.assertEqual(revenue["id"], "revenue")
+        self.assertEqual(revenue["value"], 399.0)
+        self.assertEqual(revenue["previousValue"], 50.9)
+        self.assertEqual(revenue["sourcePage"], 7)
+        self.assertEqual(revenue["sourceSha256"], nbis["report"]["sha256"])
         self.assertIsNotNone(nbis["report"])
+
+    def test_sandisk_fiscal_q4_not_calendar_q2(self):
+        rows=build(self.registry,self.intake)["coverage"]
+        sndk=next(r for r in rows if r["companyId"]=="candidate-sandisk")
+        metrics={m["id"]:m for m in sndk["typedMetrics"]}
+        self.assertEqual(metrics["revenue"]["value"], 8965)
+        self.assertEqual(metrics["revenue"]["previousValue"], 1901)
+        self.assertEqual(metrics["revenue"]["periodEnd"], "2026-07-03")
+        self.assertEqual(metrics["revenue"]["previousPeriodEnd"], "2025-06-27")
+        self.assertEqual(metrics["operatingIncome"]["value"], 7037)
+        self.assertEqual(metrics["operatingIncome"]["previousValue"], 18)
+        self.assertTrue(all(m["reviewStatus"]=="pending-review" for m in metrics.values()))
 
     def test_brainsway_three_months_matched_in_exact_issuer_table(self):
         rows = build(self.registry, self.intake)["coverage"]
