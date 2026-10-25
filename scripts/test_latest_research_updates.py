@@ -81,8 +81,16 @@ class LatestResearchUpdateTests(unittest.TestCase):
         second = build(self.dlo, self.iren)
         self.assertEqual([r["contentId"] for r in first["reports"]],
                          [r["contentId"] for r in second["reports"]])
-        self.assertEqual([r["ticker"] for r in first["reports"]], ["DLO", "IREN", "NBIS", "SMCI"])
-        self.assertTrue(all(not r["metrics"] for r in first["reports"][2:]))
+        registry = json.loads((ROOT / "public/data/official-registry.json").read_text(encoding="utf-8"))
+        self.assertEqual([r["companyId"] for r in first["reports"]],
+                         [c["id"] for c in registry["companies"]])
+        self.assertEqual(len(first["reports"]), 12)
+        by_company = {r["companyId"]: r for r in first["reports"]}
+        self.assertEqual(by_company["candidate-nebius"]["status"], "insufficient-evidence")
+        self.assertTrue(by_company["candidate-nebius"]["reportEvidence"])
+        self.assertEqual(by_company["us-smci-nasdaq-common"]["status"], "pending-review")
+        self.assertTrue(by_company["us-smci-nasdaq-common"]["metrics"])
+        self.assertEqual(first["coverage"]["companyCount"], 12)
         self.assertEqual(first["aiStatus"], "not-enabled")
 
 
@@ -116,6 +124,18 @@ class LatestResearchUpdateTests(unittest.TestCase):
         r = iren_update(changed)
         self.assertEqual(r["status"], "insufficient-evidence")
         self.assertFalse(r["metrics"])
+
+    def test_generic_sec_source_context_does_not_promote_valuation(self):
+        by_id = {r["companyId"]: r for r in build(self.dlo, self.iren)["reports"]}
+        smci = by_id["us-smci-nasdaq-common"]
+        rev = next(x for x in smci["metrics"] if x["id"] == "revenue")
+        self.assertEqual(rev["value"], 39063.072)
+        self.assertEqual(rev["previousValue"], 21972.042)
+        self.assertEqual(rev["reviewStatus"], "pending-review")
+        self.assertEqual(smci["sourceVersion"], smci["reportEvidence"]["sha256"])
+        self.assertFalse(smci["aiAnalysisEnabled"])
+        self.assertTrue(smci["reviewRequired"])
+        self.assertEqual(smci["modelReview"], [])
 
     def test_issuer_model_identity_is_checked_not_silently_combined(self):
         from unittest.mock import patch
