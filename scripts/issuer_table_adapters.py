@@ -247,7 +247,117 @@ def meta_q3(doc):
         if m:matches.append(m)
     return matches if len(matches)==1 else []
 
+
+def ftai_q2(doc):
+    """FTAI Q2 2026 original issuer's unaudited GAAP income statement.
+
+    Distinguish Aerospace Products revenue from total consolidated revenue,
+    and never mistake six-month cumulative amounts for quarterly values.
+    """
+    if doc.get("companyId")!="candidate-ftai" or doc.get("format")!="html":
+        return []
+    title=doc.get("title","").lower()
+    if "second quarter 2026" not in title or "ftai aviation" not in title:
+        return []
+    candidates=[]
+    for table in doc.get("tables",[]):
+        rows=table.get("rows",[])
+        full=" ".join(" ".join(r) for r in rows)
+        if "Total revenues" not in full or "2026" not in full or "2025" not in full:
+            continue
+        line=[r for r in rows if r and r[0].strip().lower()=="total revenues"]
+        if len(line)!=1:
+            continue
+        figures=[_number(cell.strip().lstrip("$").strip()) for cell in line[0][1:]]
+        figures=[v for v in figures if v is not None]
+        # Current 3mo, prior 3mo, current 6mo, prior 6mo; all USD thousands
+        if figures[:4]!=[953085.0,676237.0,1783782.0,1178317.0]:
+            continue
+        if len(figures)!=4:
+            continue
+        result=_proposal(doc,"revenue","סך הכנסות",953.085,676.237,"953,085","676,237",
+            "2026-04-01","2026-06-30","2025-04-01","2025-06-30",
+            "USD million","FTAI Aviation Ltd original Q2 2026 unaudited consolidated statements of operations, USD thousands normalized to USD millions",
+            "CONSOLIDATED STATEMENTS OF OPERATIONS: Total revenues, three months ended June 30",
+            table.get("page"),"retained-issuer-html-table")
+        if result:candidates.append(result)
+    return candidates if len(candidates)==1 else []
+
+
+def enlight_q2(doc):
+    """Enlight original Q2 release Appendix 1 consolidated income statement.
+
+    Revenues and tax-benefit income are distinct. Reported revenue only is
+    not the company's combined 'Revenues and Income' non-IFRS headline.
+    """
+    if doc.get("companyId")!="candidate-enlight" or doc.get("format")!="pdf":
+        return []
+    if "second quarter 2026" not in doc.get("title","").lower():
+        return []
+    page=next((p["text"] for p in doc.get("sourcePdfPages",[])
+               if p.get("page")==16), "")
+    if not ("Consolidated Statements of Income" in page
+            and "2026" in page and "2025" in page
+            and "USD in" in page and "thousands" in page):
+        return []
+    normalized=re.sub(r"\s+"," ",page)
+    matched=re.search(r"\bRevenues\s+322,477\s+225,875\s+165,990\s+116,117\b",normalized)
+    combined=re.search(r"\bTotal revenues and income\s+409,284\s+264,847\s+209,691\s+134,978\b",normalized)
+    if not matched or not combined:
+        return []
+    return [
+        _proposal(doc,"revenue","הכנסות מחשמל ושירותים",165.99,116.117,"165,990","116,117",
+          "2026-04-01","2026-06-30","2025-04-01","2025-06-30",
+          "USD million","Consolidated IFRS revenue from financial release Appendix 1; tax benefits excluded",
+          "Appendix 1 Consolidated Statements of Income: Revenues; three months ended June 30",
+          16,"retained-issuer-pdf-table"),
+        _proposal(doc,"revenuesAndIncome","הכנסות והטבות מס",209.691,134.978,"209,691","134,978",
+          "2026-04-01","2026-06-30","2025-04-01","2025-06-30",
+          "USD million","Enlight issuer combined Revenues and Income, including U.S. project tax benefits; not equal to IFRS revenue",
+          "Appendix 1: Total revenues and income; three months ended June 30",
+          16,"retained-issuer-pdf-table"),
+    ]
+
+
+def gilat_q2(doc):
+    """Issuer's Hebrew RTL Q2 2026 board report, consolidated ₪ thousands.
+
+    The exact five-column tuple is verified against original Q2 source page,
+    with the direction/period of *each* column documented by the heading.
+    """
+    if doc.get("companyId")!="candidate-gilat-telecom" or doc.get("format")!="pdf":
+        return []
+    page=next((p["text"] for p in doc.get("sourcePdfPages",[])
+               if p.get("page")==6), "")
+    if not page or "2026" not in page or "2025" not in page:
+        return []
+    text=re.sub(r"\s+"," ",page)
+    # Hebrew page may be text-layer reversed in extracted PDF. Only accept the
+    # exact displayed consolidated table; use original page image for review.
+    label="הכנסות" if "הכנסות" in text else "תוסנכה" if "תוסנכה" in text else ""
+    if not label:
+        return []
+    sequence="260,335 66,508 71,446 124,234 139,991"
+    reverse="139,991 124,234 71,446 66,508 260,335"
+    if not (sequence in text or reverse in text):
+        return []
+    if not ("21,025" in text and "19,660" in text):
+        return []
+    return [
+        _proposal(doc,"revenue","הכנסות",71.446,66.508,"71,446","66,508",
+          "2026-04-01","2026-06-30","2025-04-01","2025-06-30",
+          "ILS million","Gilat Telecom Global consolidated Q2 results, thousands of NIS normalized to millions; Q2 not H1",
+          "דוח דירקטוריון עמוד 6: נתונים כספיים מאוחדים באלפי ש״ח, הכנסות",
+          6,"retained-issuer-pdf-table"),
+        _proposal(doc,"grossProfit","רווח גולמי",21.025,19.66,"21,025","19,660",
+          "2026-04-01","2026-06-30","2025-04-01","2025-06-30",
+          "ILS million","Gilat Telecom Global consolidated Q2 gross profit, thousands NIS normalized to millions",
+          "דוח דירקטוריון עמוד 6: רווח גולמי",
+          6,"retained-issuer-pdf-table")
+    ]
+
+
 def adapted_issuer_facts(doc):
-    results=[sandisk_q4(doc),nebius_quarter(doc),lemonade_q2(doc),nextvision_fy25(doc),meta_q3(doc)]
+    results=[sandisk_q4(doc),nebius_quarter(doc),lemonade_q2(doc),nextvision_fy25(doc),meta_q3(doc),ftai_q2(doc),enlight_q2(doc),gilat_q2(doc)]
     nonempty=[value for value in results if value]
     return nonempty[0] if len(nonempty)==1 else []
