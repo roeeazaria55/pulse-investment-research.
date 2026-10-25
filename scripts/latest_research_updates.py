@@ -76,6 +76,38 @@ def model_context(report):
     if len(base_rows) != 1:
         raise ValueError("Missing or duplicate base-scenario valuation")
     base = base_rows[0]["inputs"]
+    supplied = [x for x in load(ROOT / "src/data/suppliedResearch.json")
+                if x.get("companyId") == company]
+    if len(supplied) > 1:
+        raise ValueError("Duplicate primary supplied valuation for issuer")
+    primary = supplied[0] if supplied else None
+    if primary:
+        scenarios = [x for x in primary.get("scenarios", []) if x.get("id") == "base"]
+        if len(scenarios) != 1 or primary.get("method") != "stated":
+            raise ValueError("Unsupported supplied primary valuation shape")
+        weight = scenarios[0].get("weight")
+        target = scenarios[0].get("statedValue")
+        if not isinstance(weight, (int, float)) or not isinstance(target, (int, float)):
+            raise ValueError("Malformed supplied primary scenario")
+        if not all(math.isfinite(v) for v in (weight, target)) or not 0 <= weight <= 100:
+            raise ValueError("Nonfinite supplied primary scenario")
+        report["activeValuationContext"] = {
+            "status": "unverified-supplied-research", "scenario": "base",
+            "baseTargetPerShare": target, "weight": weight, "currency": "USD",
+            "asOf": primary["date"], "source": "src/data/suppliedResearch.json",
+            "pdfFilename": primary["filename"],
+            "isComparableFinancialActual": False,
+            "note": "מחקר שסופק ידנית והוא התצוגה הראשית; מחירי יעד אינם נתוני חברה מאומתים. מודל JSON הישן הוא ארכיון ואינו מחליף את המחקר שסופק."
+        }
+    else:
+        report["activeValuationContext"] = {
+            "status": "existing-quantified-scenario-model", "scenario": "base",
+            "baseTargetPerShare": None, "weight": base_rows[0]["probability"],
+            "currency": model["quoteCurrency"], "asOf": model["analysisDate"],
+            "source": "src/data/models/" + ticker + ".json", "pdfFilename": None,
+            "isComparableFinancialActual": False,
+            "note": "תנאי מודל הבסיס נבחנים לתקופה ולהגדרה אך אינם עדכון שווי אוטומטי."
+        }
     mapping = {
         "us-dlo-nasdaq-a": {
             "grossProfit": ("driver", "רווח גולמי שנתי בתחזית 2027",
@@ -116,6 +148,7 @@ def model_context(report):
         comparisons.append({
             "metricId": metric["id"], "status": "not-comparable-period-or-definition",
             "modelScenario": "base" if input_key else None,
+            "modelStatus": "archived-secondary" if primary else "existing-quantified-scenario-model",
             "modelInput": input_key, "modelValue": current_assumption,
             "modelUnit": "USD million" if input_key else None,
             "modelPeriod": "calendar-2027" if input_key == "revenue" or company == "us-dlo-nasdaq-a" and input_key == "driver"
@@ -129,7 +162,7 @@ def model_context(report):
             "automaticChange": False,
         })
     report["modelReview"] = comparisons
-    report["findings"].append("נבדק מודל הבסיס ומחקר PULSE השמור. אין מדידה תואמת בתקופה ובהגדרה שניתן לפרש כהפתעת תחזית.")
+    report["findings"].append("נבדקו המחקר הראשי, מודל הבסיס ותקופות המקור. אין מדידה תואמת שניתן לפרש כהפתעת תחזית.")
     report["missing"].append("השוואות אלה הן בדיקת התאמה בין מקורות והנחות — לא תחזית חדשה ולא אישור לנתוני המקור.")
     report["contentId"] = identity({k: v for k, v in report.items() if k != "contentId"})
     return report
