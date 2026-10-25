@@ -433,6 +433,10 @@ def build(observations, iren_source, source_inventory=None, coverage=None):
             report = other_issuer_update(row)
         report.setdefault("reportEvidence", row.get("report"))
         report.setdefault("intakeStatus", row["intakeStatus"])
+        report["intakeAttemptAt"] = row.get("intakeAttemptAt")
+        report["intakeSuccessAt"] = row.get("intakeSuccessAt")
+        report["intakeError"] = (row.get("lastError") or "")[:180] or None
+        report["issuerPortal"] = row.get("issuerPortal")
         report["analystQuestions"] = row.get("analystQuestions", [])
         reports.append(report)
     return {
