@@ -1,6 +1,6 @@
 import copy
 import unittest
-from report_intake import collect,extract,safe_report_url
+from report_intake import collect,extract,safe_report_url,PILOTS
 C={'id':'us-smci-nasdaq-common','name':'Super Micro Computer','label':'SMCI','aliases':['Supermicro'],'allowedHosts':['www.sec.gov'],'documentPaths':['/Archives/edgar/data/1375365/'],'sources':[{'cik':'1375365'}]}
 URL='https://www.sec.gov/Archives/edgar/data/1375365/test.htm'
 HTML='''<html><h1>Super Micro Computer financial results</h1><script>revenue is fake</script><p>These are financial statements for the company and not an announcement of a future earnings call.</p><table><tr><th>USD millions</th><th>2026</th><th>2025</th></tr><tr><td>Revenue</td><td>100</td><td>80</td></tr></table><xbrli:context id="annual"><xbrli:entity><xbrli:identifier>0001375365</xbrli:identifier></xbrli:entity><xbrli:period><xbrli:startdate>2025-07-01</xbrli:startdate><xbrli:enddate>2026-06-30</xbrli:enddate></xbrli:period></xbrli:context><xbrli:unit id="usd"><xbrli:measure>iso4217:USD</xbrli:measure></xbrli:unit><ix:nonFraction name="us-gaap:Revenues" contextRef="annual" unitRef="usd" scale="6" format="ixt:num-dot-decimal">39,100</ix:nonFraction></html>'''.encode()
@@ -63,6 +63,24 @@ class IntakeTests(unittest.TestCase):
   def fail(u,c):self.fail('Clinical release should not be fetched')
   result=collect({'items':[item]},{'companies':[C]}, {},'2026-10-20T12:00:00Z',fetcher=fail)
   self.assertEqual(result['documents'],[])
+ def test_all_12_registry_issuers_allowed_but_request_budget_rotates(self):
+  self.assertEqual(len(PILOTS),12)
+  second={**C,'id':'candidate-iren','name':'IREN Test','label':'IREN'}
+  alt={**ITEM,'companyId':'candidate-iren','title':'IREN financial results'}
+  fetched=[]
+  def fetch(url,c):
+   fetched.append(c['id'])
+   return HTML,'text/html',url
+  first=collect({'items':[ITEM,alt]},{'companies':[C,second]}, {},
+                '2026-10-25T10:00:00Z',fetcher=fetch,limit=1)
+  self.assertEqual(len(fetched),1)
+  second_run=collect({'items':[ITEM,alt]},{'companies':[C,second]},first,
+                     '2026-10-25T11:00:00Z',fetcher=fetch,limit=1)
+  self.assertEqual(len(fetched),2)
+  self.assertEqual(set(fetched),{C['id'],second['id']})
+  self.assertEqual(len(second_run['documents']),2)
+  self.assertTrue(all(d['status']=='extracted' for d in second_run['documents']))
+
  def test_zero_budget_and_schedule_skip_fetch(self):
   def fail(u,c):self.fail('Network should not be called')
   result=collect({'items':[ITEM]},{'companies':[C]}, {},'2026-10-20T12:00:00Z',fetcher=fail,limit=0)
