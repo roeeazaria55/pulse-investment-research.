@@ -102,6 +102,11 @@ export function parseLatestSnapshot(x:unknown):LatestSnapshot {
     throw Error('ראיית דוח אינה תקינה');
   }
   if(r.intakeStatus!==undefined&&!['ok','partial','failed','unconfigured','no-candidates'].includes(r.intakeStatus))throw Error('סטטוס הורדת דוח לא מוכר');
+  if(r.issuerPortal!==undefined&&r.issuerPortal!==null&&!verifiedLink(r.issuerPortal,r.companyId))throw Error('פורטל מקור לא מאושר');
+  if(r.intakeError!==undefined&&r.intakeError!==null&&(typeof r.intakeError!=='string'||r.intakeError.length>200))throw Error('סיבת כשל לא תקינה');
+  for(const timestamp of [r.intakeAttemptAt,r.intakeSuccessAt]){
+   if(timestamp!==undefined&&timestamp!==null&&(typeof timestamp!=='string'||!Number.isFinite(Date.parse(timestamp))))throw Error('מועד בדיקת דוח אינו תקין');
+  }
   if(r.sourceUrl!==null&&!verifiedLink(r.sourceUrl,r.companyId))throw Error('קישור מקור לא תקין');
   const insufficient=r.status==='insufficient-evidence';
   if(insufficient){
@@ -241,6 +246,12 @@ export function LatestResearchUpdate({companyId,onPrepare}:{companyId:string;onP
       report.intakeStatus==='partial'?'חלק מהדוחות נקראו וחלקם נכשלו':
       report.intakeStatus==='no-candidates'?'לא זוהו מסמכי דוח מועמדים':'לא הוגדרה או לא בוצעה קריאת דוח לחברה זו'}.
       זהו סטטוס קריאת הדוח, בנפרד מסריקת אינדקס המקורות.</p>
+    <p><small>ניסיון קריאה אחרון: {report.intakeAttemptAt?new Date(report.intakeAttemptAt).toLocaleString('he-IL'):'לא בוצע'} ·
+     קריאה מוצלחת אחרונה: {report.intakeSuccessAt?new Date(report.intakeSuccessAt).toLocaleString('he-IL'):'לא קיימת'}.
+     {report.intakeError&&<> סיבת הכשל האחרונה: <bdi>{report.intakeError}</bdi>.</>}
+    </small></p>
+    {verifiedLink(report.issuerPortal||null,report.companyId)&&<p><a target="_blank" rel="noopener noreferrer"
+     href={verifiedLink(report.issuerPortal||null,report.companyId)!}>אתר הדיווחים הרשמי של החברה (קישור בלבד, לא אישור הצלחת קריאה)</a></p>}
     {evidence&&<div className="thesis-metric">
       <h5>מסמך מקור שמור (לא בהכרח הדוח האחרון של החברה)</h5>
       <p>{evidence.title} · תקופה שזוהתה: <bdi>{evidence.documentPeriod||'לא ידועה'}</bdi> · תאריך פרסום: {date(evidence.publishedDate)}</p>
