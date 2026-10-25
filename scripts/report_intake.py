@@ -201,7 +201,7 @@ def candidates(snapshot,company):
                  'kind':'document','documentPeriod':r.get('documentPeriod'),
                  'periodBasis':'curated-issuer-title-unverified',
                  'publishedDate':r['publishedDate'],'publishedDateBasis':'curated-reference-only',
-                 'sourceId':'curated-official-pointer','evidenceUrl':r['evidence']})
+                 'sourceId':'curated-official-pointer','evidenceUrl':r['evidence'],'curated':True})
  def rank(item):
   period=item.get('documentPeriod') or item['title'];year=re.search(r'20\d{2}',period);fiscal=FISCAL_YEAR.search(period);quarter=re.search(r'Q([1-4])',period,re.I);word=re.search(r'(first|second|third|fourth)\s+(?:fiscal\s+)?quarter',period,re.I)
   q=int(quarter[1]) if quarter else {'first':1,'second':2,'third':3,'fourth':4}.get(word[1].lower(),0) if word else 0
@@ -227,7 +227,7 @@ def collect(snapshot,registry,previous,now,fetcher=fetch_document,limit=16,budge
   todo=candidates(snapshot,company)[:6]
   def priority(item):
    ident='report:'+hashlib.sha256((company['id']+'|'+canonical(item['url'])).encode()).hexdigest()[:32]
-   return (ident in records,records.get(ident,{}).get('lastSuccessfulAt',''))
+   return (not item.get('curated',False),ident in records,records.get(ident,{}).get('lastSuccessfulAt',''))
   todo.sort(key=priority);chosen=todo[:2];status=dict(companyId=company['id'],
      lastAttemptAt=previous_status.get(company['id'],{}).get('lastAttemptAt'),
      status='no-candidates',error=None)
