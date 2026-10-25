@@ -20,18 +20,21 @@ class AIWorkflowIsolationTests(unittest.TestCase):
         self.assertNotIn("schedule:", review)
         self.assertNotIn("pull_request:", review)
         self.assertIn("refs/heads/main", review)
-        self.assertIn("APPROVE_SINGLE_PAID_AI_REQUEST", review)
+        self.assertNotIn("OPENAI_API_KEY", review)
+        self.assertNotIn("--execute", review)
         self.assertIn("contents: read", review)
         self.assertNotIn("contents: write", review)
         self.assertNotIn("upload-artifact", review)
         runner = (ROOT / "scripts/run_optional_ai_review.py").read_text(encoding="utf-8")
         self.assertNotIn("write_text(", runner)
         self.assertNotIn("work/ai-review-", runner)
-        self.assertIn("validated-in-memory", runner)
+        self.assertIn("private_output_path", runner)
+        self.assertIn("private-review-created", runner)
 
     def test_pwa_cache_is_rotated_for_new_research_shell(self):
         sw = (ROOT / "public/sw.js").read_text(encoding="utf-8")
-        self.assertIn('pulse-v5-model-review-20261025', sw)
+        self.assertIn('pulse-v6-research-history-offline-20261025', sw)
+        self.assertIn('research-update-history.json', sw)
 
 
 if __name__ == "__main__":
