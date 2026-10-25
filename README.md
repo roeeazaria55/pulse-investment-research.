@@ -1,14 +1,14 @@
-> **October 2026 release candidate (PR #60, not deployed):** The existing PULSE
-> PWA includes twelve company research/source status views, retained report
-> pointers, source-backed review-only DLO/IREN/BWAY/SMCI financial candidates,
-> and a bounded public issuer-research history built for the
-> `pulse-data` publication pipeline. DLO data still need reconciliation and
-> IREN FY2026 is a historical baseline, not new earnings. Only four issuers
-> have pilot financial candidates, all requiring review; the latest PR source
-> scan retained issuer documents for eight companies (including LMND and
-> Next Vision). Source availability can change. GitHub Actions paid
-> AI is **disabled**; an explicitly approved local private-output CLI is
-> available for future testing, not yet executed with a paid model call.
+> **October 2026 expanded research branch — NOT READY TO MERGE under the owner's 12/12 requirement.**
+> All twelve issuers have source-status research pages. Source-backed,
+> review-only financial metrics now exist for DLO, IREN, NBIS, META, LMND,
+> SNDK, Next Vision (historical FY2025), BrainsWay and SMCI: **9 of 12**.
+> FTAI source downloads remain blocked, an Enlight Q2 call transcript is
+> **not** a GAAP financial filing, and Gilat Telecom's PDF has not passed
+> original-document financial-extraction checks. A source URL or earnings
+> transcript is not completed financial coverage. DLO requires reconciliation.
+> No values update targets, scenarios or portfolios. Nothing has been merged
+> to `main` and no paid OpenAI API call was made. See
+> [release gates and rollback](docs/PULSE_RELEASE.md).
 > See [v1 release gates, production checks and rollback](docs/PULSE_RELEASE.md).
 >
 # PULSE — Investment Research
