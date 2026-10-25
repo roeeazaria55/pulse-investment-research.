@@ -32,7 +32,7 @@ it('displays retained real-value-shaped DLO research with honest review status a
  fireEvent.click(screen.getByRole('button',{name:/הכנת שאלות למחקר/}));
  expect(prepare).toHaveBeenCalledOnce();
  expect(prepare.mock.calls[0][0]).toContain('399.7');
- expect(prepare.mock.calls[0][0]).toContain('לא תשנה אוטומטית');
+ expect(prepare.mock.calls[0][0]).toContain('אל תשנה אוטומטית');
 });
 it('shows missing evidence for SMCI without invented values',async()=>{
  vi.stubGlobal('fetch',vi.fn().mockResolvedValue({ok:true,json:async()=>snapshot()}));
