@@ -1,8 +1,8 @@
 """Opt-in ONE-issuer AI review. Never used by scheduled collection.
 
 Execution requires BOTH --execute and PULSE_PAID_AI_APPROVED=YES, plus a
-private OPENAI_API_KEY. AI output is validated in runner memory only.
-No artifact, logs of content, publication, valuation mutation or write to GitHub.
+private OPENAI_API_KEY. Output may be saved ONLY to an explicit private
+absolute path outside the public Git repository, never in Actions artifacts.
 """
 import argparse
 import json
@@ -41,22 +41,53 @@ def parse_and_validate(packet, response):
     if len(outputs) != 1 or not isinstance(outputs[0], str):
         raise ValueError("Unexpected AI response shape")
     candidate = json.loads(outputs[0])
-    validate_ai_proposal(packet, candidate)
+    validate_ai_proposal(packet, candidate, model_execution_attested=True)
     if candidate["analysisMode"] != "model-generated-unverified":
         raise ValueError("AI execution incorrectly labeled as deterministic")
     return candidate
+
+
+def private_output_path(raw):
+    """Fail BEFORE a paid request without an explicit non-repository destination."""
+    if not raw or not Path(raw).is_absolute():
+        raise ValueError("Private absolute output path is required for paid AI")
+    target = Path(raw)
+    root = ROOT.resolve()
+    parent = target.parent.resolve(strict=True)
+    if parent == root or root in parent.parents:
+        raise ValueError("Private AI output cannot be saved anywhere in the public repository")
+    if not parent.is_dir():
+        raise ValueError("Private AI output directory does not exist")
+    if target.exists() or target.is_symlink():
+        raise ValueError("Refusing to overwrite existing or linked private AI output")
+    if target.suffix != ".json":
+        raise ValueError("Use a private JSON destination")
+    return target
+
+
+def save_private(candidate, target):
+    # Atomic O_EXCL creation with owner-only permissions. Never overwrite.
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    fd = os.open(target, flags, 0o600)
+    with os.fdopen(fd, "w", encoding="utf-8") as handle:
+        json.dump(candidate, handle, ensure_ascii=False, indent=2, allow_nan=False)
+        handle.write("\\n")
 
 
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--ticker", choices=["DLO", "IREN", "NBIS", "SMCI"], default="DLO")
     p.add_argument("--execute", action="store_true", help="Chargeable API call; requires separate affirmative environment gate")
+    p.add_argument("--private-output", help="Absolute JSON path outside the repository, never a GitHub artifact")
     a = p.parse_args()
     packet, content = prepare(a.ticker)
     if not a.execute:
         print(json.dumps({"ticker": a.ticker, "packetSha256": packet["contentSha256"],
                           "status": "preflight-only", "paidAiExecuted": False}))
         return
+    target = private_output_path(a.private_output)
     if os.getenv("PULSE_PAID_AI_APPROVED") != "YES":
         raise ValueError("Explicit paid AI gate not granted")
     key = os.getenv("OPENAI_API_KEY")
@@ -90,15 +121,14 @@ def main():
     except HTTPError as e:
         raise ValueError("AI API returned HTTP " + str(e.code) + "; no proposal saved") from None
     candidate = parse_and_validate(packet, json.loads(raw))
-    # No persist/upload/print of content or free-form model text. We only
-    # publish a hash and count of validated review elements in the job log.
+    save_private(candidate, target)
     fingerprint = sha256(json.dumps(candidate, ensure_ascii=False, sort_keys=True,
                                    separators=(",", ":")).encode("utf-8")).hexdigest()
-    print(json.dumps({"ticker": a.ticker, "status": "validated-in-memory",
+    print(json.dumps({"ticker": a.ticker, "status": "private-review-created",
                       "packetSha256": packet["contentSha256"], "proposalSha256": fingerprint,
                       "citedEvidence": len(candidate["evidenceCitations"]),
                       "interpretations": len(candidate["interpretations"]),
-                      "outputSaved": False, "automaticModelChanges": False}))
+                      "outputSaved": True, "automaticModelChanges": False}))
 
 
 if __name__ == "__main__":
