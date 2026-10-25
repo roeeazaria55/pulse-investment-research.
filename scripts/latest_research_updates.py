@@ -143,8 +143,9 @@ def model_context(report):
         # DLO contemporaneous supplied analyst baseline must match exactly to
         # be labeled a research-text match; no data scraped from prose as truth.
         text_match = None
-        if company == "us-dlo-nasdaq-a" and metric["id"] == "revenue":
-            text_match = "399.7" in research["fields"]["revenue"] and abs(metric["value"] - 399.7) < 1e-8
+        if company == "us-dlo-nasdaq-a" and metric["id"] in ("revenue", "grossProfit"):
+            expected = {"revenue": 399.7, "grossProfit": 127.2}[metric["id"]]
+            text_match = str(expected) in research["fields"]["revenue"] and abs(metric["value"] - expected) < 1e-8
         comparisons.append({
             "metricId": metric["id"], "status": "not-comparable-period-or-definition",
             "modelScenario": "base" if input_key else None,
@@ -179,6 +180,12 @@ def missing(company, detail):
 
 
 def dlo_update(observations):
+    # Bind each extracted observation to the actual retained issuer report.
+    # A syntactically valid digest alone is NOT proof that a source exists.
+    documents = load(ROOT / "public/data/report-intake.json")["documents"]
+    issuer_docs = {(d.get("id"), d.get("sha256")): d for d in documents
+                   if isinstance(d, dict) and d.get("companyId") == "us-dlo-nasdaq-a"
+                   and d.get("status") == "extracted"}
     valid = []
     for r in observations.get("observations", []):
         if not isinstance(r, dict) or r.get("companyId") != "us-dlo-nasdaq-a":
@@ -197,6 +204,11 @@ def dlo_update(observations):
             and isinstance(r.get("sourceRaw"), str) and r["sourceRaw"].strip()
             and isinstance(r.get("sourceRow"), str) and r["sourceRow"].strip()
         ):
+            continue
+        source_doc = issuer_docs.get((r.get("reportId"), r["sourceSha256"]))
+        if not source_doc or r["sourceUrl"] != source_doc.get("url") or r.get("publishedDate") != source_doc.get("publishedDate"):
+            continue
+        if bool(source_doc.get("revised")) and r["reviewStatus"] != "needs-reconciliation":
             continue
         valid.append(r)
     if not valid:
