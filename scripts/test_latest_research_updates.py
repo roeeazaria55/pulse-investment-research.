@@ -32,6 +32,17 @@ class LatestResearchUpdateTests(unittest.TestCase):
         self.assertTrue(all(m["reviewStatus"] in ("needs-reconciliation", "pending-review") for m in r["metrics"]))
         self.assertFalse(r["aiAnalysisEnabled"])
 
+    def test_dlo_observation_must_match_retained_report_digest_and_identity(self):
+        tampered = json.loads(json.dumps(self.dlo))
+        target = next(x for x in tampered["observations"] if x["metricId"] == "revenue")
+        target["sourceSha256"] = "f" * 64
+        actual = dlo_update(tampered)
+        self.assertNotIn("revenue", {x["id"] for x in actual["metrics"]})
+        target["sourceSha256"] = next(x["sourceSha256"] for x in self.dlo["observations"] if x["metricId"] == "revenue")
+        target["reportId"] = "report:forged"
+        actual = dlo_update(tampered)
+        self.assertNotIn("revenue", {x["id"] for x in actual["metrics"]})
+
     def test_malformed_dlo_evidence_not_displayed(self):
         r = dlo_update({"observations": [{
             "companyId": "us-dlo-nasdaq-a", "metricId": "revenue", "value": 1,
