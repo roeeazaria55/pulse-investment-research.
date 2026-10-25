@@ -136,6 +136,63 @@ def safe_source_facts(doc):
     return sorted(proposals, key=lambda r: r["id"])[:MAX_METRICS]
 
 
+
+def reviewed_html_table_candidates(doc):
+    """Fail-closed *format adapter* for the exact BrainsWay Q2-2026 issuer
+    profit/loss table layout. Column positions and units are checked against
+    table headings; values are always read from retained source cells.
+    This is a pilot of a reusable source-layout adapter, not general OCR.
+    """
+    if doc.get("companyId") != "candidate-brainsway" or doc.get("format") != "html":
+        return []
+    tables = [t for t in doc.get("tables", []) if isinstance(t, dict) and
+              isinstance(t.get("rows"), list) and
+              any(isinstance(r, list) and r == ["CONSOLIDATED STATEMENTS OF PROFIT OR LOSS"]
+                  for r in t["rows"][:3])]
+    if len(tables) != 1:
+        return []
+    rows = tables[0]["rows"]
+    if len(rows) < 9 or (
+        rows[2] != ["U.S. dollars in thousands (except per share data)"]
+        or rows[3] != ["", "", "For the three months ended June 30,", "",
+                       "For the six months ended June 30,"]
+        or rows[4][:8] != ["", "", "2026", "", "2025", "", "2026", ""]
+    ):
+        return []
+    label_map = {"Revenues": ("revenue", "הכנסות"),
+                 "Gross profit": ("grossProfit", "רווח גולמי")}
+    result = []
+    for label, (metric, hebrew) in label_map.items():
+        source_rows = [r for r in rows if isinstance(r, list) and r and r[0] == label]
+        if len(source_rows) != 1:
+            return []
+        r = source_rows[0]
+        if len(r) < 7:
+            return []
+        raw_current, raw_prior = r[3], r[6]
+        if not all(isinstance(x, str) and re.fullmatch(r"\d{1,3}(?:,\d{3})*|\d+", x)
+                   for x in (raw_current, raw_prior)):
+            return []
+        current = int(raw_current.replace(",", ""))/1000
+        previous = int(raw_prior.replace(",", ""))/1000
+        result.append({
+            "id": metric, "label": hebrew, "value": current, "previousValue": previous,
+            "changePercent": round((current-previous)/abs(previous)*100,2) if previous else None,
+            "unit": "USD million", "periodStart": "2026-04-01", "periodEnd": "2026-06-30",
+            "previousPeriodStart": "2025-04-01", "previousPeriodEnd": "2025-06-30",
+            "accountingBasis": "Unaudited consolidated statement, USD thousands normalized to USD million",
+            "sourceRow": "CONSOLIDATED STATEMENTS OF PROFIT OR LOSS: "+label,
+            "sourceRaw": raw_current, "sourcePreviousRaw": raw_prior,
+            "sourcePage": None, "sourceDocumentUrl": None, "sourceUrl": doc["url"],
+            "reviewStatus": "pending-review",
+            "comparison": "Q2 2026 against Q2 2025 under the same issuer statement heading. "
+                          "Unreviewed historical YoY, not an earlier analyst forecast.",
+            "evidenceScope": "retained-issuer-html-table",
+            "sourceSha256": doc["sha256"], "reportId": doc["id"], "sourceContext": "Q2 2026 issuer statement",
+        })
+    return result
+
+
 def report_rank(doc):
     # Fiscal / quarter text is only a *candidate ordering hint*, not a
     # fabricated reported period or publication date.
@@ -177,7 +234,11 @@ def build(registry, intake):
         checks = [s for s in statuses if isinstance(s, dict) and s.get("companyId") == c["id"]]
         fetch_state = status_for(checks)
         latest = company_docs[0] if company_docs else None
-        proposal = safe_source_facts(latest) if latest else []
+        proposals_xbrl = safe_source_facts(latest) if latest else []
+        proposals_table = reviewed_html_table_candidates(latest) if latest else []
+        if proposals_xbrl and proposals_table:
+            raise ValueError("Multiple accounting paths for one retained issuer report")
+        proposal = proposals_xbrl or proposals_table
         candidate = None
         if latest:
             candidate = {
@@ -199,7 +260,7 @@ def build(registry, intake):
             "lastError": next((s.get("error") for s in checks if s.get("error")), None),
             "retainedDocumentCount": len(company_docs),
             "report": candidate, "typedMetrics": proposal,
-            "metricCoverage": ("provisional-xbrl" if proposal else "report-only" if candidate else "no-document"),
+            "metricCoverage": ("provisional-structured" if proposal else "report-only" if candidate else "no-document"),
             "issuerPortal": next((s["url"] for s in c.get("sources", []) if
                                   isinstance(s, dict) and isinstance(s.get("url"), str)
                                   and s["url"].startswith("https://")), None),
@@ -207,7 +268,7 @@ def build(registry, intake):
         })
     return {"version": 1, "coverage": covered,
             "notice": "12/12 indexed. Report links are retained evidence, not currently verified downloads. "
-                      "Only uniquely scoped, structured USD XBRL values are financial proposals."}
+                      "Only uniquely scoped XBRL or strictly validated original table cells are financial proposals."}
 
 
 def main():
