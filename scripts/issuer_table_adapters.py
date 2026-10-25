@@ -296,11 +296,12 @@ def enlight_q2(doc):
         return []
     page=next((p["text"] for p in doc.get("sourcePdfPages",[])
                if p.get("page")==16), "")
-    if not ("Consolidated Statements of Income" in page
-            and "2026" in page and "2025" in page
-            and "USD in" in page and "thousands" in page):
-        return []
     normalized=re.sub(r"\s+"," ",page)
+    if not ("Consolidated Statements of Income" in normalized
+            and "USD in" in normalized and "thousands" in normalized
+            and re.search(r"For the six months ended.*For the three months ended.*"
+                          r"2026\s+2025\s+2026\s+2025",normalized)):
+        return []
     matched=re.search(r"\bRevenues\s+322,477\s+225,875\s+165,990\s+116,117\b",normalized)
     combined=re.search(r"\bTotal revenues and income\s+409,284\s+264,847\s+209,691\s+134,978\b",normalized)
     if not matched or not combined:
