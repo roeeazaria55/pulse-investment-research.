@@ -43,6 +43,24 @@ class LatestResearchUpdateTests(unittest.TestCase):
         actual = dlo_update(tampered)
         self.assertNotIn("revenue", {x["id"] for x in actual["metrics"]})
 
+    def test_source_index_failure_is_not_mislabeled_as_no_new_report(self):
+        from latest_research_updates import source_check_summary
+        checked = source_check_summary({"sources": [
+            {"companyId": "us-dlo-nasdaq-a", "status": "failed",
+             "lastAttemptAt": "2026-10-25T11:00:00Z", "lastSuccessfulAt": None},
+            {"companyId": "us-dlo-nasdaq-a", "status": "ok",
+             "lastAttemptAt": "2026-10-25T11:00:00Z",
+             "lastSuccessfulAt": "2026-10-25T11:00:00Z"},
+            {"companyId": "candidate-nebius", "status": "ok",
+             "lastAttemptAt": "2026-10-25T11:00:00Z", "lastSuccessfulAt": "2026-10-25T11:00:00Z"},
+        ]})
+        self.assertEqual(checked["us-dlo-nasdaq-a"]["status"], "partial")
+        self.assertEqual(checked["candidate-nebius"]["status"], "ok")
+        self.assertEqual(checked["candidate-iren"]["status"], "unconfigured")
+        self.assertEqual(checked["us-dlo-nasdaq-a"]["sourcesFailed"], 1)
+        with self.assertRaisesRegex(ValueError, "Unknown issuer"):
+            source_check_summary({"sources": [{"companyId": "us-dlo-nasdaq-a", "status": "approved"}]})
+
     def test_malformed_dlo_evidence_not_displayed(self):
         r = dlo_update({"observations": [{
             "companyId": "us-dlo-nasdaq-a", "metricId": "revenue", "value": 1,
