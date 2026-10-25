@@ -36,6 +36,25 @@ with sync_playwright() as pw:
         pages=response.json()['pages']
         assert len(pages)==item['pages'] and all(p['text'].strip() for p in pages),f'Research page content missing: {pages_url}'
         checked_assets.append({'pdf':pdf_url,'sha256':item['sha256'],'pages':pages_url})
+    latest_asset=assets.get(urljoin(URL,'data/latest-research-updates.json'),timeout=30000)
+    history_asset=assets.get(urljoin(URL,'data/research-update-history.json'),timeout=30000)
+    assert latest_asset.status==200 and history_asset.status==200,'Research JSON assets unavailable'
+    published=latest_asset.json()
+    archive=history_asset.json()
+    assert published['version']==1 and archive['version']==1,'Research JSON version mismatch'
+    current_by_ticker={r['ticker']:r for r in published['reports']}
+    for ticker,ids in [('DLO',{'revenue','grossProfit','operatingCash','capex'}),
+                       ('IREN',{'revenue','operatingCash','capex'})]:
+        report=current_by_ticker[ticker]
+        assert ids.issubset({m['id'] for m in report['metrics']}),f'Missing published {ticker} metrics'
+        assert report['reviewRequired'] is True and report['aiAnalysisEnabled'] is False
+        assert any(item['companyId']==report['companyId'] and item['contentId']==report['contentId']
+                   for item in archive['entries']),f'Published {ticker} history does not match latest source'
+    assert current_by_ticker['DLO']['status']=='needs-reconciliation'
+    assert current_by_ticker['IREN']['status']=='historical-baseline-pending-review'
+    Path('work/mobile-published-research.json').write_text(
+        json.dumps({'url':URL,'companyStatuses':{k:r['status'] for k,r in current_by_ticker.items()},
+                    'historyEntries':len(archive['entries']),'verifiedAgainstActualPublishedJson':True},ensure_ascii=False,indent=2))
     assets.dispose()
     Path('work/mobile-research-assets.json').write_text(json.dumps({'url':URL,'checked':checked_assets},ensure_ascii=False))
     for width in (320,390,430):
@@ -97,6 +116,7 @@ with sync_playwright() as pw:
                 expect(latest).to_contain_text('399.7 USD million')
                 expect(latest).to_contain_text('21.14')
                 expect(latest).to_contain_text('מודל משני בארכיון')
+                expect(latest).to_contain_text('היסטוריית גרסאות מחקר (1)')
                 expect(latest).to_contain_text('לא ניתוח AI')
                 latest.scroll_into_view_if_needed()
                 page.screenshot(path=f'work/mobile-{width}-latest-research-dlo.png',full_page=False)
@@ -106,6 +126,7 @@ with sync_playwright() as pw:
                 expect(latest).to_contain_text('4,333.1 USD million')
                 expect(latest).to_contain_text('4,500 USD million')
                 expect(latest).to_contain_text('אין הפתעת תחזית מוכחת')
+                expect(latest).to_contain_text('היסטוריית גרסאות מחקר (1)')
                 latest.scroll_into_view_if_needed()
                 page.screenshot(path=f'work/mobile-{width}-latest-research-iren.png',full_page=False)
             if label in ('NBIS','SMCI'):
