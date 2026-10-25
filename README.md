@@ -1,14 +1,16 @@
-> **October 2026 expanded research branch — NOT READY TO MERGE under the owner's 12/12 requirement.**
-> All twelve issuers have source-status research pages. Source-backed,
-> review-only financial metrics now exist for DLO, IREN, NBIS, META, LMND,
-> SNDK, Next Vision (historical FY2025), BrainsWay and SMCI: **9 of 12**.
-> FTAI source downloads remain blocked, an Enlight Q2 call transcript is
-> **not** a GAAP financial filing, and Gilat Telecom's PDF has not passed
-> original-document financial-extraction checks. A source URL or earnings
-> transcript is not completed financial coverage. DLO requires reconciliation.
-> No values update targets, scenarios or portfolios. Nothing has been merged
-> to `main` and no paid OpenAI API call was made. See
-> [release gates and rollback](docs/PULSE_RELEASE.md).
+> **October 2026 expanded research branch — NO MERGE under the owner's strict 12/12 requirement.**
+> All twelve issuers have research/source-status pages. **11/12** now have
+> financial observations linked to issuer-origin source content and marked
+> review-only: NBIS, META, DLO, LMND, SNDK, IREN, Next Vision (historical
+> FY2025), Enlight (Q2 2026 IFRS and tax-benefit-inclusive revenue separately),
+> BrainsWay, Gilat Telecom Global (Q2 2026 ILS), SMCI. **FTAI Q2 2026
+> remains blocked at GitHub Actions with HTTP 403**, even from issuer IR, SEC
+> and issuer-distributed press release alternatives. Original PDF review-only
+> manual staging is now supported but requires a real PDF file obtained from
+> the issuer and human identity/period review. No values update targets,
+> scenarios or portfolios; `main` was not changed and no paid AI was used.
+> See [release gates](docs/PULSE_RELEASE.md) and
+> [manual original PDF import](docs/MANUAL_OFFICIAL_REPORT_IMPORT.md).
 > See [v1 release gates, production checks and rollback](docs/PULSE_RELEASE.md).
 >
 # PULSE — Investment Research
