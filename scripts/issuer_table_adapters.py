@@ -64,8 +64,8 @@ def sandisk_q4(doc):
             continue
         row=found[0];v=_number(row[2]);prior=_number(row[6])
         metric=_proposal(doc,key,hebrew,v,prior,row[2],row[6],
-          "2026-04-01","2026-06-30","2025-04-01","2025-06-30",
-          "USD million","Sandisk issuer Q4 FY2026 GAAP table (quarter ends inferred from explicit quarter label; analyst period confirmation pending)",
+          "2026-04-04","2026-07-03","2025-03-29","2025-06-27",
+          "USD million","Sandisk fiscal Q4 GAAP results (13-week quarter ended July 3 2026 vs June 27 2025; prior pre-separation financials require review)",
           "Q4 FY2026 vs Q4 FY2025 GAAP: "+label,table.get("page"),"retained-issuer-html-table")
         if metric: result.append(metric)
     return result
