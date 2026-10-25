@@ -190,7 +190,7 @@ def collect(snapshot,registry,previous,now,fetcher=fetch_document,limit=8,budget
   def priority(item):
    ident='report:'+hashlib.sha256((company['id']+'|'+canonical(item['url'])).encode()).hexdigest()[:32]
    return (ident in records,records.get(ident,{}).get('lastSuccessfulAt',''))
-  todo.sort(key=priority);chosen=todo[:1];status=dict(companyId=company['id'],lastAttemptAt=now,status='no-candidates',error=None)
+  todo.sort(key=priority);chosen=todo[:2];status=dict(companyId=company['id'],lastAttemptAt=now,status='no-candidates',error=None)
   discovery=[s for s in snapshot.get('sources',[]) if s.get('companyId')==company['id']]
   if not chosen and discovery and all(s.get('status')=='failed' for s in discovery):
    detail=next((s.get('error') for s in discovery if s.get('error')),'Unknown discovery failure')
@@ -213,7 +213,8 @@ def collect(snapshot,registry,previous,now,fetcher=fetch_document,limit=8,budget
     revisions=prior.get('revisions',[]) if prior else []
     if changed:revisions=([dict(sha256=prior['sha256'],firstDetectedAt=prior['firstDetectedAt'],lastSuccessfulAt=prior['lastSuccessfulAt'])]+revisions)[:3]
     record=dict(**result,id=ident,companyId=company['id'],ticker=company['label'],url=url,finalUrl=final,publishedDate=item.get('publishedDate'),documentPeriod=item.get('documentPeriod'),periodBasis=item.get('periodBasis','unknown'),firstDetectedAt=prior['firstDetectedAt'] if prior else now,lastSuccessfulAt=now,lastAttemptAt=now,revised=changed or bool(prior and prior.get('revised')),revisions=revisions,parserVersion=PARSER,error=None)
-    records[ident]=record;status.update(status='partial' if status['status'] in ('failed','partial') else 'ok',error=status['error'])
+    records[ident]=record;status.update(status='partial' if status['status'] in ('failed','partial') or result['status'] != 'extracted' else 'ok',error=status['error'])
+    if result['status'] == 'extracted':break
    except Exception as exc:
     status.update(status='partial' if status['status'] in ('ok','partial') else 'failed',error=str(exc)[:180])
     if prior:records[ident]={**prior,'lastAttemptAt':now,'error':str(exc)[:180]}
