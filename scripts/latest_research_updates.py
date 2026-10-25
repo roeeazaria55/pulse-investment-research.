@@ -363,11 +363,11 @@ def other_issuer_update(row):
         raise ValueError("Report link not on the registered issuer domain")
     body = {
         "companyId": company, "ticker": COMPANIES[company],
-        "status": "pending-review", "kind": "structured-sec-xbrl-review-only",
+        "status": "pending-review", "kind": ("issuer-html-table-review-only" if metrics[0]["evidenceScope"] == "retained-issuer-html-table" else "structured-sec-xbrl-review-only"),
         "reportPeriod": metrics[0]["periodStart"] + "/" + metrics[0]["periodEnd"],
         "publishedDate": evidence.get("publishedDate"), "sourceUrl": source,
         "sourceVersion": version,
-        "sourceDigestKind": "retained-sec-inline-xbrl-sha256",
+        "sourceDigestKind": ("retained-issuer-html-table-sha256" if metrics[0]["evidenceScope"] == "retained-issuer-html-table" else "retained-sec-inline-xbrl-sha256"),
         "metrics": [{k: v for k, v in metric.items() if k not in (
              "sourceSha256", "reportId", "evidenceScope", "sourceContext")}
              for metric in metrics],
