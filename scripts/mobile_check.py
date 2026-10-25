@@ -90,6 +90,22 @@ with sync_playwright() as pw:
             company_select.select_option(option)
             page.get_by_role('tab',name='סקירה',exact=True).click()
             exchange.get_by_role('heading',name=f'מחקר בסיס ל־{label}',exact=True).wait_for()
+            latest=exchange.get_by_role('region',name='עדכון המחקר האחרון',exact=True)
+            latest.get_by_role('heading',name='עדכון המחקר האחרון שנקלט',exact=True).wait_for()
+            if label=='DLO':
+                expect(latest).to_contain_text('נדרש בירור גרסת מקור')
+                expect(latest).to_contain_text('399.7 USD million')
+                expect(latest).to_contain_text('לא ניתוח AI')
+                latest.scroll_into_view_if_needed()
+                page.screenshot(path=f'work/mobile-{width}-latest-research-dlo.png',full_page=False)
+            if label=='IREN':
+                expect(latest).to_contain_text('נתוני בסיס היסטוריים')
+                expect(latest).to_contain_text('707 USD million')
+                expect(latest).to_contain_text('4,333.1 USD million')
+                latest.scroll_into_view_if_needed()
+                page.screenshot(path=f'work/mobile-{width}-latest-research-iren.png',full_page=False)
+            if label in ('NBIS','SMCI'):
+                expect(latest).to_contain_text('אין עדכון פיננסי מבוסס מקור')
             if label=='IREN':
                 actuals=exchange.get_by_role('region',name='נתוני בסיס IREN FY2026 מהדוח הרשמי',exact=True)
                 expect(actuals).to_contain_text('$707.0M')
