@@ -141,14 +141,16 @@
         "www.globenewswire.com",
         "rss.globenewswire.com",
         "www.sec.gov",
-        "data.sec.gov"
+        "data.sec.gov",
+        "ftandi.gcs-web.com"
       ],
       "documentPaths": [
         "/news-releases/news-release-details/",
         "/static-files/",
         "/news-release/",
         "/Archives/edgar/data/1590364/",
-        "/node/"
+        "/node/",
+        "/sec-filings/sec-filing/"
       ],
       "sources": [
         {
@@ -184,6 +186,20 @@
         "אפטיאיי"
       ],
       "curatedReportCandidates": [
+        {
+          "title": "FTAI Aviation Ltd Reports Second Quarter 2026 Results — official IR HTML",
+          "url": "https://ftandi.gcs-web.com/news-releases/news-release-details/ftai-aviation-ltd-reports-second-quarter-2026-results-increases",
+          "publishedDate": "2026-07-29",
+          "documentPeriod": "Q2 2026",
+          "evidence": "https://ftandi.gcs-web.com/news-releases/news-release-details/ftai-aviation-ltd-reports-second-quarter-2026-results-increases"
+        },
+        {
+          "title": "FTAI Aviation Ltd Reports Second Quarter 2026 Results — official IR PDF",
+          "url": "https://ftandi.gcs-web.com/node/13051/pdf",
+          "publishedDate": "2026-07-29",
+          "documentPeriod": "Q2 2026",
+          "evidence": "https://ftandi.gcs-web.com/news-releases/news-release-details/ftai-aviation-ltd-reports-second-quarter-2026-results-increases"
+        },
         {
           "title": "FTAI Aviation Ltd Reports Second Quarter 2026 Financial Results — official issuer HTML",
           "url": "https://ir.ftaiaviation.com/news-releases/news-release-details/ftai-aviation-ltd-reports-second-quarter-2026-results-increases",
