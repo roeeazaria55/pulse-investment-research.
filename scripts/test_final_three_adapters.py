@@ -66,6 +66,33 @@ class FinalThreeAdapterTests(unittest.TestCase):
         bad["tables"].append(copy.deepcopy(bad["tables"][0]))  # ambiguous duplicates
         self.assertEqual(ftai_q2(bad),[])
 
+    def test_ftai_original_pdf_compatible_with_controlled_import(self):
+        doc={
+            "companyId":"candidate-ftai","format":"pdf",
+            "title":"FTAI Aviation Ltd. Reports Second Quarter 2026 Results",
+            "sha256":"a"*64,"id":"report:"+"b"*32,
+            "url":"https://ftandi.gcs-web.com/node/13051/pdf",
+            "sourcePdfPages":[{"page":2,"text":(
+                "FTAI AVIATION LTD. CONSOLIDATED STATEMENTS OF OPERATIONS (Unaudited) "
+                "Dollar amounts in thousands except share and per share data "
+                "Three Months Ended June 30 Six Months Ended June 30 "
+                "2026 2025 2026 2025 "
+                "Aerospace products revenue 692,229 420,686 1,214,814 685,111 "
+                "Total revenues 953,085 676,237 1,783,782 1,178,317")}],
+        }
+        r=ftai_q2(doc)
+        self.assertEqual(len(r),1)
+        self.assertEqual((r[0]["value"],r[0]["previousValue"]),(953.085,676.237))
+        self.assertEqual(r[0]["unit"],"USD million")
+        self.assertEqual(r[0]["reviewStatus"],"pending-review")
+        self.assertEqual(r[0]["sourcePage"],2)
+        bad=copy.deepcopy(doc)
+        bad["sourcePdfPages"][0]["text"]=bad["sourcePdfPages"][0]["text"].replace("2026 2025 2026 2025","2025 2026 2025 2026")
+        self.assertEqual(ftai_q2(bad),[])
+        bad=copy.deepcopy(doc)
+        bad["sourcePdfPages"][0]["text"]=bad["sourcePdfPages"][0]["text"].replace("953,085","953,086")
+        self.assertEqual(ftai_q2(bad),[])
+
     def test_enlight_income_is_not_revenue(self):
         m={r["id"]:r for r in enlight_q2(self.enlight())}
         self.assertEqual(set(m),{"revenue","revenuesAndIncome"})
