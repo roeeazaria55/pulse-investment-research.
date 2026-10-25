@@ -126,7 +126,7 @@ export function parseLatestSnapshot(x:unknown):LatestSnapshot {
    if(!knownMetrics.has(m.id)||metricIds.has(m.id)||!shortText(m.label,100)||typeof m.value!=='number'||!Number.isFinite(m.value)||
     m.previousValue!==null&&(typeof m.previousValue!=='number'||!Number.isFinite(m.previousValue))||
     m.changePercent!==null&&(typeof m.changePercent!=='number'||!Number.isFinite(m.changePercent))||
-    m.unit!=='USD million'||!verifiedLink(m.sourceUrl,r.companyId)||m.sourceUrl!==r.sourceUrl||
+    (m.unit!=='USD million'&&!(r.companyId==='candidate-gilat-telecom'&&m.unit==='ILS million'))||!verifiedLink(m.sourceUrl,r.companyId)||m.sourceUrl!==r.sourceUrl||
     !validDay(m.periodStart)||!validDay(m.periodEnd)||m.periodStart>m.periodEnd||
     !shortText(m.accountingBasis,500)||!shortText(m.sourceRow,500)||!shortText(m.sourceRaw,200)||!shortText(m.comparison,500)||
     !['pending-review','needs-reconciliation'].includes(m.reviewStatus))throw Error('נתון פיננסי לא תקין');
