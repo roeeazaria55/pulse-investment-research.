@@ -317,6 +317,20 @@ with sync_playwright() as pw:
         assert page.locator('html').evaluate("e=>e.classList.contains('keyboard-open')")
         assert dialog.bounding_box()['height']<=340
         dialog.get_by_role('button',name='סגירה',exact=True).click()
+        if width==390:
+            # Browser-level offline smoke: ensure the *deployed PWA shell* and
+            # last validated research snapshot remain readable with no network.
+            page.wait_for_function("navigator.serviceWorker && !!navigator.serviceWorker.controller",timeout=20000)
+            context.set_offline(True)
+            page.reload(wait_until='domcontentloaded')
+            page.get_by_role('heading',name='התדריך היומי.',exact=True).wait_for(timeout=10000)
+            page.get_by_role('navigation',name='ניווט נייד').get_by_role('button',name='מחקר',exact=True).click()
+            page.get_by_label('חברה למחקר',exact=True).select_option('initial-2')
+            offline_latest=page.get_by_role('region',name='עדכון המחקר האחרון',exact=True)
+            expect(offline_latest).to_contain_text('מצב לא מקוון')
+            expect(offline_latest).to_contain_text('399.7 USD million')
+            page.screenshot(path='work/mobile-390-offline-research.png',full_page=False)
+            context.set_offline(False)
         assert not errors,errors
         results.append({'width':width,'rtl':True,'textScale':'200%','keyboard':'simulated visual viewport','overflow':False,'pageErrors':errors})
         context.close()
