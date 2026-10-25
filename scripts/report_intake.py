@@ -159,7 +159,7 @@ def extract(body,content_type,url,company):
     if time.monotonic()-parse_start>20:truncated=True;break
     page_text=page.extract_text() or ''
     parts.append(page_text)
-    target_pages={'candidate-enlight':{16,19}, 'candidate-gilat-telecom':{6}}
+    target_pages={'candidate-enlight':{16,19}, 'candidate-gilat-telecom':{6}, 'candidate-ftai':{2,3}}
     if page.page_number in target_pages.get(company['id'],set()):
      # Original issuer statement page, not OCR or generated table values.
      source_pdf_pages.append({'page':page.page_number,'text':page_text[:9000]})
@@ -192,6 +192,10 @@ def extract(body,content_type,url,company):
  if pdf and company['id']=='candidate-enlight':
   page_evidence=any(all(v in item['text'] for v in ('322,477','225,875','165,990','116,117'))
                     and 'Revenues' in item['text'] for item in source_pdf_pages)
+ if pdf and company['id']=='candidate-ftai':
+  page_evidence=any(all(v in item['text'] for v in ('953,085','676,237','1,783,782','1,178,317'))
+                    and 'Total revenues' in item['text']
+                    and 'CONSOLIDATED STATEMENTS OF OPERATIONS' in item['text'] for item in source_pdf_pages)
  if not tables and not facts and not page_evidence and not FINANCIAL_TITLE.search(title):raise ValueError('Not a financial results document')
  if not tables and not facts and not page_evidence:status='read-no-supported-data'
  else:status='extracted'
