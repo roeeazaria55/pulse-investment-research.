@@ -10,10 +10,14 @@ export interface LatestReport {
  reportPeriod:string|null;publishedDate:string|null;sourceUrl:string|null;sourceVersion:string|null;
  metrics:ResearchMetric[];findings:string[];questions:string[];missing:string[];
  sourceDigestKind?:string|null;modelReview?:ModelComparison[];
+ activeValuationContext?:{status:'unverified-supplied-research'|'existing-quantified-scenario-model';
+ scenario:'base';baseTargetPerShare:number|null;weight:number;currency:string;asOf:string;
+ source:string;pdfFilename:string|null;isComparableFinancialActual:false;note:string};
  aiAnalysisEnabled:boolean;reviewRequired:boolean;modelChange:string;contentId:string|null;
 }
 export interface ModelComparison {
  metricId:string;status:'not-comparable-period-or-definition';modelScenario:string|null;
+ modelStatus:'archived-secondary'|'existing-quantified-scenario-model';
  modelInput:string|null;modelValue:number|null;modelUnit:string|null;modelPeriod:string|null;
  modelLabel:string;modelAsOf:string;modelSource:string;researchAsOf:string;researchSource:string;
  researchTextMatch:boolean|null;reason:string;analystReview:string;automaticChange:false;
@@ -80,8 +84,19 @@ export function parseLatestSnapshot(x:unknown):LatestSnapshot {
    if(r.companyId==='us-dlo-nasdaq-a'&&(m.previousValue!==null||m.changePercent!==null||m.reviewStatus==='needs-reconciliation'&&r.status!=='needs-reconciliation'))throw Error('השוואת DLO לא מאושרת');
    if(r.companyId==='candidate-iren'&&(!shortText(m.sourcePreviousRaw,200)||!Number.isInteger(m.sourcePage)||!(m.sourcePage!>=1&&m.sourcePage!<=100)||!verifiedLink(m.sourceDocumentUrl||null,r.companyId)||m.previousValue===null))throw Error('חסרה ראיית מקור IREN');
   }
+  if(!insufficient){
+   const v=r.activeValuationContext;
+   const isSupplied=r.companyId==='us-dlo-nasdaq-a';
+   if(!v||v.isComparableFinancialActual!==false||v.scenario!=='base'||!validDay(v.asOf)||
+    typeof v.weight!=='number'||!Number.isFinite(v.weight)||v.weight<0||v.weight>100||
+    !shortText(v.note,800)||v.currency!=='USD'||
+    (isSupplied&&(v.status!=='unverified-supplied-research'||v.source!=='src/data/suppliedResearch.json'||typeof v.baseTargetPerShare!=='number'||!Number.isFinite(v.baseTargetPerShare)))||
+    (!isSupplied&&(v.status!=='existing-quantified-scenario-model'||v.source!=='src/data/models/iren.json'||v.baseTargetPerShare!==null)))
+     throw Error('הקשר הערכת השווי אינו מאומת');
+  }
   for(const cmp of r.modelReview){
    if(!metricIds.has(cmp.metricId)||cmp.status!=='not-comparable-period-or-definition'||cmp.automaticChange!==false||
+    cmp.modelStatus!==(r.companyId==='us-dlo-nasdaq-a'?'archived-secondary':'existing-quantified-scenario-model')||
     !shortText(cmp.modelAsOf,32)||!validDay(cmp.modelAsOf)||!validDay(cmp.researchAsOf)||
     cmp.modelSource!=='src/data/models/'+r.ticker.toLowerCase()+'.json'||
     cmp.researchSource!=='src/data/research/'+r.ticker.toLowerCase()+'.json'||
@@ -150,11 +165,14 @@ export function LatestResearchUpdate({companyId,onPrepare}:{companyId:string;onP
        </details>
       </div>)}
      </div>}
+    {report.activeValuationContext&&<p><strong>הערכת השווי שמוצגת במחקר:</strong> {report.activeValuationContext.status==='unverified-supplied-research'?
+     'מחקר מלא שסופק, תרחיש בסיס '+formatAmount(report.activeValuationContext.baseTargetPerShare||0)+' דולר למניה ('+report.activeValuationContext.weight+'%).':
+     'מודל תרחישים קיים מ־'+report.activeValuationContext.asOf+'.'} {report.activeValuationContext.note}</p>}
     {report.modelReview?.length? <section aria-label="השוואת מחקר ומודל קיימים">
      <h5>השוואה למחקר ולמודל PULSE הקיימים</h5>
      <p>השוואת תקופות והגדרות לפני ביצוע חישוב סטייה: <strong>אין הפתעת תחזית מוכחת</strong>. כל ההנחות נשארות ללא שינוי.</p>
      <ul>{report.modelReview.map(c=><li key={c.metricId}>
-      <strong>{c.modelLabel}</strong> · הנחת בסיס {c.modelValue===null?'לא קיימת במודל הכמותי':formatAmount(c.modelValue)+' '+(c.modelUnit||'')}.
+      <strong>{c.modelLabel}{c.modelStatus==='archived-secondary'?' · מודל משני בארכיון':''}</strong> · הנחת בסיס {c.modelValue===null?'לא קיימת במודל הכמותי':formatAmount(c.modelValue)+' '+(c.modelUnit||'')}.
       <p>{c.reason}</p><p>לבדיקה: {c.analystReview}</p>
       <small>מודל {c.modelAsOf} · מחקר {c.researchAsOf} · {c.researchTextMatch===true?'התאמה טקסטואלית למחקר שסופק (לא ראיה עצמאית)':'לא נמצאה תחזית מאושרת לתקופה ולהגדרה'}</small>
      </li>)}</ul>
