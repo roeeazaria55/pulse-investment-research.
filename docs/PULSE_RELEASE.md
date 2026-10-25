@@ -14,8 +14,18 @@ observations require reconciliation and are **not** approved financial facts.
 IREN FY2026 vs FY2025 uses a bounded curated official issuer table extract,
 with raw cells and issuer PDF page pointers. The curated JSON digest is **not**
 the original PDF hash. Historical FY2026 growth is **not** a surprise relative
-to the October 2026 PULSE model. NBIS and SMCI have no verified new update
-in this pilot; the existing base research remains accessible.
+to the October 2026 PULSE model.
+
+All 12 companies in `public/data/official-registry.json` now have explicit
+source-index/document-fetch/research states; this is **not** twelve companies
+with verified financial extraction. Retained original issuer content currently
+exists for NBIS, DLO, SNDK, IREN, BrainsWay and SMCI. The numeric pilot is
+DLO (reconciliation), IREN (curated historical FY2026), BrainsWay (strict
+unaudited Q2-2026/Q2-2025 revenue + gross-profit statement cells) and SMCI
+(typed annual SEC XBRL revenue, gross profit and operating cash flow).
+All extracted rows still require analyst review. Missing filings, invalid
+table layouts and HTTP 403 must remain explicitly shown, not filled with
+guessed figures.
 
 The model comparison identifies mismatched accounting periods/bases instead
 of calculating spurious surprise percentages. Primary supplied DLO valuation
@@ -34,7 +44,8 @@ The existing `Publish PULSE` workflow is the only production data pipeline:
    job checks out `main` and seeds the prior approved public state from
    `pulse-data`. Failure to fetch that branch is intentionally fatal.
 2. It collects issuer evidence, validates provisional financial observations,
-   generates `latest-research-updates.json`, then uses
+   generates `issuer-coverage.json` for all twelve issuers,
+   `latest-research-updates.json`, then uses
    `research_update_history.py` to append unique **content IDs** to the
    bounded `research-update-history.json` archive. Repeated polling does not
    fabricate a new event; only verified *source-bounded review-only* records
@@ -59,8 +70,10 @@ source must not be described as a successful fresh data update.
 
 - [ ] Latest PR head has successful Python, JS/Vitest, TypeScript/production
   build, real official source retrieval and mobile Chromium checks.
-- [ ] Inspect source JSON and verify DLO/IREN links, dates, review statuses,
-  IREN numbers and non-comparable model fields.
+- [ ] Inspect `issuer-coverage.json` for all 12 companies, compare its
+  retained-document count against original issuer intake, verify DLO/IREN and
+  BWAY/SMCI source rows, fiscal dates, currency units, SHA, and review statuses.
+  Do not mislabel a successful source index scan as a successful report fetch.
 - [ ] Compare all retained PDF SHA-256 values with the supplied manifest.
 - [ ] Verify no new secret, API key, personal holdings, automatic valuation
   mutation or paid model call appears in the changed files.
