@@ -224,10 +224,15 @@ def collect(snapshot,registry,previous,now,fetcher=fetch_document,limit=16,budge
                 key=lambda c: (c['id'] in have_doc,
                                previous_status.get(c['id'],{}).get('lastAttemptAt') or '',c['id']))
  for company in ordered:
-  todo=candidates(snapshot,company)[:6]
+  todo=candidates(snapshot,company)
+  # Prioritize vetted issuer financial statements over investor-call transcripts.
+  # Apply the cap AFTER the curated-source priority ordering, not before.
   def priority(item):
    ident='report:'+hashlib.sha256((company['id']+'|'+canonical(item['url'])).encode()).hexdigest()[:32]
-   return (not item.get('curated',False),ident in records,records.get(ident,{}).get('lastSuccessfulAt',''))
+   title=item.get('title','').lower()
+   non_filing=bool(re.search(r'prepared remarks|conference call|transcript|earnings presentation',title))
+   return (non_filing, not item.get('curated',False),
+           ident in records,records.get(ident,{}).get('lastSuccessfulAt',''))
   todo.sort(key=priority);chosen=todo[:2];status=dict(companyId=company['id'],
      lastAttemptAt=previous_status.get(company['id'],{}).get('lastAttemptAt'),
      status='no-candidates',error=None)
