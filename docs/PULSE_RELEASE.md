@@ -16,22 +16,32 @@ with raw cells and issuer PDF page pointers. The curated JSON digest is **not**
 the original PDF hash. Historical FY2026 growth is **not** a surprise relative
 to the October 2026 PULSE model.
 
-All 12 companies in `public/data/official-registry.json` have source-index,
-document-fetch and research states. **Only 9 currently have financial candidate
-metrics** (all require analyst review): DLO (Q2 source reconciliation),
-IREN (FY2026 curated historical), NBIS (original Q2 2026 PDF),
-META (issuer Q3 2026 GAAP HTML), LMND (Q2 2026 shareholder letter),
-SNDK (fiscal Q4 ended July 3 2026), Next Vision (FY2025 historical baseline),
-BrainsWay (Q2 2026 issuer statement) and SMCI (FY2026 SEC inline XBRL).
+All 12 registered companies have source-index, document-fetch and research
+status. **11/12 now have source-bound financial observations** marked
+`pending-review`: NBIS, META, DLO, LMND, SNDK, IREN, Next Vision (FY2025
+historical), **Enlight** (Q2 2026 actual IFRS revenues USD 165.990m vs
+116.117m; separate total revenues+tax benefits USD 209.691m vs 134.978m),
+BrainsWay, **Gilat Telecom Global** (Q2 2026 NIS revenue 71.446m vs
+66.508m; gross profit 21.025m vs 19.660m) and SMCI.
 
-**Unresolved under the owner's strict 12/12 release gate:** FTAI's original
-Q2 PDF/SEC report remains inaccessible to the runner (403 despite verified
-issuer HTML/PDF alternatives); Enlight has a retained Q2 conference-call
-transcript but this is *not* a supported financial statement; Gilat Telecom
-original Hebrew PDF has not been accepted as structured financial evidence.
-Other source polling failures may be temporary. Do not label source links or
-transcripts as parsed financial reports. Do not merge or claim full coverage
-unless each has genuine source-bound metrics with correct periods and units.
+The original Enlight 34-page official earnings PDF and Gilat 64-page official
+Hebrew Q2 financial PDF were actually downloaded in the PR source-probe,
+content-SHAed and matched to issuer source-page text (without OCR). For
+Gilat, original revenue table is on PDF page 6; source is in **ILS thousands**
+and normalized to **ILS million**. For Enlight, Appendix 1 table is PDF
+page 16; IFRS revenue excludes the U.S. tax benefits included in a separately
+identified combined measure. Both are pending human review, not automatic
+earnings surprises or model updates.
+
+**NO-GO pending FTAI** under the strict 12/12 condition. FTAI Q2 2026 has
+issuer IR HTML/PDF, SEC filing and issuer-distributed GlobeNewswire
+statement, but current Actions downloads still fail with HTTP 403. The
+[controlled original-PDF import fallback](MANUAL_OFFICIAL_REPORT_IMPORT.md)
+requires a real official PDF, SHA from that PDF's bytes, and human-review
+confirmation before safely importing original statement rows. A URL, mirrored
+copy, manual transcription or a passed fixture alone is **not** successful
+official-content intake. Do not merge unless the owner expressly changes the
+release gate or original FTAI document extraction succeeds.
 
 The model comparison identifies mismatched accounting periods/bases instead
 of calculating spurious surprise percentages. Primary supplied DLO valuation
