@@ -53,7 +53,7 @@ def private_output_path(raw):
         raise ValueError("Private absolute output path is required for paid AI")
     target = Path(raw)
     root = ROOT.resolve()
-    parent = target.parent.resolve(strict=True)
+    parent = target.parent.resolve(strict=False)
     if parent == root or root in parent.parents:
         raise ValueError("Private AI output cannot be saved anywhere in the public repository")
     if not parent.is_dir():
