@@ -1,5 +1,5 @@
 /* Bump this identifier when publishing a new application shell. */
-const VERSION = "pulse-v4-research";
+const VERSION = "pulse-v5-model-review-20261025";
 const SCOPE = new URL(self.registration.scope);
 const CACHE = `${VERSION}-${SCOPE.pathname}`;
 const local = (path) => new URL(path, SCOPE).href;
