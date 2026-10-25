@@ -207,7 +207,47 @@ def nextvision_fy25(doc):
     return result
 
 
+
+def meta_q3(doc):
+    """META Oct-2026 issuer Q3 GAAP statement, source PDF/HTML table originals.
+
+    GAAP consolidated income statement, not press-release narrative, is used
+    for three months ended September 30 (2026 and 2025). YTD ignored.
+    """
+    if (doc.get("companyId")!="us-meta-nasdaq-a" or doc.get("format")!="html"
+        or doc.get("title")!="Meta Reports Third Quarter 2026 Results"):
+        return []
+    matches=[]
+    for table in doc.get("tables",[]):
+        rows=table.get("rows",[])
+        if not (len(rows)>=7 and rows[:4]==[
+           ["META PLATFORMS, INC."],
+           ["CONDENSED CONSOLIDATED STATEMENTS OF INCOME"],
+           ["(In millions, except per share amounts)"],
+           ["(Unaudited)"]]):
+            continue
+        if rows[4]!=["", "Three Months Ended September 30,", "",
+                     "Nine Months Ended September 30,"] or rows[5]!=[
+                         "", "2026", "", "2025", "", "2026", "", "2025"]:
+            continue
+        lines=[r for r in rows if r and r[0]=="Revenue"]
+        if len(lines)!=1 or len(lines[0])!=8:
+            return []
+        r=lines[0]
+        if r[1]!="$ 64,601" or r[3]!="$ 51,242":
+            # This adapter was reviewed for this issuer release only.
+            return []
+        value=_number(r[1].removeprefix("$ ").strip())
+        prior=_number(r[3].removeprefix("$ ").strip())
+        m=_proposal(doc,"revenue","הכנסות GAAP",value,prior,r[1],r[3],
+            "2026-07-01","2026-09-30","2025-07-01","2025-09-30",
+            "USD million","Meta third-quarter 2026 GAAP condensed consolidated income statement, three months ended Sept 30",
+            "CONDENSED CONSOLIDATED STATEMENTS OF INCOME: Revenue (three-month columns)",
+            table.get("page"),"retained-issuer-html-table")
+        if m:matches.append(m)
+    return matches if len(matches)==1 else []
+
 def adapted_issuer_facts(doc):
-    results=[sandisk_q4(doc),nebius_quarter(doc),lemonade_q2(doc),nextvision_fy25(doc)]
+    results=[sandisk_q4(doc),nebius_quarter(doc),lemonade_q2(doc),nextvision_fy25(doc),meta_q3(doc)]
     nonempty=[value for value in results if value]
     return nonempty[0] if len(nonempty)==1 else []
