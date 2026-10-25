@@ -1,13 +1,14 @@
 """Opt-in ONE-issuer AI review. Never used by scheduled collection.
 
 Execution requires BOTH --execute and PULSE_PAID_AI_APPROVED=YES, plus a
-private OPENAI_API_KEY. AI results are CI artifacts for human review only.
-No storage in public/data, valuation mutation, or write to GitHub.
+private OPENAI_API_KEY. AI output is validated in runner memory only.
+No artifact, logs of content, publication, valuation mutation or write to GitHub.
 """
 import argparse
 import json
 import os
 from pathlib import Path
+from hashlib import sha256
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 
@@ -89,13 +90,15 @@ def main():
     except HTTPError as e:
         raise ValueError("AI API returned HTTP " + str(e.code) + "; no proposal saved") from None
     candidate = parse_and_validate(packet, json.loads(raw))
-    output = ROOT / "work" / ("ai-review-" + a.ticker + ".json")
-    output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(json.dumps(candidate, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(json.dumps({"ticker": a.ticker, "status": "requires-human-review",
-                      "packetSha256": packet["contentSha256"],
-                      "output": str(output.relative_to(ROOT)),
-                      "automaticModelChanges": False}))
+    # No persist/upload/print of content or free-form model text. We only
+    # publish a hash and count of validated review elements in the job log.
+    fingerprint = sha256(json.dumps(candidate, ensure_ascii=False, sort_keys=True,
+                                   separators=(",", ":")).encode("utf-8")).hexdigest()
+    print(json.dumps({"ticker": a.ticker, "status": "validated-in-memory",
+                      "packetSha256": packet["contentSha256"], "proposalSha256": fingerprint,
+                      "citedEvidence": len(candidate["evidenceCitations"]),
+                      "interpretations": len(candidate["interpretations"]),
+                      "outputSaved": False, "automaticModelChanges": False}))
 
 
 if __name__ == "__main__":
