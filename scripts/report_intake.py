@@ -211,13 +211,18 @@ def candidates(snapshot,company):
   return (y,4 if fiscal and not q else q,item.get('publishedDate') or '',item.get('lastSeenAt') or '')
  return sorted(items,key=rank,reverse=True)
 
-def collect(snapshot,registry,previous,now,fetcher=fetch_document,limit=8,budget=120):
+def collect(snapshot,registry,previous,now,fetcher=fetch_document,limit=16,budget=180):
  records={r['id']:r for r in previous.get('documents',[])};statuses=[];attempts=0;deadline=time.monotonic()+budget
  # Oldest actual content-fetch attempt goes first, preventing fixed registry
  # order from starving companies when the network request budget is exhausted.
  previous_status={s['companyId']:s for s in previous.get('sources',[]) if isinstance(s,dict) and isinstance(s.get('companyId'),str)}
+ # Fill true missing-document gaps before re-checking already retained reports.
+ # Within equal coverage tiers, rotate oldest attempt first to avoid starvation.
+ have_doc={d.get('companyId') for d in previous.get('documents',[]) if
+           isinstance(d,dict) and d.get('status')=='extracted'}
  ordered=sorted((c for c in registry['companies'] if c['id'] in PILOTS),
-                key=lambda c: (previous_status.get(c['id'],{}).get('lastAttemptAt') or '',c['id']))
+                key=lambda c: (c['id'] in have_doc,
+                               previous_status.get(c['id'],{}).get('lastAttemptAt') or '',c['id']))
  for company in ordered:
   todo=candidates(snapshot,company)[:6]
   def priority(item):
