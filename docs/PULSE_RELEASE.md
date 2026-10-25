@@ -16,17 +16,22 @@ with raw cells and issuer PDF page pointers. The curated JSON digest is **not**
 the original PDF hash. Historical FY2026 growth is **not** a surprise relative
 to the October 2026 PULSE model.
 
-All 12 companies in `public/data/official-registry.json` now have explicit
-source-index/document-fetch/research states; this is **not** twelve companies
-with verified financial extraction. Retained original issuer content currently
-exists for NBIS, DLO, LMND, SNDK, IREN, Next Vision, BrainsWay and SMCI
-in the latest branch CI snapshot. The numeric pilot is
-DLO (reconciliation), IREN (curated historical FY2026), BrainsWay (strict
-unaudited Q2-2026/Q2-2025 revenue + gross-profit statement cells) and SMCI
-(typed annual SEC XBRL revenue, gross profit and operating cash flow).
-All extracted rows still require analyst review. Missing filings, invalid
-table layouts and HTTP 403 must remain explicitly shown, not filled with
-guessed figures.
+All 12 companies in `public/data/official-registry.json` have source-index,
+document-fetch and research states. **Only 9 currently have financial candidate
+metrics** (all require analyst review): DLO (Q2 source reconciliation),
+IREN (FY2026 curated historical), NBIS (original Q2 2026 PDF),
+META (issuer Q3 2026 GAAP HTML), LMND (Q2 2026 shareholder letter),
+SNDK (fiscal Q4 ended July 3 2026), Next Vision (FY2025 historical baseline),
+BrainsWay (Q2 2026 issuer statement) and SMCI (FY2026 SEC inline XBRL).
+
+**Unresolved under the owner's strict 12/12 release gate:** FTAI's original
+Q2 PDF/SEC report remains inaccessible to the runner (403 despite verified
+issuer HTML/PDF alternatives); Enlight has a retained Q2 conference-call
+transcript but this is *not* a supported financial statement; Gilat Telecom
+original Hebrew PDF has not been accepted as structured financial evidence.
+Other source polling failures may be temporary. Do not label source links or
+transcripts as parsed financial reports. Do not merge or claim full coverage
+unless each has genuine source-bound metrics with correct periods and units.
 
 The model comparison identifies mismatched accounting periods/bases instead
 of calculating spurious surprise percentages. Primary supplied DLO valuation
