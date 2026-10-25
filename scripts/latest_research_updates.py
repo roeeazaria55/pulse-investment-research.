@@ -380,7 +380,7 @@ def other_issuer_update(row):
         "modelChange": "אין שינוי בתרחישים, בהנחות או במחירי יעד.",
         "reportEvidence": evidence, "intakeStatus": row["intakeStatus"],
     }
-    body["contentId"] = identity(body)
+    body["contentId"] = identity({k:v for k,v in body.items() if k not in ("reportEvidence", "intakeStatus")})
     return body
 
 
