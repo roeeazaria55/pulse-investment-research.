@@ -19,7 +19,8 @@ to the October 2026 PULSE model.
 All 12 companies in `public/data/official-registry.json` now have explicit
 source-index/document-fetch/research states; this is **not** twelve companies
 with verified financial extraction. Retained original issuer content currently
-exists for NBIS, DLO, SNDK, IREN, BrainsWay and SMCI. The numeric pilot is
+exists for NBIS, DLO, LMND, SNDK, IREN, Next Vision, BrainsWay and SMCI
+in the latest branch CI snapshot. The numeric pilot is
 DLO (reconciliation), IREN (curated historical FY2026), BrainsWay (strict
 unaudited Q2-2026/Q2-2025 revenue + gross-profit statement cells) and SMCI
 (typed annual SEC XBRL revenue, gross profit and operating cash flow).
