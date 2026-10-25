@@ -8,6 +8,7 @@ from __future__ import annotations
 from datetime import date
 from pathlib import Path
 from urllib.parse import urlsplit
+from issuer_table_adapters import adapted_issuer_facts
 import json
 import math
 import re
@@ -237,9 +238,10 @@ def build(registry, intake):
         latest = company_docs[0] if company_docs else None
         proposals_xbrl = safe_source_facts(latest) if latest else []
         proposals_table = reviewed_html_table_candidates(latest) if latest else []
-        if proposals_xbrl and proposals_table:
+        proposals_other = adapted_issuer_facts(latest) if latest else []
+        if sum(bool(v) for v in (proposals_xbrl,proposals_table,proposals_other))>1:
             raise ValueError("Multiple accounting paths for one retained issuer report")
-        proposal = proposals_xbrl or proposals_table
+        proposal = proposals_xbrl or proposals_table or proposals_other
         candidate = None
         if latest:
             candidate = {
