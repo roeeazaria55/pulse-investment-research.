@@ -1,6 +1,6 @@
 import copy
 import unittest
-from report_intake import collect,extract,safe_report_url,PILOTS,ascii_report_url
+from report_intake import collect,extract,safe_report_url,PILOTS,ascii_report_url,candidates
 C={'id':'us-smci-nasdaq-common','name':'Super Micro Computer','label':'SMCI','aliases':['Supermicro'],'allowedHosts':['www.sec.gov'],'documentPaths':['/Archives/edgar/data/1375365/'],'sources':[{'cik':'1375365'}]}
 URL='https://www.sec.gov/Archives/edgar/data/1375365/test.htm'
 HTML='''<html><h1>Super Micro Computer financial results</h1><script>revenue is fake</script><p>These are financial statements for the company and not an announcement of a future earnings call.</p><table><tr><th>USD millions</th><th>2026</th><th>2025</th></tr><tr><td>Revenue</td><td>100</td><td>80</td></tr></table><xbrli:context id="annual"><xbrli:entity><xbrli:identifier>0001375365</xbrli:identifier></xbrli:entity><xbrli:period><xbrli:startdate>2025-07-01</xbrli:startdate><xbrli:enddate>2026-06-30</xbrli:enddate></xbrli:period></xbrli:context><xbrli:unit id="usd"><xbrli:measure>iso4217:USD</xbrli:measure></xbrli:unit><ix:nonFraction name="us-gaap:Revenues" contextRef="annual" unitRef="usd" scale="6" format="ixt:num-dot-decimal">39,100</ix:nonFraction></html>'''.encode()
@@ -92,6 +92,28 @@ class IntakeTests(unittest.TestCase):
   self.assertTrue(safe_report_url(normalized,company))
   with self.assertRaisesRegex(ValueError,'allowlist'):
    ascii_report_url('https://evil.test/wp-content/uploads/2026/08/דוח.pdf',company)
+
+ def test_fallback_verified_official_reports_are_only_fetch_candidates(self):
+  from pathlib import Path
+  import json
+  registry=json.loads(Path('public/data/official-registry.json').read_text(encoding='utf-8'))
+  for company_id,path_part in [
+      ('us-meta-nasdaq-a','Meta-Reports-Third-Quarter-2026-Results'),
+      ('candidate-ftai','/node/13051/pdf'),
+      ('candidate-enlight','2Q26-Earnings-Release-Eng.pdf'),
+      ('candidate-gilat-telecom','%')]:
+   company=next(c for c in registry['companies'] if c['id']==company_id)
+   matches=candidates({'items':[]},company)
+   self.assertTrue(matches,company_id)
+   self.assertTrue(all(safe_report_url(c['url'],company) for c in matches))
+   self.assertTrue(any(path_part in c['url'] for c in matches) if path_part!='%' else
+                   any('דוח' in c['url'] for c in matches))
+  company=next(c for c in registry['companies'] if c['id']=='candidate-enlight')
+  forged=dict(company)
+  forged['curatedReportCandidates']=[{'title':'Q2 2026 earnings results','url':'https://evil.invalid/2026.pdf',
+       'publishedDate':'2026-08-04','evidence':'https://evil.invalid/'}]
+  with self.assertRaisesRegex(ValueError,'Invalid curated'):
+   candidates({'items':[]},forged)
 
  def test_zero_budget_and_schedule_skip_fetch(self):
   def fail(u,c):self.fail('Network should not be called')
