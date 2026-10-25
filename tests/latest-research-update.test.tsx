@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import {afterEach, expect, it, vi} from 'vitest';
 import {cleanup, render, screen, fireEvent} from '@testing-library/react';
+import registry from '../public/data/official-registry.json';
 import {LatestResearchUpdate, parseLatestSnapshot, parseResearchHistory, verifiedLink, type LatestReport} from '../src/components/LatestResearchUpdate';
 
 const missing=(companyId:string,ticker:string):LatestReport=>({
@@ -29,7 +30,9 @@ function snapshot(){
   researchSource:'src/data/research/dlo.json',researchTextMatch:true,reason:'תקופה שונה',
   analystReview:'אין שינוי שווי',automaticChange:false}];
  return {version:1,generatedAt:'2026-10-25T10:00:00Z',aiStatus:'not-enabled',notice:'Review only',
-  reports:[dlo,missing('candidate-iren','IREN'),missing('candidate-nebius','NBIS'),missing('us-smci-nasdaq-common','SMCI')]};
+  reports:[dlo,missing('candidate-iren','IREN'),missing('candidate-nebius','NBIS'),missing('us-smci-nasdaq-common','SMCI'),
+   ...registry.companies.filter(c=>!['us-dlo-nasdaq-a','candidate-iren','candidate-nebius','us-smci-nasdaq-common'].includes(c.id))
+    .map(c=>missing(c.id,c.label))]};
 }
 afterEach(()=>{cleanup();vi.unstubAllGlobals()});
 it('displays retained real-value-shaped DLO research with honest review status and manual action',async()=>{
@@ -56,10 +59,10 @@ it('rejects hostile source and invalid amounts before rendering',()=>{
  expect(verifiedLink('javascript:alert(1)','candidate-iren')).toBeNull();
 });
 
-it('shows company-out-of-coverage state with no fictional data',async()=>{
+it('shows an explicitly monitored company without invented financial data',async()=>{
  vi.stubGlobal('fetch',vi.fn().mockResolvedValue({ok:true,json:async()=>snapshot()}));
  render(<LatestResearchUpdate companyId="candidate-enlight"/>);
- expect(await screen.findByText(/אין עדכון מחקר אוטומטי לחברה זו/)).toBeTruthy();
+ expect(await screen.findByText(/אין עדכון פיננסי מבוסס מקור/)).toBeTruthy();
 });
 it('rejects inconsistent issuer digest and unauthorized automatic update',()=>{
  const bad=snapshot();
@@ -94,4 +97,37 @@ it('rejects duplicated or identity-swapped historical evidence',()=>{
  expect(parseResearchHistory(h).entries).toHaveLength(1);
  expect(()=>parseResearchHistory({...h,entries:[entry,entry]})).toThrow();
  expect(()=>parseResearchHistory({...h,entries:[{...entry,companyId:'candidate-iren'}]})).toThrow();
+});
+
+
+it('covers every official company with a unique report row',()=>{
+ const data=snapshot();
+ expect(parseLatestSnapshot(data).reports).toHaveLength(registry.companies.length);
+ const incomplete=snapshot();incomplete.reports.pop();
+ expect(()=>parseLatestSnapshot(incomplete)).toThrow('מבנה');
+ const duplicated=snapshot();duplicated.reports[1].companyId=duplicated.reports[0].companyId;
+ expect(()=>parseLatestSnapshot(duplicated)).toThrow();
+});
+
+it('accepts a strictly retained SEC/XBRL comparison as unapproved evidence',()=>{
+ const data=snapshot();
+ const report=data.reports.find(r=>r.companyId==='us-smci-nasdaq-common')!;
+ report.status='pending-review';report.kind='structured-sec-xbrl-review-only';
+ report.sourceUrl='https://www.sec.gov/Archives/edgar/data/1375365/000137536526000022/smci-20260630.htm';
+ report.sourceVersion='a'.repeat(64);report.sourceDigestKind='retained-sec-inline-xbrl-sha256';
+ report.metrics=[{id:'revenue',label:'הכנסות',value:39063.072,previousValue:21972.042,changePercent:77.79,
+   unit:'USD million',periodStart:'2025-07-01',periodEnd:'2026-06-30',
+   accountingBasis:'US GAAP Revenue from Contracts — structured XBRL (needs review)',
+   sourceRow:'us-gaap:revenuefromcontractwithcustomerexcludingassessedtax',sourceRaw:'39063072000',
+   sourcePreviousRaw:'21972042000',sourcePage:null,sourceDocumentUrl:null,
+   sourceUrl:report.sourceUrl,reviewStatus:'pending-review',
+   comparison:'Same tagged duration; not a forecast surprise.'}];
+ report.reportEvidence={id:'report:'+'f'.repeat(32),sha256:'a'.repeat(64),title:'SMCI FY2026 official SEC 10-K',
+   format:'html',url:report.sourceUrl,publishedDate:null,documentPeriod:null,
+   firstDetectedAt:'2026-10-20T00:00:00Z',lastSuccessfulAt:'2026-10-20T00:00:00Z',
+   reviewStatus:'pending-review',sourceIsCurrentlyReachable:false,
+   note:'Retained document, not proof of latest issuer filing.'};
+ expect(parseLatestSnapshot(data).reports.find(r=>r.companyId===report.companyId)?.metrics[0].value).toBe(39063.072);
+ report.reportEvidence.sha256='b'.repeat(64);
+ expect(()=>parseLatestSnapshot(data)).toThrow('XBRL');
 });
