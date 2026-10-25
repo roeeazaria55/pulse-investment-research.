@@ -86,7 +86,8 @@ class LatestResearchUpdateTests(unittest.TestCase):
                          [c["id"] for c in registry["companies"]])
         self.assertEqual(len(first["reports"]), 12)
         by_company = {r["companyId"]: r for r in first["reports"]}
-        self.assertEqual(by_company["candidate-nebius"]["status"], "insufficient-evidence")
+        self.assertEqual(by_company["candidate-nebius"]["status"], "pending-review")
+        self.assertEqual(by_company["candidate-sandisk"]["status"], "pending-review")
         self.assertTrue(by_company["candidate-nebius"]["reportEvidence"])
         self.assertEqual(by_company["us-smci-nasdaq-common"]["status"], "pending-review")
         self.assertTrue(by_company["us-smci-nasdaq-common"]["metrics"])
