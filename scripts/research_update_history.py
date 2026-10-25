@@ -90,7 +90,7 @@ def combine(previous, latest):
             entries.append(rec)
             known.add(key)
             additions += 1
-        elif next(item for item in entries if (item["companyId"], item["contentId"]) == key)["report"] != report:
+        elif next(item for item in entries if (item["companyId"], item["contentId"]) == key)["report"] != rec["report"]:
             raise ValueError("Research content changed without a version increment")
     result = []
     for company in sorted(ALLOWED):
