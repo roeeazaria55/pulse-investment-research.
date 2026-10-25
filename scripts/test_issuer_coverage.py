@@ -41,6 +41,20 @@ class CoverageTests(unittest.TestCase):
         self.assertEqual(nbis["typedMetrics"], [])
         self.assertIsNotNone(nbis["report"])
 
+    def test_brainsway_three_months_matched_in_exact_issuer_table(self):
+        rows = build(self.registry, self.intake)["coverage"]
+        bway = next(r for r in rows if r["companyId"] == "candidate-brainsway")
+        metrics = {m["id"]:m for m in bway["typedMetrics"]}
+        self.assertEqual(bway["metricCoverage"], "provisional-structured")
+        self.assertEqual(metrics["revenue"]["value"], 17.107)
+        self.assertEqual(metrics["revenue"]["previousValue"], 12.632)
+        self.assertEqual(metrics["grossProfit"]["value"], 12.766)
+        self.assertEqual(metrics["revenue"]["periodStart"], "2026-04-01")
+        self.assertEqual(metrics["revenue"]["periodEnd"], "2026-06-30")
+        self.assertEqual(metrics["revenue"]["previousPeriodStart"], "2025-04-01")
+        self.assertEqual(metrics["revenue"]["evidenceScope"], "retained-issuer-html-table")
+        self.assertTrue(all(m["reviewStatus"] == "pending-review" for m in metrics.values()))
+
     def test_deny_unknown_domains_and_tampered_hash(self):
         company = next(c for c in self.registry["companies"] if c["id"] == "candidate-nebius")
         doc = next(d for d in self.intake["documents"] if d["companyId"] == company["id"])
