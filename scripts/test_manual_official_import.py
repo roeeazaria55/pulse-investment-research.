@@ -77,7 +77,7 @@ class ManualSourceImportTests(unittest.TestCase):
 
     def test_rejects_private_staging_inside_public_repository(self):
         with self.assertRaisesRegex(ValueError,"outside"):
-            self.run_stage(output_dir=ROOT / "work")
+            self.run_stage(output_dir=ROOT / "scripts")
 
     def test_unrecognized_dates_and_document_version_never_overwrite(self):
         with self.assertRaisesRegex(ValueError,"publication"):
