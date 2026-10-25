@@ -57,7 +57,7 @@ export function verifiedLink(url:string|null,companyId:string):string|null {
  } catch {return null;}
 }
 
-const knownMetrics=new Set(['revenue','grossProfit','operatingCash','capex']);
+const knownMetrics=new Set(['revenue','grossProfit','operatingCash','capex','operatingIncome']);
 const hash=/^[a-f0-9]{64}$/;
 const day=/^\d{4}-\d{2}-\d{2}$/;
 function shortText(value:unknown,max=2000):value is string{
@@ -119,7 +119,7 @@ export function parseLatestSnapshot(x:unknown):LatestSnapshot {
   if(r.companyId==='us-dlo-nasdaq-a'&&!insufficient&&r.sourceDigestKind!=='retained-issuer-html-sha256')throw Error('סוג גרסת DLO שגוי');
   if(r.companyId==='candidate-iren'&&!insufficient&&r.sourceDigestKind!=='curated-extract-json-sha256-not-original-pdf')throw Error('זהות ראיית IREN שגויה');
   if(!['us-dlo-nasdaq-a','candidate-iren'].includes(r.companyId)&&!insufficient&&(
-    !['retained-sec-inline-xbrl-sha256','retained-issuer-html-table-sha256'].includes(r.sourceDigestKind||'')||!evidence||
+    !['retained-sec-inline-xbrl-sha256','retained-issuer-html-table-sha256','retained-issuer-pdf-table-sha256'].includes(r.sourceDigestKind||'')||!evidence||
     r.sourceUrl!==evidence.url||r.sourceVersion!==evidence.sha256))throw Error('נתוני XBRL אינם קשורים למקור');
   const metricIds=new Set<string>();
   for(const m of r.metrics){
