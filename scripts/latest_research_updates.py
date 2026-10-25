@@ -356,7 +356,7 @@ def other_issuer_update(row):
     version = evidence["sha256"]
     if not (SHA256.fullmatch(version) and all(m["sourceUrl"] == source and
             m["sourceSha256"] == version and m["reportId"] == evidence["id"] and
-            m["reviewStatus"] == "pending-review" and m["unit"] == "USD million" for m in metrics)):
+            m["reviewStatus"] == "pending-review" and (m["unit"] == "USD million" or (company == "candidate-gilat-telecom" and m["unit"] == "ILS million")) for m in metrics)):
         raise ValueError("Inconsistent cross-source issuer XBRL evidence")
     allowed = {c["id"]: set(c["allowedHosts"]) for c in load(ROOT / "public/data/official-registry.json")["companies"]}
     if not trusted_url(source, allowed[company]):
