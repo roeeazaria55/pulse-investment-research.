@@ -19,6 +19,7 @@ import os
 from pathlib import Path
 import shutil
 from report_intake import MAX_BYTES, PARSER, extract, safe_report_url, valid_day
+from issuer_table_adapters import adapted_issuer_facts
 from official_sources import canonical
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -59,14 +60,22 @@ def stage(source, issuer, url, period, published, output_dir, *,
     result = reader(body, "application/pdf", url, company)
     if not isinstance(result, dict) or result.get("sha256") != digest:
         raise ValueError("Extractor digest mismatches original PDF bytes")
-    if result.get("status") != "extracted" or not result.get("tables"):
-        raise ValueError("Official PDF requires readable statement tables; manual import is not enough")
+    if result.get("status") != "extracted":
+        raise ValueError("Official PDF needs a real readable financial statement")
+    # Table-free Hebrew / issuer PDFs are supported only when a bounded original
+    # page adapter verifies the exact financial row, quarter, issuer, and units.
+    document_id = "report:" + hashlib.sha256((issuer + "|" + canonical(url)).encode()).hexdigest()[:32]
+    probe = {**result, "companyId": issuer, "url": url, "id": document_id}
+    reviewed_candidates = adapted_issuer_facts(probe)
+    if not reviewed_candidates or any(x["reviewStatus"] != "pending-review"
+                                  or x["sourceSha256"] != digest for x in reviewed_candidates):
+        raise ValueError("No source-row validated financial observation in original PDF")
     if result.get("reviewStatus") != "pending-review" or result.get("format") != "pdf":
         raise ValueError("Unsafe manual observation status")
     result = dict(result)
     result.pop("links", None)
     moment = dt.datetime.now(dt.timezone.utc).isoformat()
-    identity = "report:" + hashlib.sha256((issuer + "|" + canonical(url)).encode()).hexdigest()[:32]
+    identity = document_id
     existing = next((d for d in previous["documents"] if d.get("id") == identity), None)
     record = dict(**result, id=identity, companyId=issuer, ticker=company["label"],
         url=url, finalUrl=url, publishedDate=published, documentPeriod=period,
@@ -125,7 +134,8 @@ def stage(source, issuer, url, period, published, output_dir, *,
         raise
     return {"issuer": issuer, "sha256": digest, "pdf": str(pdf_path),
             "stagedFeed": str(json_path), "manifest": str(manifest),
-            "numberOfTables": len(result["tables"]), "status": "human-review-required"}
+            "numberOfTables": len(result["tables"]), "numberOfReviewedMetricCandidates": len(reviewed_candidates),
+            "status": "human-review-required"}
 
 
 def main():
