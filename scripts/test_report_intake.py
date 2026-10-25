@@ -115,6 +115,40 @@ class IntakeTests(unittest.TestCase):
   with self.assertRaisesRegex(ValueError,'Invalid curated'):
    candidates({'items':[]},forged)
 
+ def test_company_report_candidate_prioritized_ahead_of_transcript(self):
+  import json
+  from pathlib import Path
+  registry=json.loads(Path('public/data/official-registry.json').read_text(encoding='utf-8'))
+  company=next(c for c in registry['companies'] if c['id']=='candidate-enlight')
+  # A conference call already exists in discovery, but original issuer Q2
+  # financial statement must be first actual download attempt.
+  transcript={'id':'official:transcript','companyId':company['id'],'kind':'results',
+      'title':'Enlight Q2 2026 prepared remarks conference call financial results',
+      'url':'https://enlightenergy.com/wp-content/uploads/2026/08/Enlight-prepared-remarks-Q2-2026-1.pdf',
+      'documentPeriod':'Q2 2026','publishedDate':'2026-08-16'}
+  original=company['curatedReportCandidates'][0]['url']
+  attempted=[]
+  def fetch(url,c):
+   attempted.append(url)
+   raise PermissionError('HTTP Error 403: Forbidden')
+  collect({'items':[transcript]}, {'companies':[company]}, {},
+          '2026-10-25T15:00:00Z',fetcher=fetch,limit=1)
+  self.assertEqual(attempted,[original])
+
+ def test_issuer_distributed_press_release_is_first_ftai_fallback(self):
+  import json
+  from pathlib import Path
+  registry=json.loads(Path('public/data/official-registry.json').read_text(encoding='utf-8'))
+  company=next(c for c in registry['companies'] if c['id']=='candidate-ftai')
+  attempted=[]
+  def fetch(url,c):
+   attempted.append(url)
+   raise PermissionError('HTTP Error 403: Forbidden')
+  collect({'items':[]},{'companies':[company]}, {},
+          '2026-10-25T15:00:00Z',fetcher=fetch,limit=1)
+  self.assertEqual(len(attempted),1)
+  self.assertIn('globenewswire.com/news-release/2026/07/29',attempted[0])
+
  def test_zero_budget_and_schedule_skip_fetch(self):
   def fail(u,c):self.fail('Network should not be called')
   result=collect({'items':[ITEM]},{'companies':[C]}, {},'2026-10-20T12:00:00Z',fetcher=fail,limit=0)
