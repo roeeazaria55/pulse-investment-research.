@@ -76,7 +76,7 @@ class ManualSourceImportTests(unittest.TestCase):
         bad_reader=lambda *args: {**self.reader(*args),"sha256":"a"*64}
         with self.assertRaisesRegex(ValueError,"digest"):
             self.run_stage(reader=bad_reader)
-        bad_reader=lambda *args: {**self.reader(*args),"tables":[]}
+        bad_reader=lambda *args: {**self.reader(*args),"tables":[],"sourcePdfPages":[]}
         with self.assertRaisesRegex(ValueError,"source-row"):
             self.run_stage(reader=bad_reader)
 
