@@ -28,8 +28,12 @@ class ManualSourceImportTests(unittest.TestCase):
     def reader(self, body, ct, url, company):
         return {"status":"extracted","sha256":hashlib.sha256(body).hexdigest(),
                 "bytes":len(body),"format":"pdf","tables":[{"page":1,"rows":[["Total revenues","953,085"]]}],
-                "facts":[],"reviewStatus":"pending-review","title":"FTAI Aviation Ltd.",
-                "links":[],"tableCount":1}
+                "facts":[],"reviewStatus":"pending-review","title":"FTAI Aviation Ltd. Reports Second Quarter 2026 Results",
+                "links":[],"tableCount":1,"sourcePdfPages":[{"page":2,
+                    "text":"FTAI AVIATION LTD. CONSOLIDATED STATEMENTS OF OPERATIONS (Unaudited) "
+                      "Three Months Ended June 30 Six Months Ended June 30 "
+                      "2026 2025 2026 2025 "
+                      "Total revenues 953,085 676,237 1,783,782 1,178,317"}]}
 
     def run_stage(self, **overrides):
         args={"source":self.source,"issuer":self.company_id,"url":self.url,
@@ -47,6 +51,7 @@ class ManualSourceImportTests(unittest.TestCase):
         self.assertEqual(report["sha256"],self.digest)
         self.assertEqual(report["url"],self.url)
         self.assertEqual(report["reviewStatus"],"pending-review")
+        self.assertEqual(result["numberOfReviewedMetricCandidates"],1)
         self.assertEqual(report["provenance"],"manually-downloaded-original-pdf-human-verification-required")
         self.assertEqual(snapshot["sources"][0]["status"],"deferred")
         manifest=json.loads(Path(result["manifest"]).read_text(encoding="utf-8"))
@@ -72,7 +77,7 @@ class ManualSourceImportTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"digest"):
             self.run_stage(reader=bad_reader)
         bad_reader=lambda *args: {**self.reader(*args),"tables":[]}
-        with self.assertRaisesRegex(ValueError,"readable statement"):
+        with self.assertRaisesRegex(ValueError,"source-row"):
             self.run_stage(reader=bad_reader)
 
     def test_rejects_private_staging_inside_public_repository(self):
