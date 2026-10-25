@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parent.parent
 LATEST = ROOT / "public/data/latest-research-updates.json"
 OUTPUT = ROOT / "public/data/research-update-history.json"
 MAX_PER_ISSUER = 12
-ALLOWED = {"us-dlo-nasdaq-a", "candidate-iren", "candidate-nebius", "us-smci-nasdaq-common"}
+ALLOWED = {c["id"] for c in json.loads((ROOT / "public/data/official-registry.json").read_text(encoding="utf-8"))["companies"]}
 ID = re.compile(r"^[0-9a-f]{24}$")
 
 
