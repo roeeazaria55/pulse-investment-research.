@@ -39,6 +39,12 @@ def _entry(report, first_seen):
     if report.get("status") not in ("needs-reconciliation", "pending-review", "historical-baseline-pending-review"):
         raise ValueError("Unsafe source status")
     _time(first_seen)
+    # Fetch-health timestamps and retained-document last-success metadata vary
+    # on every run; they must never masquerade as a new research revision.
+    # Historical evidence is sourced from the stable report URL/sha/metrics.
+    volatile = {"reportEvidence", "intakeStatus", "intakeAttemptAt",
+                "intakeSuccessAt", "intakeError", "issuerPortal", "analystQuestions"}
+    stable_report = {k:v for k,v in report.items() if k not in volatile}
     return {
         "companyId": report["companyId"], "ticker": report["ticker"],
         "contentId": content_id, "firstSeenAt": first_seen,
