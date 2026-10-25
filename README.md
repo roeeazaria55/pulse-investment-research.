@@ -1,8 +1,11 @@
 > **October 2026 release candidate (PR #60, not deployed):** The existing PULSE
-> PWA includes source-backed DLO and IREN research snapshots, review-only model
-> comparison and a bounded public issuer-research history built for the
+> PWA includes twelve company research/source status views, retained report
+> pointers, source-backed review-only DLO/IREN/BWAY/SMCI financial candidates,
+> and a bounded public issuer-research history built for the
 > `pulse-data` publication pipeline. DLO data still need reconciliation and
-> IREN FY2026 is a historical baseline, not new earnings. GitHub Actions paid
+> IREN FY2026 is a historical baseline, not new earnings. Only four issuers
+> have pilot financial candidates, all requiring review; six currently have
+> retained full source documents. GitHub Actions paid
 > AI is **disabled**; an explicitly approved local private-output CLI is
 > available for future testing, not yet executed with a paid model call.
 > See [v1 release gates, production checks and rollback](docs/PULSE_RELEASE.md).
