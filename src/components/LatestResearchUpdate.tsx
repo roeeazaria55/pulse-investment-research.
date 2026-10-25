@@ -18,6 +18,7 @@ export interface LatestReport {
  sourceDigestKind?:string|null;modelReview?:ModelComparison[];
  reportEvidence?:RetainedIssuerReport|null;intakeStatus?:'ok'|'partial'|'failed'|'unconfigured'|'no-candidates';
  analystQuestions?:string[];
+ intakeAttemptAt?:string|null;intakeSuccessAt?:string|null;intakeError?:string|null;issuerPortal?:string|null;
  activeValuationContext?:{status:'unverified-supplied-research'|'existing-quantified-scenario-model';
  scenario:'base';baseTargetPerShare:number|null;weight:number;currency:string;asOf:string;
  source:string;pdfFilename:string|null;isComparableFinancialActual:false;note:string};
