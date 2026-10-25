@@ -4,18 +4,6 @@ on:
     branches: [main]
     paths-ignore: ["public/data/feed.json", "public/data/ingestion-state.json", "public/data/official-sources.json", "public/data/report-intake.json", "public/data/report-review-queue.json", "public/data/auto-financial-observations.json", "public/data/forecast-archive.json", "public/data/forecast-actual-comparisons.json", "public/data/research-update-proposals.json", "public/data/latest-research-updates.json"]
   workflow_dispatch:
-    inputs:
-      ai_review:
-        description: 'Paid AI review of one company (opt-in; requires configured private API key)'
-        required: false
-        type: boolean
-        default: false
-      ai_ticker:
-        description: 'One issuer for manually requested AI review'
-        required: false
-        type: choice
-        options: [DLO, IREN, NBIS, SMCI]
-        default: DLO
   schedule:
     # About every 30 minutes; 13:00 Jerusalem daily window is generated on
     # the first actual run after its boundary, including weekends and DST.
@@ -105,21 +93,6 @@ jobs:
       - name: Build latest source-backed research updates
         if: steps.collect.outputs.skipped != 'true'
         run: python3 scripts/latest_research_updates.py
-      - name: Manually approved paid AI review (artifact only; never publish automatically)
-        if: github.event_name == 'workflow_dispatch' && inputs.ai_review == true && steps.collect.outputs.skipped != 'true'
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          PULSE_PAID_AI_APPROVED: 'YES'
-        run: |
-          python3 scripts/ai_research_packets.py
-          python3 scripts/run_optional_ai_review.py --ticker "${{ inputs.ai_ticker }}" --execute
-      - name: Upload private manual AI review for human inspection
-        if: github.event_name == 'workflow_dispatch' && inputs.ai_review == true && steps.collect.outputs.skipped != 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: pending-ai-review
-          path: work/ai-review-*.json
-          retention-days: 7
       - name: Test
         if: steps.collect.outputs.skipped != 'true'
         run: npm test
