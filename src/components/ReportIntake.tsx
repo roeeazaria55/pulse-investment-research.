@@ -17,7 +17,7 @@ export function ReportIntake({companyId}:{companyId:string}){
    <ul>{readiness.requirements.map(requirement=><li key={requirement}>{requirement}</li>)}</ul>
   </div>}
   {failed?<p role="status">מצב הקליטה אינו זמין. אין להסיק מכך שלא פורסם דוח.</p>:!data?<p role="status">טוען מצב קליטה…</p>:<>
-   {source&&<p>{statuses[source.status]} · ניסיון אחרון {new Date(source.lastAttemptAt).toLocaleString('he-IL')}. {source.status!=='ok'&&'ייתכן שקיימים דיווחים נוספים שלא נקלטו.'}</p>}
+   {source&&<p>{statuses[source.status]} · ניסיון אחרון {source.lastAttemptAt?new Date(source.lastAttemptAt).toLocaleString('he-IL'):'לא בוצע ניסיון קריאת תוכן'}. {source.status!=='ok'&&'ייתכן שקיימים דיווחים נוספים שלא נקלטו.'}</p>}
    {source?.error&&<p role="status">פרטי כשל הקליטה: <bdi>{source.error}</bdi></p>}
    {!docs.length&&<p>אין עדיין תוכן דוח שנקרא בהצלחה במאגר הזה. קישורי הדיווחים זמינים במקורות; כשל קריאה אינו היעדר דיווח.</p>}
    {docs.map(d=><details className="intake-document" key={d.id}><summary>{d.title}{d.revised?' · זוהתה גרסה מתוקנת':''}</summary>
