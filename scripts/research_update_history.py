@@ -51,7 +51,7 @@ def _entry(report, first_seen):
         "reportPeriod": report.get("reportPeriod"),
         "publishedDate": report.get("publishedDate"),
         "sourceVersion": report.get("sourceVersion"),
-        "status": report["status"], "report": report,
+        "status": report["status"], "report": stable_report,
     }
 
 
