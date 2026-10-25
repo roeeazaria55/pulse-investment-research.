@@ -51,7 +51,8 @@ def iso_date(s):
 
 
 def document_usable(doc, company):
-    return (isinstance(doc, dict) and doc.get("companyId") == company["id"]
+    return (isinstance(doc, dict) and not re.search(r"(?:conference call|prepared remarks)",str(doc.get("title","")),re.I)
+        and doc.get("companyId") == company["id"]
         and doc.get("status") == "extracted"
         and isinstance(doc.get("sha256"), str) and bool(DIGEST.fullmatch(doc["sha256"]))
         and isinstance(doc.get("id"), str) and doc["id"].startswith("report:")
