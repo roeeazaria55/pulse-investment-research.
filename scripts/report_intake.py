@@ -18,7 +18,7 @@ MAX_BYTES=8*1024*1024
 PILOTS={c["id"] for c in json.loads((Path(__file__).resolve().parent.parent/"public/data/official-registry.json").read_text(encoding="utf-8"))["companies"]}
 LABELS=re.compile(r'revenue|net (?:income|loss)|gross profit|operating (?:income|loss)|cash flow|inventor|accounts receivable|total assets|earnings per|TPV|remaining performance|הכנסות|רווח|מלאי|תזרים',re.I)
 FISCAL_YEAR=re.compile(r'\bFY\s*((?:20)?\d{2})\b',re.I)
-FINANCIAL_TITLE=re.compile(r'financial|fiscal|quarter|\bQ[1-4]\b|\bFY\s*(?:20)?\d{2}\b|annual report|10-K|10-Q|20-F|shareholder|תוצאות כספיות|דוח כספי',re.I)
+FINANCIAL_TITLE=re.compile(r'financial|fiscal|quarter|\bQ[1-4]\b|\bFY\s*(?:20)?\d{2}\b|annual report|10-K|10-Q|20-F|shareholder|תוצאות כספיות|דוח כספי|דוחות כספיים|דוח רבעון',re.I)
 SCHEDULE=re.compile(r'to (?:report|release|announce)|date (?:of|for)|timing of|schedule|earnings call registration',re.I)
 KNOWN_FACTS={'us-gaap:revenues','us-gaap:revenuefromcontractwithcustomerexcludingassessedtax','us-gaap:netincomeloss','us-gaap:grossprofit','us-gaap:operatingincomeloss','us-gaap:netcashprovidedbyusedinoperatingactivities','us-gaap:inventorynet','us-gaap:accountsreceivablenetcurrent','us-gaap:cashandcashequivalentsatcarryingvalue','us-gaap:weightedaveragenumberofdilutedsharesoutstanding','us-gaap:earningspersharediluted'}
 def clean(value):return ' '.join(value.split())
@@ -32,8 +32,20 @@ def safe_report_url(url,company):
   return document_url(url,company) and not any(part in ('.','..') for part in path.split('/'))
  except (ValueError,TypeError):return False
 
-def fetch_document(url,company):
+def ascii_report_url(url,company):
+ """Percent-encode non-ASCII path chars on already-allowlisted issuer URLs.
+ This is ordinary URL encoding, not an authentication or access bypass.
+ """
  if not safe_report_url(url,company):raise ValueError('Report URL outside issuer allowlist')
+ p=urllib.parse.urlsplit(url)
+ encoded=urllib.parse.urlunsplit((p.scheme,p.netloc,
+          urllib.parse.quote(p.path,safe='/%-._~'),
+          urllib.parse.quote(p.query,safe='=&/%?+-._~'),'')) 
+ if not safe_report_url(encoded,company):raise ValueError('Encoded report URL escaped issuer allowlist')
+ return encoded
+
+def fetch_document(url,company):
+ url=ascii_report_url(url,company)
  class Redirects(urllib.request.HTTPRedirectHandler):
   def redirect_request(self,req,fp,code,msg,headers,newurl):
    if not safe_report_url(newurl,company) or getattr(req,'hops',0)>=2:raise ValueError('Report redirect outside issuer allowlist')
