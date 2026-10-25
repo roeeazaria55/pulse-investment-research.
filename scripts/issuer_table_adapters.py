@@ -129,7 +129,85 @@ def nebius_quarter(doc):
         if metric: found.append(metric)
     return found if len(found)==1 else []
 
+
+def lemonade_q2(doc):
+    """Lemonade 2026 Q2 shareholder-letter original PDF operating metrics.
+
+    The quarterly columns come before the 6-month YTD columns; four numeric
+    cells plus corroborating MD&A text and original page are mandatory.
+    """
+    if (doc.get("companyId")!="us-lmnd-nyse-common" or doc.get("format")!="pdf"
+        or not re.search(r"Shareholder Letter Q2 2026",doc.get("title",""),re.I)):
+        return []
+    page9=" ".join(cell for t in doc.get("tables",[]) if t.get("page")==9
+                   for row in t.get("rows",[]) for cell in row)
+    if not ("Second quarter" in page9 and "$294.4" in page9 and "2025" in page9):
+        return []
+    matching=[t for t in doc.get("tables",[]) if t.get("page")==11 and
+              any(row and row[0].startswith("($ in millions, except Premium per customer)")
+                  for row in t.get("rows",[]))]
+    if len(matching)!=1:
+        return []
+    t=matching[0]
+    result=[]
+    for label,key,hebrew in [("Total revenue","revenue","הכנסות"),
+                              ("Gross profit","grossProfit","רווח גולמי")]:
+        rows=[row for row in t["rows"] if row and len(row)<=3 and
+              row[0].startswith(label+" $ ")]
+        if len(rows)!=1:
+            return []
+        raw=rows[0][0][len(label):].strip()
+        m=re.fullmatch(r"\$\s+([\d,]+(?:\.\d+)?)\s+\$\s+([\d,]+(?:\.\d+)?)"
+                       r"\s+\$\s+([\d,]+(?:\.\d+)?)\s+\$\s+([\d,]+(?:\.\d+)?)",raw)
+        if not m:
+            return []
+        value=_number(m[1]);prior=_number(m[2])
+        rec=_proposal(doc,key,hebrew,value,prior,m[1],m[2],
+            "2026-04-01","2026-06-30","2025-04-01","2025-06-30",
+            "USD million","Lemonade Q2 2026 shareholder letter ($ million): first two quarter columns, YTD excluded",
+            "Shareholder Letter Q2 2026 p.11: "+label,t["page"],"retained-issuer-pdf-table")
+        if rec:result.append(rec)
+    return result
+
+
+def nextvision_fy25(doc):
+    """Next Vision 2025 audited activity table, USD thousands; not 2026 data."""
+    if (doc.get("companyId")!="candidate-next-vision" or doc.get("format")!="pdf"
+        or "Periodic Report for 2025" not in doc.get("title","")):
+        return []
+    candidates=[]
+    for t in doc.get("tables",[]):
+        rows=t.get("rows",[])
+        if t.get("page")!=9 or len(rows)<7:
+            continue
+        if not (rows[0]==["","","For the year ended on","","","",""] and
+                "USD thousands" in " ".join(rows[1]) and
+                "December 31, 2025" in " ".join(rows[2]) and
+                "December 31, 2024" in " ".join(rows[2])):
+            continue
+        candidates.append(t)
+    if len(candidates)!=1:
+        return []
+    t=candidates[0]
+    result=[]
+    for label,key,hebrew in [("Area of activity revenue","revenue","הכנסות"),
+                              ("Gross profit","grossProfit","רווח גולמי")]:
+        matches=[r for r in t["rows"] if r and r[0]==label]
+        if len(matches)!=1 or len(matches[0])<5:
+            return []
+        row=matches[0]
+        a=_number(row[1]);b=_number(row[4])
+        if a is None or b is None:
+            return []
+        rec=_proposal(doc,key,hebrew,round(a/1000,6),round(b/1000,6),
+            row[1],row[4],"2025-01-01","2025-12-31","2024-01-01","2024-12-31",
+            "USD million","Next Vision FY2025 activity report, original USD-thousands table normalized to USD million; historical baseline only",
+            "FY2025 original report, area of activity: "+label,t["page"],"retained-issuer-pdf-table")
+        if rec:result.append(rec)
+    return result
+
+
 def adapted_issuer_facts(doc):
-    results=[sandisk_q4(doc),nebius_quarter(doc)]
+    results=[sandisk_q4(doc),nebius_quarter(doc),lemonade_q2(doc),nextvision_fy25(doc)]
     nonempty=[value for value in results if value]
     return nonempty[0] if len(nonempty)==1 else []
