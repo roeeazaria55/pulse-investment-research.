@@ -1,4 +1,4 @@
-"""Build review-only research updates from collected DLO facts and the IREN issuer baseline.
+"""Build source-backed review-only updates for the entire 12-company PULSE registry.
 
 A deterministic metadata/financial-evidence transformation, NOT AI analysis.
 Only read public company evidence. No portfolio, API key, valuation or approval writes.
@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 from hashlib import sha256
 from pathlib import Path
 from urllib.parse import urlparse
+from issuer_coverage import build as build_coverage
 import json
 import math
 import re
@@ -15,10 +16,8 @@ import re
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "public/data/latest-research-updates.json"
 COMPANIES = {
-    "us-dlo-nasdaq-a": "DLO",
-    "candidate-iren": "IREN",
-    "candidate-nebius": "NBIS",
-    "us-smci-nasdaq-common": "SMCI",
+    company["id"]: company.get("label") or company.get("ticker") or company["name"]
+    for company in json.loads((ROOT / "public/data/official-registry.json").read_text(encoding="utf-8"))["companies"]
 }
 METRICS = {
     "revenue": "הכנסות",
@@ -332,6 +331,59 @@ def iren_update(source):
     return body
 
 
+
+def other_issuer_update(row):
+    """A source document is a finding, never an approved financial observation.
+
+    Only uniquely scoped, same-unit XBRL duration facts from retained SEC
+    documents may appear as typed *proposals*. All other parsed tables are
+    visible through the original document link but remain unparsed.
+    """
+    company = row["companyId"]
+    if company in ("us-dlo-nasdaq-a", "candidate-iren"):
+        raise ValueError("Dedicated issuer cannot use generic fallback")
+    evidence = row.get("report")
+    metrics = row.get("typedMetrics", [])
+    if not evidence or not metrics:
+        text = ("דוח שמור זמין לקריאה, אך טרם זוהו מדדים מחולצים שאפשר לאמת בהגדרה ובתקופה."
+                if evidence else "טרם נשמר דוח רשמי קריא לצורך חילוץ מדדים פיננסיים.")
+        entry = missing(company, text)
+        entry["questions"] = row.get("analystQuestions", []) or [text]
+        entry["reportEvidence"] = evidence
+        entry["intakeStatus"] = row["intakeStatus"]
+        return entry
+    source = evidence["url"]
+    version = evidence["sha256"]
+    if not (SHA256.fullmatch(version) and all(m["sourceUrl"] == source and
+            m["sourceSha256"] == version and m["reportId"] == evidence["id"] and
+            m["reviewStatus"] == "pending-review" and m["unit"] == "USD million" for m in metrics)):
+        raise ValueError("Inconsistent cross-source issuer XBRL evidence")
+    allowed = {c["id"]: set(c["allowedHosts"]) for c in load(ROOT / "public/data/official-registry.json")["companies"]}
+    if not trusted_url(source, allowed[company]):
+        raise ValueError("Report link not on the registered issuer domain")
+    body = {
+        "companyId": company, "ticker": COMPANIES[company],
+        "status": "pending-review", "kind": "structured-sec-xbrl-review-only",
+        "reportPeriod": metrics[0]["periodStart"] + "/" + metrics[0]["periodEnd"],
+        "publishedDate": evidence.get("publishedDate"), "sourceUrl": source,
+        "sourceVersion": version,
+        "sourceDigestKind": "retained-sec-inline-xbrl-sha256",
+        "metrics": [{k: v for k, v in metric.items() if k not in (
+             "sourceSha256", "reportId", "evidenceScope", "sourceContext")}
+             for metric in metrics],
+        "modelReview": [],
+        "findings": ["נתוני XBRL מובנים חולצו מקובץ SEC שמור; טרם אושרו עיתוי/הגדרות/בקרת אנליסט."],
+        "questions": row.get("analystQuestions", []) or ["האם התקופה והיחידה תואמות למודל?"],
+        "missing": ["לא הושוו ביצועים לתחזית מתוארכת; אין אישור אוטומטי או שינוי במחיר יעד.",
+                    "הצלחת קליטת המקור בהווה תלויה במצב הורדת הדוח המוצג בנפרד."],
+        "aiAnalysisEnabled": False, "reviewRequired": True,
+        "modelChange": "אין שינוי בתרחישים, בהנחות או במחירי יעד.",
+        "reportEvidence": evidence, "intakeStatus": row["intakeStatus"],
+    }
+    body["contentId"] = identity(body)
+    return body
+
+
 def source_check_summary(source_inventory):
     """Source *index* polling health. Does not certify financial extraction."""
     if source_inventory is None:
@@ -362,17 +414,34 @@ def source_check_summary(source_inventory):
     return result
 
 
-def build(observations, iren_source, source_inventory=None):
-    reports = [
-        model_context(dlo_update(observations)),
-        model_context(iren_update(iren_source)),
-        missing("candidate-nebius", "לא קיימת קליטה אוטומטית מאושרת חדשה לצורך עדכון המחקר של NBIS."),
-        missing("us-smci-nasdaq-common", "לא קיימת קליטה אוטומטית מאושרת חדשה לצורך עדכון המחקר של SMCI."),
-    ]
+def build(observations, iren_source, source_inventory=None, coverage=None):
+    if coverage is None:
+        coverage = build_coverage(load(ROOT / "public/data/official-registry.json"),
+                                  load(ROOT / "public/data/report-intake.json"))
+    rows = coverage.get("coverage", [])
+    if len(rows) != len(COMPANIES) or {r["companyId"] for r in rows} != set(COMPANIES):
+        raise ValueError("12-company official evidence coverage is incomplete")
+    indexed = {r["companyId"]: r for r in rows}
+    reports = []
+    for company in COMPANIES:
+        row = indexed[company]
+        if company == "us-dlo-nasdaq-a":
+            report = model_context(dlo_update(observations))
+        elif company == "candidate-iren":
+            report = model_context(iren_update(iren_source))
+        else:
+            report = other_issuer_update(row)
+        report.setdefault("reportEvidence", row.get("report"))
+        report.setdefault("intakeStatus", row["intakeStatus"])
+        report["analystQuestions"] = row.get("analystQuestions", [])
+        reports.append(report)
     return {
         "version": 1, "generatedAt": datetime.now(timezone.utc).isoformat(),
         "sourceChecks": source_check_summary(source_inventory),
         "reports": reports, "aiStatus": "not-enabled",
+        "coverage": {"companyCount": len(reports),
+                     "financialMetricCompanies": [r["ticker"] for r in reports if r["metrics"]],
+                     "retainedDocumentCompanies": [r["ticker"] for r in reports if r.get("reportEvidence")]},
         "notice": "Deterministic review-only research. Curated IREN FY2026 baseline is not fresh collection. No AI run, auto-approval, price-target change or historical forecast surprise.",
     }
 
@@ -381,7 +450,9 @@ def main():
     observations = load(ROOT / "public/data/auto-financial-observations.json")
     iren = load(ROOT / "public/data/iren-fy26-source.json")
     inventory = load(ROOT / "public/data/official-sources.json")
-    data = build(observations, iren, inventory)
+    coverage = build_coverage(load(ROOT / "public/data/official-registry.json"),
+                              load(ROOT / "public/data/report-intake.json"))
+    data = build(observations, iren, inventory, coverage)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     temp = OUT.with_suffix(".json.tmp")
     temp.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
