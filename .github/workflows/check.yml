@@ -30,6 +30,7 @@ jobs:
           python3 scripts/forecast_archive.py
           python3 scripts/forecast_actual_comparison.py
           python3 scripts/research_update_proposals.py
+          python3 scripts/issuer_coverage.py
           python3 scripts/latest_research_updates.py
           python3 scripts/research_update_history.py
           python3 scripts/ai_research_packets.py
