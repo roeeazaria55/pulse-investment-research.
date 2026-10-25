@@ -15,7 +15,7 @@ from official_sources import document_url, canonical
 VERSION=1
 PARSER='official-content-v1'
 MAX_BYTES=8*1024*1024
-PILOTS={'candidate-nebius','candidate-iren','candidate-sandisk','us-dlo-nasdaq-a','candidate-brainsway','us-smci-nasdaq-common'}
+PILOTS={c["id"] for c in json.loads((Path(__file__).resolve().parent.parent/"public/data/official-registry.json").read_text(encoding="utf-8"))["companies"]}
 LABELS=re.compile(r'revenue|net (?:income|loss)|gross profit|operating (?:income|loss)|cash flow|inventor|accounts receivable|total assets|earnings per|TPV|remaining performance|הכנסות|רווח|מלאי|תזרים',re.I)
 FISCAL_YEAR=re.compile(r'\bFY\s*((?:20)?\d{2})\b',re.I)
 FINANCIAL_TITLE=re.compile(r'financial|fiscal|quarter|\bQ[1-4]\b|\bFY\s*(?:20)?\d{2}\b|annual report|10-K|10-Q|20-F|shareholder|תוצאות כספיות|דוח כספי',re.I)
@@ -184,19 +184,26 @@ def candidates(snapshot,company):
 
 def collect(snapshot,registry,previous,now,fetcher=fetch_document,limit=8,budget=120):
  records={r['id']:r for r in previous.get('documents',[])};statuses=[];attempts=0;deadline=time.monotonic()+budget
- for company in registry['companies']:
-  if company['id'] not in PILOTS:continue
+ # Oldest actual content-fetch attempt goes first, preventing fixed registry
+ # order from starving companies when the network request budget is exhausted.
+ previous_status={s['companyId']:s for s in previous.get('sources',[]) if isinstance(s,dict) and isinstance(s.get('companyId'),str)}
+ ordered=sorted((c for c in registry['companies'] if c['id'] in PILOTS),
+                key=lambda c: (previous_status.get(c['id'],{}).get('lastAttemptAt') or '',c['id']))
+ for company in ordered:
   todo=candidates(snapshot,company)[:4]
   def priority(item):
    ident='report:'+hashlib.sha256((company['id']+'|'+canonical(item['url'])).encode()).hexdigest()[:32]
    return (ident in records,records.get(ident,{}).get('lastSuccessfulAt',''))
-  todo.sort(key=priority);chosen=todo[:2];status=dict(companyId=company['id'],lastAttemptAt=now,status='no-candidates',error=None)
+  todo.sort(key=priority);chosen=todo[:2];status=dict(companyId=company['id'],
+     lastAttemptAt=previous_status.get(company['id'],{}).get('lastAttemptAt'),
+     status='no-candidates',error=None)
   discovery=[s for s in snapshot.get('sources',[]) if s.get('companyId')==company['id']]
   if not chosen and discovery and all(s.get('status')=='failed' for s in discovery):
    detail=next((s.get('error') for s in discovery if s.get('error')),'Unknown discovery failure')
    status.update(status='failed',error=('Official source discovery failed; publication status unknown: '+detail)[:180])
   for item in chosen:
    if attempts>=limit or time.monotonic()>deadline:status.update(status='deferred',error='Run budget reached; retained records unchanged');break
+   status['lastAttemptAt']=now
    url=canonical(item['url']);ident='report:'+hashlib.sha256((company['id']+'|'+url).encode()).hexdigest()[:32]
    prior=records.get(ident)
    # Recheck even stable URLs: issuers may replace a document without changing its URL.
