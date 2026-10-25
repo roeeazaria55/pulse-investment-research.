@@ -4,8 +4,9 @@
 > and a bounded public issuer-research history built for the
 > `pulse-data` publication pipeline. DLO data still need reconciliation and
 > IREN FY2026 is a historical baseline, not new earnings. Only four issuers
-> have pilot financial candidates, all requiring review; six currently have
-> retained full source documents. GitHub Actions paid
+> have pilot financial candidates, all requiring review; the latest PR source
+> scan retained issuer documents for eight companies (including LMND and
+> Next Vision). Source availability can change. GitHub Actions paid
 > AI is **disabled**; an explicitly approved local private-output CLI is
 > available for future testing, not yet executed with a paid model call.
 > See [v1 release gates, production checks and rollback](docs/PULSE_RELEASE.md).
