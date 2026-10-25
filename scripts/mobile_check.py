@@ -49,7 +49,7 @@ with sync_playwright() as pw:
     assert {r['companyId'] for r in coverage['coverage']}==registered_ids,'Coverage identity mismatch'
     assert {r['companyId'] for r in published['reports']}==registered_ids,'Report identity mismatch'
     assert len([r for r in coverage['coverage'] if r['report']])>=6,'Unexpected loss of retained reports'
-    assert all(r['metricCoverage'] in ('no-document','report-only','provisional-xbrl')
+    assert all(r['metricCoverage'] in ('no-document','report-only','provisional-structured')
                for r in coverage['coverage'])
 
     assert published['version']==1 and archive['version']==1,'Research JSON version mismatch'
