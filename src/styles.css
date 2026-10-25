@@ -1820,3 +1820,11 @@ summary { cursor: pointer; min-height: 44px; padding-block: .55rem; line-height:
 .report-intake{margin-block:20px;padding:14px;border:1px solid var(--border,#263243);border-radius:10px;min-width:0;overflow-wrap:anywhere}.report-intake summary{cursor:pointer;line-height:1.7}.intake-document{padding-block:14px;border-top:1px solid var(--border,#263243)}.intake-document>small{display:block;line-height:1.8}
 .mapped-observation{padding:12px;margin-block:12px;border-inline-start:3px solid var(--border,#263243);background:var(--surface,#111827);overflow-wrap:anywhere;min-width:0}.mapped-observation small{display:block;line-height:1.8}
 
+
+/* Source-backed research update: dense information stays readable on 320px Android. */
+.report-intake-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;margin-block:12px}
+.report-intake-grid .thesis-metric{min-width:0;margin:0;padding:12px;border-radius:10px;border:1px solid var(--border,#263243)}
+.report-intake-grid .thesis-metric strong{display:block;overflow-wrap:anywhere}
+.report-intake-grid details{margin-top:10px}
+.report-intake [data-testid="latest-research-update"]{max-width:100%}
+@media(max-width:390px){.report-intake-grid{grid-template-columns:minmax(0,1fr)}}
