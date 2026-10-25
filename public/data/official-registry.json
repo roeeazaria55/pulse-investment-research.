@@ -130,12 +130,15 @@
       "allowedHosts": [
         "ir.ftaiaviation.com",
         "www.globenewswire.com",
-        "rss.globenewswire.com"
+        "rss.globenewswire.com",
+        "www.sec.gov",
+        "data.sec.gov"
       ],
       "documentPaths": [
         "/news-releases/news-release-details/",
         "/static-files/",
-        "/news-release/"
+        "/news-release/",
+        "/Archives/edgar/data/1590364/"
       ],
       "sources": [
         {
@@ -153,9 +156,11 @@
         },
         {
           "id": "candidate-ftai-reports-fallback",
-          "label": "דף רשמי חלופי — מסמכים והודעות",
-          "url": "https://ir.ftaiaviation.com/",
-          "reviewedAt": "2026-10-19"
+          "label": "SEC EDGAR — FTAI Aviation (CIK 1590364)",
+          "url": "https://data.sec.gov/submissions/CIK0001590364.json",
+          "reviewedAt": "2026-10-19",
+          "format": "sec-submissions",
+          "cik": "1590364"
         }
       ],
       "questions": [
@@ -324,13 +329,15 @@
         "enlightenergy.com"
       ],
       "documentPaths": [
-        "/wp-content/uploads/"
+        "/wp-content/uploads/",
+        "/data/financial-reports/",
+        "/earnings-releases/"
       ],
       "sources": [
         {
           "id": "candidate-enlight-official",
-          "label": "מקור משקיעים רשמי",
-          "url": "https://enlightenergy.com/data/events-presentations/"
+          "label": "מאגר דוחות כספיים רשמי — Enlight",
+          "url": "https://enlightenergy.com/earnings-releases/"
         }
       ],
       "questions": [
