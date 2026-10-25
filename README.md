@@ -1,3 +1,12 @@
+> **October 2026 release candidate (PR #60, not deployed):** The existing PULSE
+> PWA includes source-backed DLO and IREN research snapshots, review-only model
+> comparison and a bounded public issuer-research history built for the
+> `pulse-data` publication pipeline. DLO data still need reconciliation and
+> IREN FY2026 is a historical baseline, not new earnings. GitHub Actions paid
+> AI is **disabled**; an explicitly approved local private-output CLI is
+> available for future testing, not yet executed with a paid model call.
+> See [v1 release gates, production checks and rollback](docs/PULSE_RELEASE.md).
+>
 # PULSE — Investment Research
 
 A Hebrew, RTL, mobile-first investment research PWA. Built with React, Vite, TypeScript and Tailwind CSS. Runs entirely in the browser. No backend, credentials, paid services, tracking, or market-data API.
@@ -98,4 +107,4 @@ The public format is documented by [feed.schema.json](schemas/feed.schema.json) 
 
 ## Remaining scope
 
-The scoped SEC filings collector, persisted deduplication, rule-template briefings and morning/evening schedule are implemented by `Publish PULSE`. Availability must be confirmed by an actual manual run and the published source statuses. Eight registry companies await reviewed mappings/sources. No live quotes, article crawler, IR/RSS ingestion, AI summarization, financial metric extraction, authentication, cloud sync, private-data ingestion or broker integration is included. The application is not an investment recommendation engine.
+The scoped SEC filings collector, persisted deduplication, rule-template briefings and morning/evening schedule are implemented by `Publish PULSE`. Availability must be confirmed by an actual manual run and the published source statuses. Eight registry companies await reviewed mappings/sources. Real headline discovery, limited official issuer-source intake, provisional financial extraction and review-only research updates are present, but coverage is partial and no source is a substitute for analyst verification. Live stock quotes, autonomous paid AI summarization, authentication, cloud sync, private-data ingestion and brokerage integration are not included. The application is not an investment recommendation engine.
