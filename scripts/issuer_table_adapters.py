@@ -144,7 +144,7 @@ def lemonade_q2(doc):
     if not ("Second quarter" in page9 and "$294.4" in page9 and "2025" in page9):
         return []
     matching=[t for t in doc.get("tables",[]) if t.get("page")==11 and
-              any(row and row[0].startswith("($ in millions, except Premium per customer)")
+              any(row and "($ in millions, except Premium per customer)" in " ".join(row)
                   for row in t.get("rows",[]))]
     if len(matching)!=1:
         return []
