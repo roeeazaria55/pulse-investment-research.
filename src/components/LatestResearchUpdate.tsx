@@ -8,7 +8,7 @@ export interface ResearchMetric {
  sourceRow:string;sourceRaw:string;sourcePreviousRaw?:string|null;sourcePage?:number|null;sourceDocumentUrl?:string|null;sourceUrl:string;reviewStatus:string;comparison:string;
 }
 export interface RetainedIssuerReport {
- id:string;url:string;sha256:string;title:string;format:'pdf'|'html';publishedDate:string|null;
+ id:string;url:string;sha256:string;title:string;format:'pdf'|'html'|'sec-json';publishedDate:string|null;
  documentPeriod:string|null;firstDetectedAt:string|null;lastSuccessfulAt:string|null;
  reviewStatus:'pending-review';sourceIsCurrentlyReachable:boolean;note:string;
 }
@@ -96,7 +96,7 @@ export function parseLatestSnapshot(x:unknown):LatestSnapshot {
   if(evidence!==undefined&&evidence!==null){
    if(!/^report:[a-f0-9]{32}$/.test(evidence.id)||!hash.test(evidence.sha256)||
     !verifiedLink(evidence.url,r.companyId)||!shortText(evidence.title,250)||
-    !['pdf','html'].includes(evidence.format)||evidence.reviewStatus!=='pending-review'||
+    !['pdf','html','sec-json'].includes(evidence.format)||evidence.reviewStatus!=='pending-review'||
     !(evidence.publishedDate===null||validDay(evidence.publishedDate))||
     !(evidence.documentPeriod===null||shortText(evidence.documentPeriod,120))||
     typeof evidence.sourceIsCurrentlyReachable!=='boolean'||!shortText(evidence.note,300))
@@ -119,7 +119,7 @@ export function parseLatestSnapshot(x:unknown):LatestSnapshot {
   if(r.companyId==='us-dlo-nasdaq-a'&&!insufficient&&r.sourceDigestKind!=='retained-issuer-html-sha256')throw Error('סוג גרסת DLO שגוי');
   if(r.companyId==='candidate-iren'&&!insufficient&&r.sourceDigestKind!=='curated-extract-json-sha256-not-original-pdf')throw Error('זהות ראיית IREN שגויה');
   if(!['us-dlo-nasdaq-a','candidate-iren'].includes(r.companyId)&&!insufficient&&(
-    !['retained-sec-inline-xbrl-sha256','retained-issuer-html-table-sha256','retained-issuer-pdf-table-sha256'].includes(r.sourceDigestKind||'')||!evidence||
+    !['retained-sec-inline-xbrl-sha256','retained-sec-companyfacts-json-sha256','retained-issuer-html-table-sha256','retained-issuer-pdf-table-sha256'].includes(r.sourceDigestKind||'')||!evidence||
     r.sourceUrl!==evidence.url||r.sourceVersion!==evidence.sha256))throw Error('נתוני XBRL אינם קשורים למקור');
   const metricIds=new Set<string>();
   for(const m of r.metrics){
