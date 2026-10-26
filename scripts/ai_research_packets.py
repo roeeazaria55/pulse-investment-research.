@@ -197,17 +197,18 @@ def forecast_history(company, archive):
     """
     rows = []
     seen = set()
+    expected_ticker = provenance_ticker(company)
     for f in archive:
         if not isinstance(f, dict):
             raise ValueError("Malformed archived forecast record")
         if f.get("companyId") != company["id"]:
-            if company["ticker"] and f.get("ticker") == company["ticker"]:
+            if expected_ticker and f.get("ticker") == expected_ticker:
                 raise ValueError("Archived forecast issuer identity mismatch")
             continue
         point = f.get("point")
         required = ("id", "metricId", "ticker", "firstRecordedAt",
                     "firstRecordedCommit", "researchAsOf", "chronologyStatus")
-        if (f.get("ticker") != company["ticker"]
+        if (f.get("ticker") != expected_ticker
             or any(not text(f.get(key), 900) for key in required)
             or not re.fullmatch(r"forecast:[0-9a-f]{32}", f["id"])
             or not re.fullmatch(r"[0-9a-f]{40}", f["firstRecordedCommit"])
@@ -469,14 +470,14 @@ def pdf_reference(company, supplied):
     """
     matches = [row for row in supplied
                if row.get("companyId") == company["id"]
-               or (company["ticker"] and row.get("ticker") == company["ticker"])]
+               or (provenance_ticker(company) and row.get("ticker") == provenance_ticker(company))]
     if not matches:
         return None
     if len(matches) != 1:
         raise ValueError("Duplicate supplied PDF issuer identity")
     row = matches[0]
     if (row.get("companyId") != company["id"]
-            or row.get("ticker") != company["ticker"]):
+            or row.get("ticker") != provenance_ticker(company)):
         raise ValueError("Cross-issuer supplied PDF identity")
     filename, declared_sha = row.get("filename"), row.get("sha256")
     if (not isinstance(filename, str)
@@ -503,6 +504,15 @@ def pdf_reference(company, supplied):
             "availability": "repository" if reference is not None else "unavailable",
             "reviewStatus": "unverified-supplied-analyst-research",
             "note": "Document pointer only; no unverified PDF figures parsed into facts."}
+
+# Legacy analyst PDFs and immutable forecast files predate TASE symbol
+# normalization. The issuer companyId stays authoritative; aliases here
+# only verify matching source provenance and never infer market tickers.
+ARCHIVED_SOURCE_TICKERS = {"candidate-brainsway": "BWAY"}
+
+def provenance_ticker(company):
+    return company["ticker"] or ARCHIVED_SOURCE_TICKERS.get(company["id"], "")
+
 
 ISSUER_METRIC_IDS = frozenset((
     "revenue", "grossProfit", "operatingIncome", "operatingCash", "capex",
