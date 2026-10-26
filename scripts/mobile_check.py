@@ -69,6 +69,27 @@ with sync_playwright() as pw:
         assert selfmetric and str(selfmetric['value'])==expected and selfmetric['unit']==unit,ticker
         assert r['reviewRequired'] is True and r['aiAnalysisEnabled'] is False
         assert any(item['companyId']==r['companyId'] and item['contentId']==r['contentId'] for item in archive['entries'])
+    # Every generated AI packet is a read-only source *input*, never a
+    # deployed AI response, approved valuation or private portfolio snapshot.
+    ai_packet_count=0
+    for issuer in registry['companies']:
+        key=issuer['ticker'] or issuer['id']
+        packet_resp=assets.get(urljoin(URL,'data/ai-research-packets/'+key+'.json'),timeout=30000)
+        assert packet_resp.status==200,f'Missing AI context for {key}'
+        packet=packet_resp.json()
+        assert packet['companyId']==issuer['id'],f'Cross-issuer packet for {key}'
+        assert packet['trustPolicy']['aiAnalysisExecuted'] is False
+        assert packet['trustPolicy']['mayModifyTargetsOrProbabilities'] is False
+        assert packet['trustPolicy']['includesPersonalPortfolio'] is False
+        current=next(r for r in published['reports'] if r['companyId']==issuer['id'])
+        bridge=packet['latestIssuerResearch']
+        assert len(bridge['sourceBoundMetrics'])==len(current['metrics']),f'AI context facts dropped for {key}'
+        assert bridge['modelEligible'] is False
+        if key=='FTAI':
+            assert bridge['status']=='insufficient-evidence' and not bridge['sourceBoundMetrics']
+        ai_packet_count+=1
+    assert ai_packet_count==12
+
     assert not current_by_ticker['FTAI']['metrics'], 'Unretrieved FTAI report must not be fabricated'
     assert current_by_ticker['SMCI']['status']=='pending-review'
     smci={m['id']:m for m in current_by_ticker['SMCI']['metrics']}
@@ -81,6 +102,7 @@ with sync_playwright() as pw:
     Path('work/mobile-published-research.json').write_text(
         json.dumps({'url':URL,'companyStatuses':{k:r['status'] for k,r in current_by_ticker.items()},
                     'historyEntries':len(archive['entries']),
+                    'aiReadOnlyIssuerPackets':ai_packet_count,
                     'companies':len(published['reports']), 'retainedDocCompanies':len([r for r in coverage['coverage'] if r['report']]),
                     'verifiedAgainstActualPublishedJson':True},ensure_ascii=False,indent=2))
     assets.dispose()
