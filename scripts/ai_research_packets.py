@@ -516,7 +516,7 @@ def provenance_ticker(company):
 
 ISSUER_METRIC_IDS = frozenset((
     "revenue", "grossProfit", "operatingIncome", "operatingCash", "capex",
-    "revenuesAndIncome", "netIncome", "cash", "debt", "freeCashFlow",
+    "revenuesAndIncome", "netIncome", "cash", "inventory", "accountsReceivable", "debt", "freeCashFlow",
 ))
 
 
