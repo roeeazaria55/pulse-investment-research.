@@ -14,7 +14,12 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parent.parent
-TICKERS = ("DLO", "NBIS", "IREN", "SMCI")
+# Every registered issuer has a stable ASCII output key. TASE companies use
+# the exact registry company ID where there is no exchange ticker.
+TICKERS = tuple(
+    c.get("ticker") or c["id"]
+    for c in json.loads((ROOT / "public/data/official-registry.json").read_text(encoding="utf-8"))["companies"]
+)
 FIELDS = ("thesis", "revenue", "profitability", "cashFlow", "valuation",
           "advantages", "catalysts", "risks", "bear", "base", "bull")
 SHA = re.compile(r"^[0-9a-f]{64}$")
@@ -499,14 +504,132 @@ def pdf_reference(company, supplied):
             "reviewStatus": "unverified-supplied-analyst-research",
             "note": "Document pointer only; no unverified PDF figures parsed into facts."}
 
+ISSUER_METRIC_IDS = frozenset((
+    "revenue", "grossProfit", "operatingIncome", "operatingCash", "capex",
+    "revenuesAndIncome", "netIncome", "cash", "debt", "freeCashFlow",
+))
+
+
+def source_bound_issuer_research(company, latest):
+    """Read-only bridge from the new 12-company financial research engine.
+
+    Evidence remains unapproved, and is NEVER treated as a forecast
+    surprise or a model-update authority. Missing/blocked FTAI returns an
+    explicit source gap, never fictitious numeric data.
+    """
+    if latest is None:
+        return {"status": "not-generated", "report": None,
+                "sourceBoundMetrics": [], "modelEligible": False,
+                "notice": "Current issuer research has not been generated."}
+    if not isinstance(latest, dict) or latest.get("version") != 1:
+        raise ValueError("Malformed public issuer research snapshot")
+    reports = latest.get("reports")
+    if not isinstance(reports, list):
+        raise ValueError("Missing public issuer research reports")
+    selected = [r for r in reports if isinstance(r, dict) and r.get("companyId") == company["id"]]
+    if len(selected) != 1:
+        raise ValueError("Missing or duplicate issuer research snapshot")
+    r = selected[0]
+    if (r.get("aiAnalysisEnabled") is not False or r.get("reviewRequired") is not True
+            or r.get("status") not in ("needs-reconciliation", "pending-review",
+                                        "historical-baseline-pending-review",
+                                        "insufficient-evidence")):
+        raise ValueError("Attempted AI-packet promotion of unreviewed issuer data")
+    rows = r.get("metrics")
+    if not isinstance(rows, list) or len(rows) > 16:
+        raise ValueError("Malformed issuer financial proposals")
+    if not rows:
+        if r.get("status") != "insufficient-evidence":
+            raise ValueError("Missing metrics under an apparently successful research update")
+        return {"status": "insufficient-evidence", "report": None,
+                "sourceBoundMetrics": [], "modelEligible": False,
+                "notice": "No source-bound financial metrics; no automatic synthesis or target changes."}
+    url, digest = r.get("sourceUrl"), r.get("sourceVersion")
+    if (not https_issuer_url(url, company) or not isinstance(digest, str)
+            or not SHA.fullmatch(digest) or
+            r.get("status") == "insufficient-evidence" or
+            r.get("sourceDigestKind") not in (
+                "retained-issuer-html-table-sha256",
+                "retained-issuer-pdf-table-sha256",
+                "retained-sec-inline-xbrl-sha256",
+                "curated-extract-json-sha256-not-original-pdf",
+                "original-html-content-sha256", "issuer-html-content-sha256",
+                "retained-original-issuer-content-sha256",
+            )):
+        # DLO may use a distinct declared digest label. Extend only after
+        # reviewing its exact source-provenance contract.
+        if r.get("sourceDigestKind") not in ("original-issuer-content-sha256",
+                                            "retained-issuer-content-sha256",
+                                            "source-content-sha256"):
+            raise ValueError("Unverified issuer source digest or provenance")
+        if not https_issuer_url(url, company) or not SHA.fullmatch(str(digest)):
+            raise ValueError("Invalid issuer source URL or digest")
+    validated = []
+    seen = set()
+    for m in rows:
+        if not isinstance(m, dict):
+            raise ValueError("Malformed issuer financial metric")
+        mid = m.get("id")
+        period_start, period_end = m.get("periodStart"), m.get("periodEnd")
+        previous_start = m.get("previousPeriodStart")
+        previous_end = m.get("previousPeriodEnd")
+        if (mid not in ISSUER_METRIC_IDS or mid in seen or
+                not numeric(m.get("value")) or
+                not safe_period(period_start) or not safe_period(period_end) or
+                period_start > period_end or
+                m.get("sourceUrl") != url or
+                m.get("reviewStatus") not in ("pending-review", "needs-reconciliation") or
+                m.get("unit") not in ("USD million", "ILS million") or
+                (m.get("unit") == "ILS million" and company["id"] != "candidate-gilat-telecom") or
+                not text(m.get("accountingBasis"), 1000) or
+                not text(m.get("sourceRow"), 500) or
+                not text(m.get("sourceRaw"), 500) or
+                not text(m.get("comparison"), 1000)):
+            raise ValueError("Untrusted or mismatched accounting metric")
+        previous = m.get("previousValue")
+        if previous is not None and not numeric(previous):
+            raise ValueError("Malformed previous accounting value")
+        if (previous_start is not None or previous_end is not None):
+            if (not safe_period(previous_start) or not safe_period(previous_end)
+                    or previous_start > previous_end or
+                    previous_end >= period_start):
+                raise ValueError("Non-comparable historical accounting period")
+        seen.add(mid)
+        validated.append({
+            "metricId": mid, "value": m["value"],
+            "previousValue": previous, "unit": m["unit"],
+            "periodStart": period_start, "periodEnd": period_end,
+            "previousPeriodStart": previous_start,
+            "previousPeriodEnd": previous_end,
+            "accountingBasis": m["accountingBasis"],
+            "sourceRow": m["sourceRow"], "sourceRaw": m["sourceRaw"],
+            "sourcePage": m.get("sourcePage"),
+            "reviewStatus": m["reviewStatus"],
+            "sourceUrl": url, "sourceDigest": digest,
+            "sourceDigestKind": r["sourceDigestKind"],
+            "comparisonType": "historical-not-prediction",
+            "modelEligible": False,
+        })
+    return {"status": r["status"], "report": {
+        "sourceUrl": url, "digest": digest, "digestKind": r["sourceDigestKind"],
+        "period": r.get("reportPeriod"), "publishedDate": r.get("publishedDate"),
+        "contentId": r.get("contentId"),
+        "reviewRequired": True
+    }, "sourceBoundMetrics": validated, "modelEligible": False,
+        "notice": "Retained issuer research; requires human source and model review."}
+
+
 def build_packet(company, files):
-    registry, observations, archive, comparisons, supplied = files
+    registry, observations, archive, comparisons, supplied, latest = files
     refs = [source_ref(ROOT/"public/data/official-registry.json"),
             source_ref(ROOT/"public/data/auto-financial-observations.json"),
             source_ref(ROOT/"public/data/forecast-archive.json"),
             source_ref(ROOT/"public/data/forecast-actual-comparisons.json"),
             source_ref(ROOT/"src/data/suppliedResearch.json")]
     research = research_for(company, refs)
+    if latest is not None:
+        refs.append(source_ref(ROOT / "public/data/latest-research-updates.json"))
+    issuer_update = source_bound_issuer_research(company, latest)
     model = active_model_for(company, refs)
     forecasts = forecast_history(company, archive.get("forecasts", []))
     candidates = financial_observations(company, observations.get("observations", []),
@@ -521,6 +644,7 @@ def build_packet(company, files):
         "companyName":company["name"], "industry":None,
         "officialSources":official_portal_sources(company),
         "financialObservations":candidates,
+        "latestIssuerResearch":issuer_update,
         "research":research,
         "valuationModel":model,
         "archivedForecasts":forecasts,
@@ -557,6 +681,7 @@ def build_all(root=ROOT):
     archive=read_json(root/"public/data/forecast-archive.json")
     comparisons=read_json(root/"public/data/forecast-actual-comparisons.json")
     supplied=read_json(root/"src/data/suppliedResearch.json")
+    latest=read_json(root/"public/data/latest-research-updates.json", optional=True)
     if not all(isinstance(source, dict) for source in (registry, observations, archive, comparisons)):
         raise ValueError("Malformed packet source document")
     if any(source.get("version") != 1 for source in (registry, observations, archive, comparisons)):
@@ -568,11 +693,20 @@ def build_all(root=ROOT):
     required_object_rows(archive, "forecasts", "forecast archive")
     comparison_rows = required_object_rows(comparisons, "results", "forecast comparisons")
     validate_comparison_evidence(comparison_rows, observations["observations"], archive["forecasts"])
+    keys = [c.get("ticker") or c.get("id") for c in companies]
+    if len(companies) != 12 or set(keys) != set(TICKERS) or len(set(keys)) != 12:
+        raise ValueError("AI packets need exactly 12 unique issuer registry identities")
+    if latest is not None:
+        latest_reports = latest.get("reports")
+        if (not isinstance(latest_reports, list)
+                or len(latest_reports) != len(companies)
+                or set(r.get("companyId") for r in latest_reports if isinstance(r, dict))
+                   != {c["id"] for c in companies}):
+            raise ValueError("Incomplete or duplicate 12-company issuer research")
     packets={}
-    for ticker in TICKERS:
-        matching=[c for c in companies if c.get("ticker")==ticker]
-        if len(matching)!=1:raise ValueError("Missing or duplicate issuer registry entry: "+ticker)
-        packets[ticker]=build_packet(matching[0],(registry,observations,archive,comparisons,supplied))
+    for company in companies:
+        ticker=company.get("ticker") or company["id"]
+        packets[ticker]=build_packet(company,(registry,observations,archive,comparisons,supplied,latest))
     return packets
 
 def main():
