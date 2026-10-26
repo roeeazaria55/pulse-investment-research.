@@ -17,7 +17,6 @@ PRIOR = ("2025-04-01", "2025-06-30")
 TAGS = (
     "RevenueFromContractWithCustomerExcludingAssessedTax",
     "Revenues",
-    "RevenueFromContractWithCustomerIncludingAssessedTax",
     "OperatingIncomeLoss",
     "NetIncomeLoss",
 )
@@ -44,7 +43,11 @@ def read_ftai_companyfacts(body, url, company):
     if not isinstance(gaap, dict):
         raise ValueError("SEC companyfacts missing US GAAP facts")
     extracted = []
+    revenue_found = False
     for name in TAGS:
+        if name in TAGS[:2] and revenue_found:
+            # Do not merge alternate revenue definitions if both appear.
+            continue
         data = gaap.get(name)
         if not isinstance(data, dict):
             continue
@@ -77,6 +80,8 @@ def read_ftai_companyfacts(body, url, company):
         # filing, not another accession, frame, FY or H1 context.
         if len(matched) != 2 or any(matched.get(k) is None for k in (CURRENT, PRIOR)):
             continue
+        if name in TAGS[:2]:
+            revenue_found = True
         for (start, end) in (CURRENT, PRIOR):
             extracted.append({
                 "concept": "us-gaap:" + name.lower(),
