@@ -43,6 +43,38 @@ copy, manual transcription or a passed fixture alone is **not** successful
 official-content intake. Do not merge unless the owner expressly changes the
 release gate or original FTAI document extraction succeeds.
 
+### 2026-10-26 financial-intelligence gate audit
+
+PR #60 now tests an additional official **SEC Company Facts JSON** intake route for
+FTAI Aviation CIK **1590364**, Q2 2026 10-Q accession
+`0001628280-26-051412`. The adapter requires exact SEC CIK/name, filing date,
+3-month fiscal dates, `10-Q` form, US-GAAP tags and same-accession
+comparatives. It computes SHA-256 over the **actual HTTP response bytes** and
+never turns H1 totals into Q2. The JSON digest is **not** a PDF digest.
+The official endpoint's inclusion in the allowlist or passing mocked-source
+tests does **not** prove the GitHub runner fetched the feed. See the current
+PR source-intake artifact before changing release status. As of the last
+attested 11/12 run, FTAI did not have retained financial observations.
+
+For SMCI, source-backed **cash, inventory and accounts receivable** are now
+independently scoped **balance-sheet instants** at FY2026/FY2025 year end.
+They are not operating cash flows, cash expenses or new forecast assumptions.
+Deterministic Hebrew comparisons derive gross/operating profit margin changes
+only if current and historical revenue and profit share the same original
+source version, currency and identical duration columns. These are
+review-only descriptions, not beats/misses or automatic scenario revisions.
+
+The collector prefers a newer fiscal quarter over older curated document
+pointers, without claiming that a scheduled future earnings announcement is a
+published filing. Per-company metric/status counts are logged in the read-only
+CI source audit. The existing 12-company AI packets carry Hebrew findings and
+questions as **unapproved input**, not output from a paid model.
+
+FTAI's October 6 official release schedules Q3 2026 results for
+**October 29, 2026**. On October 26, Q2 remains the last verified published
+quarterly report. This date is for the next operator check, not proof that
+a Q3 result already exists.
+
 The model comparison identifies mismatched accounting periods/bases instead
 of calculating spurious surprise percentages. Primary supplied DLO valuation
 remains separate from the older JSON model. No live prices, buy/sell signals,
