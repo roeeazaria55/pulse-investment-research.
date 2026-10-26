@@ -34,6 +34,24 @@ class CoverageTests(unittest.TestCase):
         self.assertEqual(actual["revenue"]["reviewStatus"], "pending-review")
         self.assertTrue(all("surprise" not in m["id"] for m in smci["typedMetrics"]))
 
+    def test_smci_operating_and_net_income_same_adjacent_fiscal_period(self):
+        rows = build(self.registry, self.intake)["coverage"]
+        smci = next(r for r in rows if r["companyId"] == "us-smci-nasdaq-common")
+        data = {m["id"]: m for m in smci["typedMetrics"]}
+        self.assertEqual(len(data), 5)
+        self.assertEqual(data["operatingIncome"]["value"], 2770.486)
+        self.assertEqual(data["operatingIncome"]["previousValue"], 1252.994)
+        self.assertEqual(data["netIncome"]["value"], 2230.453)
+        self.assertEqual(data["netIncome"]["previousValue"], 1048.854)
+        self.assertEqual(data["operatingCash"]["value"], -6809.886)
+        self.assertEqual(data["operatingCash"]["previousValue"], 1659.524)
+        for metric in ("operatingIncome", "netIncome", "operatingCash"):
+            self.assertEqual(data[metric]["periodStart"], "2025-07-01")
+            self.assertEqual(data[metric]["periodEnd"], "2026-06-30")
+            self.assertEqual(data[metric]["previousPeriodEnd"], "2025-06-30")
+            self.assertEqual(data[metric]["sourceSha256"], smci["report"]["sha256"])
+            self.assertEqual(data[metric]["reviewStatus"], "pending-review")
+
     def test_strict_pdf_adapter_never_confuses_unreviewed_layouts(self):
         rows = build(self.registry, self.intake)["coverage"]
         nbis = next(r for r in rows if r["companyId"] == "candidate-nebius")
