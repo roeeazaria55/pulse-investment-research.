@@ -274,15 +274,15 @@ export function LatestResearchUpdate({companyId,onPrepare}:{companyId:string;onP
       {report.metrics.map(m=><div key={m.id} className="thesis-metric">
        <h5>{m.label}</h5>
        <p><strong dir="ltr">{formatAmount(m.value)} {m.unit}</strong></p>
-       {m.previousValue!==null&&<p>בסיס תקופה קודמת <bdi>{m.previousPeriodStart&&m.previousPeriodEnd?m.previousPeriodStart+'–'+m.previousPeriodEnd:'FY2025 (כאשר רלוונטי)'}</bdi>: <bdi>{formatAmount(m.previousValue)} {m.unit}</bdi>
-        {m.changePercent!==null&&<> · שינוי שנתי: <bdi>{m.changePercent>0?'+':''}{formatAmount(m.changePercent)}%</bdi></>}</p>}
+       {m.previousValue!==null&&<p>בסיס תקופה קודמת <bdi>{m.previousPeriodStart&&m.previousPeriodEnd?(m.previousPeriodStart===m.previousPeriodEnd?'ליום '+m.previousPeriodEnd:m.previousPeriodStart+'–'+m.previousPeriodEnd):'תקופת השוואה לא זמינה'}</bdi>: <bdi>{formatAmount(m.previousValue)} {m.unit}</bdi>
+        {m.changePercent!==null&&<> · שינוי מול תקופת ההשוואה: <bdi>{m.changePercent>0?'+':''}{formatAmount(m.changePercent)}%</bdi></>}</p>}
        <p><small>{m.comparison}</small></p>
        <details><summary>הגדרה, מקור ומצב אימות</summary>
         <p>הגדרה: {m.accountingBasis}</p>
         <p>שורת מקור: <bdi>{m.sourceRow}</bdi> · ערך גולמי: <bdi>{m.sourceRaw}</bdi></p>
         {m.sourcePreviousRaw&&<p>ערך גולמי קודם: <bdi>{m.sourcePreviousRaw}</bdi></p>}
         {m.sourceDocumentUrl&&m.sourcePage&&verifiedLink(m.sourceDocumentUrl,report.companyId)&&<a href={verifiedLink(m.sourceDocumentUrl,report.companyId)!+'#page='+m.sourcePage} target="_blank" rel="noopener noreferrer">PDF של המנפיק · עמוד {m.sourcePage}</a>}
-        <p>תקופה: <bdi>{m.periodStart}–{m.periodEnd}</bdi> · סטטוס: {m.reviewStatus==='needs-reconciliation'?'דורש בירור':'ממתין לבדיקה'}</p>
+        <p>תקופה: <bdi>{m.periodStart===m.periodEnd?'נתון מאזני ליום '+m.periodEnd:m.periodStart+'–'+m.periodEnd}</bdi> · סטטוס: {m.reviewStatus==='needs-reconciliation'?'דורש בירור':'ממתין לבדיקה'}</p>
         {verifiedLink(m.sourceUrl,report.companyId)&&<a href={verifiedLink(m.sourceUrl,report.companyId)!} target="_blank" rel="noopener noreferrer">מקור רשמי</a>}
        </details>
       </div>)}
