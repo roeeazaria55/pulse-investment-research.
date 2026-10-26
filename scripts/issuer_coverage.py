@@ -133,7 +133,7 @@ def safe_source_facts(doc):
             "comparison": ("Same tagged accounting definition and duration; candidate prior "
                            "period only, not a verified forecast surprise." if previous else
                            "No unique same-tag prior-duration candidate."),
-            "evidenceScope": "retained-sec-inline-xbrl",
+            "evidenceScope": ("retained-sec-companyfacts-xbrl" if doc.get("format") == "sec-json" else "retained-sec-inline-xbrl"),
             "sourceSha256": doc["sha256"],
             "reportId": doc["id"],
             "sourceContext": context,
