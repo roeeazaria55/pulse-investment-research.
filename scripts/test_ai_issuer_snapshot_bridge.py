@@ -42,6 +42,8 @@ class IssuerAIPacketBridgeTests(unittest.TestCase):
                 "publishedDate": "2026-10-21",
                 "contentId": "f"*24,
                 "metrics": [metric],
+                "findings": ["שינוי בהכנסות מבוסס מקור — ממתין לבדיקה."],
+                "questions": ["האם הגידול בהכנסות תומך בהנחות המודל?"],
             }]
         }
 
@@ -65,6 +67,9 @@ class IssuerAIPacketBridgeTests(unittest.TestCase):
         self.assertEqual(m["sourceDigest"], "a"*64)
         self.assertEqual(m["comparisonType"], "historical-not-prediction")
         self.assertFalse(m["modelEligible"])
+        self.assertEqual(res["sourceBoundFindings"],["שינוי בהכנסות מבוסס מקור — ממתין לבדיקה."])
+        self.assertEqual(res["humanResearchQuestions"],["האם הגידול בהכנסות תומך בהנחות המודל?"])
+        self.assertIs(res["automaticModelChange"],False)
         self.assertEqual(m["periodEnd"], "2026-09-30")
 
     def test_inaccessible_ftai_is_never_filled_from_ir_link_or_fixture(self):
