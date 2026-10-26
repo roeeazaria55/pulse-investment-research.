@@ -38,11 +38,24 @@ class CoverageTests(unittest.TestCase):
         rows = build(self.registry, self.intake)["coverage"]
         smci = next(r for r in rows if r["companyId"] == "us-smci-nasdaq-common")
         data = {m["id"]: m for m in smci["typedMetrics"]}
-        self.assertEqual(len(data), 5)
+        self.assertEqual(len(data), 8)
         self.assertEqual(data["operatingIncome"]["value"], 2770.486)
         self.assertEqual(data["operatingIncome"]["previousValue"], 1252.994)
         self.assertEqual(data["netIncome"]["value"], 2230.453)
         self.assertEqual(data["netIncome"]["previousValue"], 1048.854)
+        self.assertEqual(data["cash"]["value"], 7521.474)
+        self.assertEqual(data["cash"]["previousValue"], 5169.911)
+        self.assertEqual(data["inventory"]["value"], 12895.949)
+        self.assertEqual(data["inventory"]["previousValue"], 4680.375)
+        self.assertEqual(data["accountsReceivable"]["value"], 6125.414)
+        self.assertEqual(data["accountsReceivable"]["previousValue"], 2203.942)
+        for item in ("cash","inventory","accountsReceivable"):
+            self.assertEqual(data[item]["periodStart"],"2026-06-30")
+            self.assertEqual(data[item]["periodEnd"],"2026-06-30")
+            self.assertEqual(data[item]["previousPeriodEnd"],"2025-06-30")
+            self.assertIn("point-in-time",data[item]["accountingBasis"])
+            self.assertEqual(data[item]["reviewStatus"],"pending-review")
+            self.assertEqual(data[item]["sourceSha256"],smci["report"]["sha256"])
         self.assertEqual(data["operatingCash"]["value"], -6809.886)
         self.assertEqual(data["operatingCash"]["previousValue"], 1659.524)
         for metric in ("operatingIncome", "netIncome", "operatingCash"):
