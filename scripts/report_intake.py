@@ -264,7 +264,10 @@ def collect(snapshot,registry,previous,now,fetcher=fetch_document,limit=16,budge
    # the older official URL remains active. In-quarter prefer curated.
    return (-year,-quarter,non_filing,not item.get('curated',False),
            ident in records,records.get(ident,{}).get('lastSuccessfulAt',''))
-  todo.sort(key=priority);chosen=todo[:2];status=dict(companyId=company['id'],
+  # Missing issuers merit up to four distinct official-path checks; a hard
+  # global request/time budget still protects other companies and the CI.
+  # Previously [:2] meant additional, verified official fallbacks were never attempted.
+  todo.sort(key=priority);chosen=todo[:4 if company['id'] not in have_doc else 2];status=dict(companyId=company['id'],
      lastAttemptAt=previous_status.get(company['id'],{}).get('lastAttemptAt'),
      status='no-candidates',error=None)
   discovery=[s for s in snapshot.get('sources',[]) if s.get('companyId')==company['id']]
