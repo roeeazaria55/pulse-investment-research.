@@ -167,6 +167,22 @@ class IntakeTests(unittest.TestCase):
           '2026-11-01T00:00:00Z',fetcher=fetch,limit=1)
   self.assertEqual(attempted,[q3])
 
+ def test_uncovered_ftai_rotates_four_distinct_official_fallbacks(self):
+  import json
+  from pathlib import Path
+  company=next(c for c in json.loads(Path('public/data/official-registry.json').read_text())['companies']
+               if c['id']=='candidate-ftai')
+  tried=[]
+  def fail(url,c):
+   tried.append(url)
+   raise PermissionError('Synthetic HTTP 403')
+  result=collect({'items':[]},{'companies':[company]}, {},
+                 '2026-10-26T19:00:00Z',fetcher=fail,limit=4,budget=40)
+  self.assertEqual(len(tried),4)
+  self.assertEqual(len(set(tried)),4)
+  self.assertEqual(result['documents'],[])
+  self.assertEqual(result['sources'][0]['status'],'failed')
+
  def test_zero_budget_and_schedule_skip_fetch(self):
   def fail(u,c):self.fail('Network should not be called')
   result=collect({'items':[ITEM]},{'companies':[C]}, {},'2026-10-20T12:00:00Z',fetcher=fail,limit=0)
