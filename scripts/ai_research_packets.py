@@ -546,24 +546,16 @@ def source_bound_issuer_research(company, latest):
                 "notice": "No source-bound financial metrics; no automatic synthesis or target changes."}
     url, digest = r.get("sourceUrl"), r.get("sourceVersion")
     if (not https_issuer_url(url, company) or not isinstance(digest, str)
-            or not SHA.fullmatch(digest) or
-            r.get("status") == "insufficient-evidence" or
-            r.get("sourceDigestKind") not in (
+            or not SHA.fullmatch(digest)
+            or r.get("status") == "insufficient-evidence"
+            or r.get("sourceDigestKind") not in (
+                "retained-issuer-html-sha256",
                 "retained-issuer-html-table-sha256",
                 "retained-issuer-pdf-table-sha256",
                 "retained-sec-inline-xbrl-sha256",
                 "curated-extract-json-sha256-not-original-pdf",
-                "original-html-content-sha256", "issuer-html-content-sha256",
-                "retained-original-issuer-content-sha256",
             )):
-        # DLO may use a distinct declared digest label. Extend only after
-        # reviewing its exact source-provenance contract.
-        if r.get("sourceDigestKind") not in ("original-issuer-content-sha256",
-                                            "retained-issuer-content-sha256",
-                                            "source-content-sha256"):
-            raise ValueError("Unverified issuer source digest or provenance")
-        if not https_issuer_url(url, company) or not SHA.fullmatch(str(digest)):
-            raise ValueError("Invalid issuer source URL or digest")
+        raise ValueError("Unverified issuer source digest or provenance")
     validated = []
     seen = set()
     for m in rows:
