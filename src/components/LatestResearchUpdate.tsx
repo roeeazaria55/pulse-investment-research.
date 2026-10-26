@@ -57,7 +57,7 @@ export function verifiedLink(url:string|null,companyId:string):string|null {
  } catch {return null;}
 }
 
-const knownMetrics=new Set(['revenue','grossProfit','operatingCash','capex','operatingIncome','netIncome','revenuesAndIncome']);
+const knownMetrics=new Set(['revenue','grossProfit','operatingCash','capex','operatingIncome','netIncome','revenuesAndIncome','cash','inventory','accountsReceivable']);
 const hash=/^[a-f0-9]{64}$/;
 const day=/^\d{4}-\d{2}-\d{2}$/;
 function shortText(value:unknown,max=2000):value is string{
