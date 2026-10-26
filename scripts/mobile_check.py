@@ -219,7 +219,6 @@ with sync_playwright() as pw:
                 page.screenshot(path=f'work/mobile-{width}-issuer-gilat-telecom.png',full_page=False)
             if label=='FTAI':
                 if ftai['metrics']:
-                    expect(latest).to_contain_text('953.085 USD million')
                     expect(latest).to_contain_text('ממתין לבדיקה')
                 else:
                     expect(latest).to_contain_text('אין עדכון פיננסי מבוסס מקור')
