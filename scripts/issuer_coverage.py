@@ -341,7 +341,15 @@ def main():
     OUT.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({"companies": len(result["coverage"]),
                       "retainedDocs": [r["ticker"] for r in result["coverage"] if r["report"]],
-                      "financialCandidates": [r["ticker"] for r in result["coverage"] if r["typedMetrics"]]},
+                      "financialCandidates": [r["ticker"] for r in result["coverage"] if r["typedMetrics"]],
+                      "issuerMatrix": [{
+                          "companyId": r["companyId"], "ticker": r["ticker"],
+                          "retainedFinancialEvidence": bool(r["report"]),
+                          "financialMetricCount": len(r["typedMetrics"]),
+                          "metricIds": [m["id"] for m in r["typedMetrics"]],
+                          "reviewStatus": ("pending-review" if r["typedMetrics"] else "insufficient-evidence"),
+                          "intakeStatus": r["intakeStatus"],
+                      } for r in result["coverage"]]},
                      ensure_ascii=False))
 
 
