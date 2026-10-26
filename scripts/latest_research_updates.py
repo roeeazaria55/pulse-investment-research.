@@ -9,6 +9,7 @@ from hashlib import sha256
 from pathlib import Path
 from urllib.parse import urlparse
 from issuer_coverage import build as build_coverage
+from financial_readout import source_margins
 import json
 import math
 import re
@@ -361,6 +362,7 @@ def other_issuer_update(row):
     allowed = {c["id"]: set(c["allowedHosts"]) for c in load(ROOT / "public/data/official-registry.json")["companies"]}
     if not trusted_url(source, allowed[company]):
         raise ValueError("Report link not on the registered issuer domain")
+    margins = source_margins(metrics)
     body = {
         "companyId": company, "ticker": COMPANIES[company],
         "status": "pending-review", "kind": ("issuer-original-table-review-only" if metrics[0]["evidenceScope"] in ("retained-issuer-html-table","retained-issuer-pdf-table") else "structured-sec-xbrl-review-only"),
@@ -375,8 +377,8 @@ def other_issuer_update(row):
              "sourceSha256", "reportId", "evidenceScope", "sourceContext")}
              for metric in metrics],
         "modelReview": [],
-        "findings": ["נתונים פיננסיים חולצו משורות מקור מובְנות; התקופות, ההגדרות וההשפעה על המודל עדיין ממתינות לבדיקת אנליסט."],
-        "questions": row.get("analystQuestions", []) or ["האם התקופה והיחידה תואמות למודל?"],
+        "findings": ["נתונים פיננסיים חולצו משורות מקור מובְנות; התקופות, ההגדרות וההשפעה על המודל עדיין ממתינות לבדיקת אנליסט."] + [m["finding"] for m in margins],
+        "questions": (row.get("analystQuestions", []) or ["האם התקופה והיחידה תואמות למודל?"]) + [m["question"] for m in margins],
         "missing": ["לא הושוו ביצועים לתחזית מתוארכת; אין אישור אוטומטי או שינוי במחיר יעד.",
                     "הצלחת קליטת המקור בהווה תלויה במצב הורדת הדוח המוצג בנפרד."],
         "aiAnalysisEnabled": False, "reviewRequired": True,
