@@ -51,7 +51,7 @@ def fetch_document(url,company):
   def redirect_request(self,req,fp,code,msg,headers,newurl):
    if not safe_report_url(newurl,company) or getattr(req,'hops',0)>=2:raise ValueError('Report redirect outside issuer allowlist')
    nxt=super().redirect_request(req,fp,code,msg,headers,newurl);nxt.hops=getattr(req,'hops',0)+1;return nxt
- req=urllib.request.Request(url,headers={'User-Agent':'PULSE public research (+https://github.com/roeeazaria55/pulse-investment-research./issues)','Accept':'text/html,application/pdf,application/xhtml+xml'})
+ req=urllib.request.Request(url,headers={'User-Agent':'PULSE public research (+https://github.com/roeeazaria55/pulse-investment-research./issues)','Accept':'application/json' if url==SEC_URL else 'text/html,application/pdf,application/xhtml+xml'})
  start=time.monotonic()
  with urllib.request.build_opener(Redirects()).open(req,timeout=12) as response:
   final=response.geturl()
