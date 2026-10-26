@@ -23,8 +23,11 @@ XBRL = {
     "us-gaap:operatingincomeloss": ("operatingIncome", "רווח תפעולי", "US GAAP Operating Income/Loss"),
     "us-gaap:netincomeloss": ("netIncome", "רווח נקי", "US GAAP Net Income/Loss"),
     "us-gaap:netcashprovidedbyusedinoperatingactivities": ("operatingCash", "תזרים תפעולי", "US GAAP Net Cash Provided by Operating Activities"),
+    "us-gaap:cashandcashequivalentsatcarryingvalue": ("cash", "מזומנים ושווי מזומנים", "US GAAP cash and cash equivalents — balance sheet instant"),
+    "us-gaap:inventorynet": ("inventory", "מלאי", "US GAAP net inventory — balance sheet instant"),
+    "us-gaap:accountsreceivablenetcurrent": ("accountsReceivable", "לקוחות נטו", "US GAAP accounts receivable net current — balance sheet instant"),
 }
-MAX_METRICS = 6
+MAX_METRICS = 8
 
 
 def read(path):
@@ -74,6 +77,58 @@ def status_for(source_rows):
     if any(v == "ok" for v in statuses):
         return "ok"
     return "no-candidates"
+
+
+SMCI_BALANCES = {
+    "us-gaap:cashandcashequivalentsatcarryingvalue",
+    "us-gaap:inventorynet",
+    "us-gaap:accountsreceivablenetcurrent",
+}
+
+
+def smci_balance_instant_facts(doc):
+    """Exact SEC original balance-sheet dates; never quarter duration flows."""
+    if doc.get("companyId") != "us-smci-nasdaq-common" or doc.get("format") != "html":
+        return []
+    results=[]
+    facts=doc.get("facts",[])
+    if not isinstance(facts,list):
+        return []
+    for concept in sorted(SMCI_BALANCES):
+        rows={}
+        for row in facts:
+            if not isinstance(row,dict) or row.get("concept")!=concept:
+                continue
+            if row.get("start") is not None or row.get("unit")!="iso4217:USD":
+                continue
+            end=row.get("end")
+            if end not in ("2026-06-30","2025-06-30"):
+                continue
+            val=row.get("value")
+            if isinstance(val,bool) or not isinstance(val,(int,float)) or not math.isfinite(val):
+                continue
+            rows.setdefault(end,[]).append(val)
+        if any(len(rows.get(k,[]))!=1 for k in ("2026-06-30","2025-06-30")):
+            continue
+        cur=rows["2026-06-30"][0];prior=rows["2025-06-30"][0]
+        key,label,basis=XBRL[concept]
+        results.append({
+            "id":key,"label":label,"value":round(cur/1e6,6),
+            "previousValue":round(prior/1e6,6),
+            "changePercent":round((cur-prior)/abs(prior)*100,2) if prior else None,
+            "unit":"USD million","periodStart":"2026-06-30","periodEnd":"2026-06-30",
+            "previousPeriodStart":"2025-06-30","previousPeriodEnd":"2025-06-30",
+            "accountingBasis":basis+" (point-in-time; not a quarterly flow)",
+            "sourceRow":concept,"sourceRaw":str(cur),"sourcePreviousRaw":str(prior),
+            "sourcePage":None,"sourceDocumentUrl":None,"sourceUrl":doc["url"],
+            "reviewStatus":"pending-review",
+            "comparison":"Balance sheet as-of dates 2026-06-30 vs 2025-06-30, "
+                         "same instant tag; not YoY flow or model surprise.",
+            "evidenceScope":"retained-sec-inline-xbrl",
+            "sourceSha256":doc["sha256"],"reportId":doc["id"],
+            "sourceContext":"Un-dimensioned US GAAP balance-sheet instant",
+        })
+    return results
 
 
 def safe_source_facts(doc):
@@ -138,7 +193,7 @@ def safe_source_facts(doc):
             "reportId": doc["id"],
             "sourceContext": context,
         })
-    return sorted(proposals, key=lambda r: r["id"])[:MAX_METRICS]
+    return sorted(proposals + smci_balance_instant_facts(doc), key=lambda r: r["id"])[:MAX_METRICS]
 
 
 
