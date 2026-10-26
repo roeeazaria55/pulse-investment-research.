@@ -11,6 +11,7 @@ import urllib.request
 from html.parser import HTMLParser
 from pathlib import Path
 from official_sources import document_url, canonical
+from ftai_sec_companyfacts import read_ftai_companyfacts, SEC_URL
 
 VERSION=1
 PARSER='official-content-v1'
@@ -150,6 +151,10 @@ def inline_facts(page,company):
 
 def extract(body,content_type,url,company):
  if len(body)>MAX_BYTES:raise ValueError('Report exceeds 8MB')
+ if company['id']=='candidate-ftai' and url==SEC_URL:
+  if content_type not in ('application/json','text/plain'):
+   raise ValueError('SEC CompanyFacts requires JSON response type')
+  return read_ftai_companyfacts(body,url,company)
  pdf=body.startswith(b'%PDF');tables=[];facts=[];links=[];page_count=None;truncated=False;source_pdf_pages=[]
  if pdf:
   import pdfplumber
