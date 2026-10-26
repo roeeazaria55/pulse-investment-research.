@@ -421,7 +421,7 @@ def validated_model_metadata(raw):
     Only the currently supported model methods are recognized; introducing
     another method requires an explicit reviewed code change.
     """
-    if not isinstance(raw, dict) or raw.get("method") not in ("earnings", "funded-ev"):
+    if not isinstance(raw, dict) or raw.get("method") not in ("earnings", "funded-ev", "sales"):
         raise ValueError("Malformed valuation model method")
     for key, limit in (("methodNote", 5000), ("driverLabel", 500)):
         value = raw.get(key)
