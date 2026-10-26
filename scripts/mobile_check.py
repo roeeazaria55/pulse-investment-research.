@@ -86,11 +86,22 @@ with sync_playwright() as pw:
         assert len(bridge['sourceBoundMetrics'])==len(current['metrics']),f'AI context facts dropped for {key}'
         assert bridge['modelEligible'] is False
         if key=='FTAI':
-            assert bridge['status']=='insufficient-evidence' and not bridge['sourceBoundMetrics']
+            if current['metrics']:
+                assert bridge['status']=='pending-review' and bridge['report']['digest']
+                assert all(m['reviewStatus']=='pending-review' and m['modelEligible'] is False
+                           for m in bridge['sourceBoundMetrics'])
+            else:
+                assert bridge['status']=='insufficient-evidence' and not bridge['sourceBoundMetrics']
         ai_packet_count+=1
     assert ai_packet_count==12
 
-    assert not current_by_ticker['FTAI']['metrics'], 'Unretrieved FTAI report must not be fabricated'
+    ftai=current_by_ticker['FTAI']
+    if ftai['metrics']:
+        assert ftai['status']=='pending-review' and ftai['reviewRequired'] is True
+        assert ftai['reportEvidence'] and ftai['sourceVersion']==ftai['reportEvidence']['sha256']
+        assert all(m['reviewStatus']=='pending-review' for m in ftai['metrics'])
+    else:
+        assert ftai['status']=='insufficient-evidence', 'No FTAI metrics must be labeled as insufficient evidence'
     assert current_by_ticker['SMCI']['status']=='pending-review'
     smci={m['id']:m for m in current_by_ticker['SMCI']['metrics']}
     assert smci['revenue']['value']==39063.072
@@ -207,7 +218,11 @@ with sync_playwright() as pw:
                 latest.scroll_into_view_if_needed()
                 page.screenshot(path=f'work/mobile-{width}-issuer-gilat-telecom.png',full_page=False)
             if label=='FTAI':
-                expect(latest).to_contain_text('אין עדכון פיננסי מבוסס מקור')
+                if ftai['metrics']:
+                    expect(latest).to_contain_text('953.085 USD million')
+                    expect(latest).to_contain_text('ממתין לבדיקה')
+                else:
+                    expect(latest).to_contain_text('אין עדכון פיננסי מבוסס מקור')
             if label=='SMCI':
                 expect(latest).to_contain_text('39,063.072 USD million')
                 expect(latest).to_contain_text('21,972.042 USD million')
