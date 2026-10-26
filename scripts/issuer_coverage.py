@@ -59,7 +59,7 @@ def document_usable(doc, company):
         and isinstance(doc.get("sha256"), str) and bool(DIGEST.fullmatch(doc["sha256"]))
         and isinstance(doc.get("id"), str) and doc["id"].startswith("report:")
         and is_official_url(doc.get("url"), company)
-        and doc.get("format") in ("html", "pdf")
+        and doc.get("format") in ("html", "pdf", "sec-json")
         and (isinstance(doc.get("tables"), list) or isinstance(doc.get("facts"), list)))
 
 
