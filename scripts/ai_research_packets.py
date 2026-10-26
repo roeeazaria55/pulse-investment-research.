@@ -613,12 +613,20 @@ def source_bound_issuer_research(company, latest):
             "comparisonType": "historical-not-prediction",
             "modelEligible": False,
         })
+    findings=r.get("findings",[])
+    questions=r.get("questions",[])
+    if (not isinstance(findings,list) or not isinstance(questions,list)
+        or len(findings)>10 or len(questions)>10
+        or not all(isinstance(v,str) and 0<len(v)<=600 for v in findings+questions)):
+        raise ValueError("Untrusted issuer narrative questions or derived findings")
     return {"status": r["status"], "report": {
         "sourceUrl": url, "digest": digest, "digestKind": r["sourceDigestKind"],
         "period": r.get("reportPeriod"), "publishedDate": r.get("publishedDate"),
         "contentId": r.get("contentId"),
         "reviewRequired": True
     }, "sourceBoundMetrics": validated, "modelEligible": False,
+        "sourceBoundFindings": findings, "humanResearchQuestions": questions,
+        "automaticModelChange": False,
         "notice": "Retained issuer research; requires human source and model review."}
 
 
