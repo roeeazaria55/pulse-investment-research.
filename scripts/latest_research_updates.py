@@ -369,6 +369,7 @@ def other_issuer_update(row):
         "sourceVersion": version,
         "sourceDigestKind": ("retained-issuer-pdf-table-sha256" if metrics[0]["evidenceScope"]=="retained-issuer-pdf-table"
                                  else "retained-issuer-html-table-sha256" if metrics[0]["evidenceScope"]=="retained-issuer-html-table"
+                                 else "retained-sec-companyfacts-json-sha256" if metrics[0]["evidenceScope"]=="retained-sec-companyfacts-xbrl"
                                  else "retained-sec-inline-xbrl-sha256"),
         "metrics": [{k: v for k, v in metric.items() if k not in (
              "sourceSha256", "reportId", "evidenceScope", "sourceContext")}
