@@ -201,7 +201,7 @@ def forecast_history(company, archive):
         if not isinstance(f, dict):
             raise ValueError("Malformed archived forecast record")
         if f.get("companyId") != company["id"]:
-            if f.get("ticker") == company["ticker"]:
+            if company["ticker"] and f.get("ticker") == company["ticker"]:
                 raise ValueError("Archived forecast issuer identity mismatch")
             continue
         point = f.get("point")
@@ -469,7 +469,7 @@ def pdf_reference(company, supplied):
     """
     matches = [row for row in supplied
                if row.get("companyId") == company["id"]
-               or row.get("ticker") == company["ticker"]]
+               or (company["ticker"] and row.get("ticker") == company["ticker"])
     if not matches:
         return None
     if len(matches) != 1:
