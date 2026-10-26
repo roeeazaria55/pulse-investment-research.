@@ -36,14 +36,20 @@ class AIResearchPacketTests(unittest.TestCase):
         self.assertFalse(p["trustPolicy"]["aiAnalysisExecuted"])
         self.assertFalse(p["trustPolicy"]["includesPersonalPortfolio"])
 
-    def test_reuses_one_contract_across_four_issuer_models(self):
+    def test_reuses_one_contract_across_all_twelve_issuers(self):
         self.assertEqual(set(self.packets),set(TICKERS))
-        for ticker,p in self.packets.items():
-            self.assertEqual(p["ticker"],ticker)
+        self.assertEqual(len(self.packets),12)
+        for key,p in self.packets.items():
+            company=next(c for c in self.registry["companies"]
+                         if (c["ticker"] or c["id"])==key)
+            self.assertEqual(p["ticker"],company["ticker"])
+            self.assertEqual(p["companyId"],company["id"])
             self.assertEqual(p["contractVersion"],1)
             self.assertEqual(len(p["contentSha256"]),64)
-            self.assertIsNotNone(p["research"])
+            self.assertIn("latestIssuerResearch",p)
             self.assertFalse(p["trustPolicy"]["mayModifyTargetsOrProbabilities"])
+        for ticker in ("DLO","NBIS","IREN","SMCI"):
+            self.assertIsNotNone(self.packets[ticker]["research"])
         self.assertEqual(self.packets["SMCI"]["valuationModel"],None)
         self.assertIsNotNone(self.packets["IREN"]["valuationModel"])
 
@@ -64,7 +70,7 @@ class AIResearchPacketTests(unittest.TestCase):
 
     def test_registry_portals_are_host_allowlisted_not_report_document_paths(self):
         for ticker, packet in self.packets.items():
-            company = next(c for c in self.registry["companies"] if c["ticker"] == ticker)
+            company = next(c for c in self.registry["companies"] if (c["ticker"] or c["id"]) == ticker)
             links = official_portal_sources(company)
             self.assertEqual(packet["officialSources"], links)
             self.assertEqual(len(links), len(company["sources"]))
@@ -173,7 +179,7 @@ class AIResearchPacketTests(unittest.TestCase):
     def test_archived_forecasts_remain_complete_and_unverified(self):
         archive = read_json(ROOT / "public/data/forecast-archive.json")["forecasts"]
         for ticker, expected in (("DLO", 4), ("NBIS", 3), ("IREN", 0), ("SMCI", 1)):
-            company = next(c for c in self.registry["companies"] if c["ticker"] == ticker)
+            company = next(c for c in self.registry["companies"] if (c["ticker"] or c["id"]) == ticker)
             rows = forecast_history(company, archive)
             with self.subTest(ticker=ticker):
                 self.assertEqual(len(rows), expected)
