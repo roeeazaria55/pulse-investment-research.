@@ -563,6 +563,7 @@ def source_bound_issuer_research(company, latest):
                 "retained-issuer-html-table-sha256",
                 "retained-issuer-pdf-table-sha256",
                 "retained-sec-inline-xbrl-sha256",
+                "retained-sec-companyfacts-json-sha256",
                 "curated-extract-json-sha256-not-original-pdf",
             )):
         raise ValueError("Unverified issuer source digest or provenance")
