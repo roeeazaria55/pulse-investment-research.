@@ -149,6 +149,24 @@ class IntakeTests(unittest.TestCase):
   self.assertEqual(len(attempted),1)
   self.assertEqual(attempted[0],'https://data.sec.gov/api/xbrl/companyfacts/CIK0001590364.json')
 
+ def test_newer_official_filing_outscores_old_curated_quarter(self):
+  # Pure synthetic ranking fixture. This is NOT evidence that a Q3 filing exists.
+  import json
+  from pathlib import Path
+  registry=json.loads(Path('public/data/official-registry.json').read_text(encoding='utf-8'))
+  company=next(c for c in registry['companies'] if c['id']=='candidate-ftai')
+  q3='https://ftandi.gcs-web.com/news-releases/news-release-details/ftai-aviation-test-quarter-2026'
+  discovery={'id':'synthetic-q3','companyId':company['id'],'kind':'results',
+      'title':'FTAI Aviation third quarter 2026 financial results',
+      'url':q3,'publishedDate':'2026-10-30','documentPeriod':'Q3 2026'}
+  attempted=[]
+  def fetch(url,c):
+   attempted.append(url)
+   raise PermissionError('Synthetic 403')
+  collect({'items':[discovery]},{'companies':[company]}, {},
+          '2026-11-01T00:00:00Z',fetcher=fetch,limit=1)
+  self.assertEqual(attempted,[q3])
+
  def test_zero_budget_and_schedule_skip_fetch(self):
   def fail(u,c):self.fail('Network should not be called')
   result=collect({'items':[ITEM]},{'companies':[C]}, {},'2026-10-20T12:00:00Z',fetcher=fail,limit=0)
