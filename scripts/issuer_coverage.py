@@ -20,9 +20,11 @@ XBRL = {
     "us-gaap:revenuefromcontractwithcustomerexcludingassessedtax": ("revenue", "הכנסות", "US GAAP Revenue from Contracts"),
     "us-gaap:revenues": ("revenue", "הכנסות", "US GAAP Revenues"),
     "us-gaap:grossprofit": ("grossProfit", "רווח גולמי", "US GAAP Gross Profit"),
+    "us-gaap:operatingincomeloss": ("operatingIncome", "רווח תפעולי", "US GAAP Operating Income/Loss"),
+    "us-gaap:netincomeloss": ("netIncome", "רווח נקי", "US GAAP Net Income/Loss"),
     "us-gaap:netcashprovidedbyusedinoperatingactivities": ("operatingCash", "תזרים תפעולי", "US GAAP Net Cash Provided by Operating Activities"),
 }
-MAX_METRICS = 4
+MAX_METRICS = 6
 
 
 def read(path):
