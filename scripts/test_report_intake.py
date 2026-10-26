@@ -147,7 +147,7 @@ class IntakeTests(unittest.TestCase):
   collect({'items':[]},{'companies':[company]}, {},
           '2026-10-25T15:00:00Z',fetcher=fetch,limit=1)
   self.assertEqual(len(attempted),1)
-  self.assertIn('globenewswire.com/news-release/2026/07/29',attempted[0])
+  self.assertEqual(attempted[0],'https://data.sec.gov/api/xbrl/companyfacts/CIK0001590364.json')
 
  def test_zero_budget_and_schedule_skip_fetch(self):
   def fail(u,c):self.fail('Network should not be called')
