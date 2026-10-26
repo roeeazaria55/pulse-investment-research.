@@ -207,6 +207,17 @@ def extract(body,content_type,url,company):
  # Do not guess fiscal periods or units from filenames, publication dates or collection dates.
  return dict(status=status,title=title or company['name'],sha256=hashlib.sha256(body).hexdigest(),bytes=len(body),format='pdf' if pdf else 'html',pages=page_count,readScope='partial-pages' if truncated else 'full-body',charactersRead=len(text),tables=tables[:12],tableCount=len(tables),tablesTruncated=len(tables)>12,facts=facts,sourcePdfPages=source_pdf_pages,reviewStatus='pending-review',links=links,notice='Content was read automatically. Table rows require period/unit review. No thesis or price target was updated.')
 
+def report_period_rank(item):
+ """Discovery ranking only. Never an authoritative fiscal accounting period."""
+ period=item.get('documentPeriod') or item['title']
+ year=re.search(r'20\d{2}',period);fiscal=FISCAL_YEAR.search(period)
+ quarter=re.search(r'Q([1-4])',period,re.I)
+ word=re.search(r'(first|second|third|fourth)\s+(?:fiscal\s+)?quarter',period,re.I)
+ q=int(quarter[1]) if quarter else {'first':1,'second':2,'third':3,'fourth':4}.get(word[1].lower(),0) if word else 0
+ y=2000+int(fiscal[1][-2:]) if fiscal else int(year[0]) if year else 0
+ return (y,4 if fiscal and not q else q,item.get('publishedDate') or '',item.get('lastSeenAt') or '')
+
+
 def candidates(snapshot,company):
  items=[i for i in snapshot.get('items',[]) if i['companyId']==company['id'] and i.get('kind') in ('results','document') and not SCHEDULE.search(i['title']) and FINANCIAL_TITLE.search(i['title']+' '+(i.get('documentPeriod') or '')) and safe_report_url(i['url'],company)]
  # Curated official pointers are *candidates* only; not documents, not
@@ -226,14 +237,7 @@ def candidates(snapshot,company):
                  'periodBasis':'curated-issuer-title-unverified',
                  'publishedDate':r['publishedDate'],'publishedDateBasis':'curated-reference-only',
                  'sourceId':'curated-official-pointer','evidenceUrl':r['evidence'],'curated':True})
- def rank(item):
-  period=item.get('documentPeriod') or item['title'];year=re.search(r'20\d{2}',period);fiscal=FISCAL_YEAR.search(period);quarter=re.search(r'Q([1-4])',period,re.I);word=re.search(r'(first|second|third|fourth)\s+(?:fiscal\s+)?quarter',period,re.I)
-  q=int(quarter[1]) if quarter else {'first':1,'second':2,'third':3,'fourth':4}.get(word[1].lower(),0) if word else 0
-  # FY26 is an issuer-supplied fiscal label used ONLY for discovery ranking.
-  # It does not establish accounting start/end dates for extracted observations.
-  y=2000+int(fiscal[1][-2:]) if fiscal else int(year[0]) if year else 0
-  return (y,4 if fiscal and not q else q,item.get('publishedDate') or '',item.get('lastSeenAt') or '')
- return sorted(items,key=rank,reverse=True)
+ return sorted(items,key=report_period_rank,reverse=True)
 
 def collect(snapshot,registry,previous,now,fetcher=fetch_document,limit=16,budget=180):
  records={r['id']:r for r in previous.get('documents',[])};statuses=[];attempts=0;deadline=time.monotonic()+budget
@@ -255,7 +259,10 @@ def collect(snapshot,registry,previous,now,fetcher=fetch_document,limit=16,budge
    ident='report:'+hashlib.sha256((company['id']+'|'+canonical(item['url'])).encode()).hexdigest()[:32]
    title=item.get('title','').lower()
    non_filing=bool(re.search(r'prepared remarks|conference call|transcript|earnings presentation',title))
-   return (non_filing, not item.get('curated',False),
+   year,quarter,*_=report_period_rank(item)
+   # A newly published quarter outranks an older curated report even if
+   # the older official URL remains active. In-quarter prefer curated.
+   return (-year,-quarter,non_filing,not item.get('curated',False),
            ident in records,records.get(ident,{}).get('lastSuccessfulAt',''))
   todo.sort(key=priority);chosen=todo[:2];status=dict(companyId=company['id'],
      lastAttemptAt=previous_status.get(company['id'],{}).get('lastAttemptAt'),
