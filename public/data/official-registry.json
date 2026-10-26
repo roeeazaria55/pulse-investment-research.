@@ -150,7 +150,8 @@
         "/news-release/",
         "/Archives/edgar/data/1590364/",
         "/node/",
-        "/sec-filings/sec-filing/"
+        "/sec-filings/sec-filing/",
+        "/api/xbrl/companyfacts/"
       ],
       "sources": [
         {
@@ -186,6 +187,13 @@
         "אפטיאיי"
       ],
       "curatedReportCandidates": [
+        {
+          "title": "FTAI Aviation Q2 2026 10-Q — Official SEC CompanyFacts XBRL JSON",
+          "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001590364.json",
+          "publishedDate": "2026-07-31",
+          "documentPeriod": "Q2 2026",
+          "evidence": "https://www.sec.gov/Archives/edgar/data/1590364/000162828026051412/ftai-20260630.htm"
+        },
         {
           "title": "FTAI Aviation Ltd Reports Second Quarter 2026 Results — issuer-distributed full GAAP financial statements",
           "url": "https://www.globenewswire.com/news-release/2026/07/29/3335598/35538/en/FTAI-Aviation-Ltd-Reports-Second-Quarter-2026-Results-Increases-Dividend-to-0-50-per-Ordinary-Share.html",
