@@ -469,7 +469,7 @@ def pdf_reference(company, supplied):
     """
     matches = [row for row in supplied
                if row.get("companyId") == company["id"]
-               or (company["ticker"] and row.get("ticker") == company["ticker"])
+               or (company["ticker"] and row.get("ticker") == company["ticker"])]
     if not matches:
         return None
     if len(matches) != 1:
