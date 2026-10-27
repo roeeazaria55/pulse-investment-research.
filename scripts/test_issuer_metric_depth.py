@@ -60,6 +60,16 @@ class DepthTests(unittest.TestCase):
   self.assertEqual(m['capex']['value'],33942)
   self.assertEqual(m['capex']['sourceRaw'],'(33,942)')
   self.assertIn('excludes finance-lease',m['capex']['accountingBasis'])
+ def test_new_unmapped_document_preserves_supported_history_and_discloses_gap(self):
+  intake=copy.deepcopy(self.intake)
+  newer=self.doc('us-lmnd-nyse-common')
+  newer.update(id='report:'+'f'*32,title='Lemonade Q3 2026 Form 10-Q',documentPeriod='Q3 2026',tables=[],facts=[],sourcePdfPages=[])
+  intake['documents'].append(newer)
+  row=next(r for r in build(self.registry,intake)['coverage'] if r['companyId']=='us-lmnd-nyse-common')
+  self.assertEqual(len(row['typedMetrics']),7)
+  self.assertEqual(row['typedMetrics'][0]['periodEnd'],'2026-06-30')
+  self.assertGreater(row['unmappedDocumentCount'],0)
+  self.assertNotEqual(row['report']['id'],newer['id'])
  def test_margin_rejects_mixed_gaap_duplicate_ids_and_missing_provenance(self):
   original=self.coverage['candidate-sandisk']['typedMetrics']
   for mutation in ('non-gaap','duplicate','missing'):

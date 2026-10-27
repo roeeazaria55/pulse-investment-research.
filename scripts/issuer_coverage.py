@@ -302,12 +302,22 @@ def build(registry, intake):
         checks = [s for s in statuses if isinstance(s, dict) and s.get("companyId") == c["id"]]
         fetch_state = status_for(checks)
         latest = company_docs[0] if company_docs else None
-        proposals_xbrl = safe_source_facts(latest) if latest else []
-        proposals_table = reviewed_html_table_candidates(latest) if latest else []
-        proposals_other = adapted_issuer_facts(latest) if latest else []
-        if sum(bool(v) for v in (proposals_xbrl,proposals_table,proposals_other))>1:
-            raise ValueError("Multiple accounting paths for one retained issuer report")
-        proposal = proposals_xbrl or proposals_table or proposals_other
+        supported = []
+        for doc in company_docs:
+            paths = [safe_source_facts(doc), reviewed_html_table_candidates(doc), adapted_issuer_facts(doc)]
+            nonempty = [p for p in paths if p]
+            if len(nonempty) > 1:
+                raise ValueError("Multiple accounting paths for one retained issuer report")
+            if nonempty:
+                supported.append((max(m["periodEnd"] for m in nonempty[0]), report_rank(doc), doc, nonempty[0]))
+        # A newly fetched unsupported PDF (or an older Hebrew report with no
+        # machine-readable period metadata) must not erase supported evidence.
+        # Order supported reports by their verified accounting date, not fetch time.
+        if supported:
+            _, _, latest, proposal = max(supported, key=lambda item: (item[0], item[1]))
+        else:
+            proposal = []
+        unmapped = len(company_docs) - len(supported)
         candidate = None
         if latest:
             candidate = {
@@ -318,7 +328,7 @@ def build(registry, intake):
                 "firstDetectedAt": latest.get("firstDetectedAt"),
                 "lastSuccessfulAt": latest.get("lastSuccessfulAt"),
                 "reviewStatus": "pending-review", "sourceIsCurrentlyReachable": False,
-                "note": "Latest retained eligible document by available metadata; not proof of latest issuer filing.",
+                "note": "Latest retained mapped accounting period when available; other documents may be unmapped. Not proof of latest issuer filing.",
             }
         covered.append({
             "companyId": c["id"], "ticker": c.get("label") or c.get("ticker") or c["name"],
@@ -329,7 +339,7 @@ def build(registry, intake):
             "intakeSuccessAt": max(
                 (d.get("lastSuccessfulAt") for d in company_docs if isinstance(d.get("lastSuccessfulAt"), str)), default=None),
             "lastError": next((s.get("error") for s in checks if s.get("error")), None),
-            "retainedDocumentCount": len(company_docs),
+            "retainedDocumentCount": len(company_docs), "unmappedDocumentCount": unmapped,
             "report": candidate, "typedMetrics": proposal,
             "metricCoverage": ("provisional-structured" if proposal else "report-only" if candidate else "no-document"),
             "issuerPortal": next((s["url"] for s in c.get("sources", []) if

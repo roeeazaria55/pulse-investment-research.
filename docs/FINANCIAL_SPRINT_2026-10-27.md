@@ -40,6 +40,8 @@ Added columns compare against the requested b41b8cb baseline, including the thre
 
 ## Verification
 
-Local: 251 Python tests, 244 Vitest tests, TypeScript/production build passed. Final browser and remote CI evidence will be linked in PR #60 after completion.
+Local: 252 Python tests, 244 Vitest tests, TypeScript/production build passed. Local Playwright passed RTL/mobile/offline checks. Current remote CI and screenshot artifacts are linked in PR #60.
 
-Release decision: pending final browser/CI checks. Eligible only for review of a review-only research UI; not approval of financial metrics, merge or deployment.
+Release decision: consult current-head CI in PR #60. Eligible only for review of a review-only research UI; not approval of financial metrics, merge or deployment.
+
+The first new CI scan found an unmapped Lemonade 10-Q and a Gilat Q1 report hiding previously supported Q2 metrics. Source selection now uses verified accounting dates among mapped documents, retains old measurements, and explicitly warns about additional unmapped documents. This was replayed against actual CI intake (66 metrics restored) and covered by a regression test.

@@ -402,7 +402,8 @@ def other_issuer_update(row):
         "findings": ["נתונים פיננסיים חולצו משורות מקור מובְנות; התקופות, ההגדרות וההשפעה על המודל עדיין ממתינות לבדיקת אנליסט."] + [m["finding"] for m in margins],
         "questions": (row.get("analystQuestions", []) or ["האם התקופה והיחידה תואמות למודל?"]) + [m["question"] for m in margins],
         "missing": ["לא הושוו ביצועים לתחזית מתוארכת; אין אישור אוטומטי או שינוי במחיר יעד.",
-                    "הצלחת קליטת המקור בהווה תלויה במצב הורדת הדוח המוצג בנפרד."],
+                    "הצלחת קליטת המקור בהווה תלויה במצב הורדת הדוח המוצג בנפרד."] +
+                   (["נשמרו גם מסמכים ללא מיפוי פיננסי. מוצגת התקופה האחרונה שחולצה, ולא בהכרח הדוח האחרון שפורסם."] if row.get("unmappedDocumentCount") else []),
         "aiAnalysisEnabled": False, "reviewRequired": True,
         "modelChange": "אין שינוי בתרחישים, בהנחות או במחירי יעד.",
         "reportEvidence": evidence, "intakeStatus": row["intakeStatus"],

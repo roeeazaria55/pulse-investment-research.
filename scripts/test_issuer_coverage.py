@@ -162,6 +162,7 @@ class CoverageTests(unittest.TestCase):
         doc.update({"id": "report:" + "a" * 32, "companyId": reg["id"],
                     "url": "https://enlightenergy.com/wp-content/uploads/example.pdf",
                     "title": "Enlight FY2026 official report", "facts": [], "tables": []})
+        added["documents"] = [d for d in added["documents"] if d["companyId"] != reg["id"]]
         added["documents"].append(doc)
         coverage = build(self.registry, added)["coverage"]
         enlight = next(r for r in coverage if r["companyId"] == reg["id"])
