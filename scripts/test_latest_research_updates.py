@@ -34,11 +34,12 @@ class LatestResearchUpdateTests(unittest.TestCase):
 
     def test_dlo_observation_must_match_retained_report_digest_and_identity(self):
         tampered = json.loads(json.dumps(self.dlo))
+        tampered["observations"] = [x for x in tampered["observations"] if x["sourceSha256"] == dlo_update(self.dlo)["sourceVersion"]]
         target = next(x for x in tampered["observations"] if x["metricId"] == "revenue")
         target["sourceSha256"] = "f" * 64
         actual = dlo_update(tampered)
         self.assertNotIn("revenue", {x["id"] for x in actual["metrics"]})
-        target["sourceSha256"] = next(x["sourceSha256"] for x in self.dlo["observations"] if x["metricId"] == "revenue")
+        target["sourceSha256"] = dlo_update(self.dlo)["sourceVersion"]
         target["reportId"] = "report:forged"
         actual = dlo_update(tampered)
         self.assertNotIn("revenue", {x["id"] for x in actual["metrics"]})
@@ -98,7 +99,7 @@ class LatestResearchUpdateTests(unittest.TestCase):
     def test_real_model_and_research_comparisons_are_explicitly_non_comparable(self):
         reports = {r["ticker"]: r for r in build(self.dlo, self.iren)["reports"]}
         iren = reports["IREN"]
-        self.assertEqual(iren["sourceDigestKind"], "curated-extract-json-sha256-not-original-pdf")
+        self.assertIn(iren["sourceDigestKind"], ("curated-extract-json-sha256-not-original-pdf", "retained-issuer-html-table-sha256"))
         review = {r["metricId"]: r for r in iren["modelReview"]}
         self.assertEqual(review["revenue"]["modelValue"], 4500)
         self.assertEqual(review["operatingCash"]["modelValue"], 1400)
@@ -108,10 +109,10 @@ class LatestResearchUpdateTests(unittest.TestCase):
         source = {m["id"]: m for m in iren["metrics"]}
         self.assertEqual(source["revenue"]["sourceRaw"], "707.0")
         self.assertEqual(source["revenue"]["sourcePreviousRaw"], "501.0")
-        self.assertEqual(source["revenue"]["sourcePage"], 12)
+        self.assertEqual(source["revenue"]["sourcePage"], 12 if iren["sourceDigestKind"].startswith("curated") else None)
         self.assertIn("(2,998.0)", source["capex"]["sourceRaw"])
         self.assertIn("(1,335.1)", source["capex"]["sourceRaw"])
-        self.assertEqual(source["capex"]["sourcePage"], 14)
+        self.assertEqual(source["capex"]["sourcePage"], 14 if iren["sourceDigestKind"].startswith("curated") else None)
         dlo = {r["metricId"]: r for r in reports["DLO"]["modelReview"]}
         self.assertEqual(dlo["grossProfit"]["modelValue"], 650)
         self.assertTrue(dlo["revenue"]["researchTextMatch"])

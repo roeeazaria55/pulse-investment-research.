@@ -17,7 +17,7 @@ VERSION=1
 PARSER='official-content-v1'
 MAX_BYTES=8*1024*1024
 PILOTS={c["id"] for c in json.loads((Path(__file__).resolve().parent.parent/"public/data/official-registry.json").read_text(encoding="utf-8"))["companies"]}
-LABELS=re.compile(r'revenue|net (?:income|loss)|gross profit|operating (?:income|loss)|cash flow|inventor|accounts receivable|total assets|earnings per|TPV|remaining performance|הכנסות|רווח|מלאי|תזרים',re.I)
+LABELS=re.compile(r'revenue|net (?:income|loss)|gross profit|operating (?:income|loss)|income from operations|cash flow|cash (?:and|provided|used|equivalents)|net cash|purchases of|payments for|capital expenditure|total debt|long.term debt|adjusted EBITDA|premium|loss ratio|inventor|accounts receivable|total assets|earnings per|TPV|remaining performance|הכנסות|רווח|מלאי|תזרים',re.I)
 FISCAL_YEAR=re.compile(r'\bFY\s*((?:20)?\d{2})\b',re.I)
 FINANCIAL_TITLE=re.compile(r'financial|fiscal|quarter|\bQ[1-4]\b|\bFY\s*(?:20)?\d{2}\b|annual report|10-K|10-Q|20-F|shareholder|תוצאות כספיות|דוח כספי|דוחות כספיים|דוח רבעון',re.I)
 SCHEDULE=re.compile(r'to (?:report|release|announce)|date (?:of|for)|timing of|schedule|earnings call registration',re.I)
@@ -164,7 +164,7 @@ def extract(body,content_type,url,company):
     if time.monotonic()-parse_start>20:truncated=True;break
     page_text=page.extract_text() or ''
     parts.append(page_text)
-    target_pages={'candidate-enlight':{16,19}, 'candidate-gilat-telecom':{6}, 'candidate-ftai':{2,3}}
+    target_pages={'candidate-enlight':{16,19}, 'candidate-gilat-telecom':{6}, 'candidate-ftai':{2,3}, 'candidate-nebius':{6,7,8,9}, 'us-lmnd-nyse-common':{11,12,13,14}, 'candidate-next-vision':{9}}
     if page.page_number in target_pages.get(company['id'],set()):
      # Original issuer statement page, not OCR or generated table values.
      source_pdf_pages.append({'page':page.page_number,'text':page_text[:9000]})

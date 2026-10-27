@@ -191,8 +191,12 @@ def nextvision_fy25(doc):
     t=candidates[0]
     result=[]
     for label,key,hebrew in [("Area of activity revenue","revenue","הכנסות"),
-                              ("Gross profit","grossProfit","רווח גולמי")]:
+                              ("Gross profit","grossProfit","רווח גולמי"),
+                              ("Profit from ordinary activity","operatingIncome","רווח מפעילות רגילה"),
+                              ("Net profit","netIncome","רווח נקי")]:
         matches=[r for r in t["rows"] if r and r[0]==label]
+        if not matches and key in ("operatingIncome","netIncome"):
+            continue
         if len(matches)!=1 or len(matches[0])<5:
             return []
         row=matches[0]
@@ -380,6 +384,8 @@ def gilat_q2(doc):
 
 
 def adapted_issuer_facts(doc):
-    results=[sandisk_q4(doc),nebius_quarter(doc),lemonade_q2(doc),nextvision_fy25(doc),meta_q3(doc),ftai_q2(doc),enlight_q2(doc),gilat_q2(doc)]
+    from issuer_metric_depth import iren_original
+    results=[sandisk_q4(doc),nebius_quarter(doc),lemonade_q2(doc),nextvision_fy25(doc),meta_q3(doc),ftai_q2(doc),enlight_q2(doc),gilat_q2(doc),iren_original(doc)]
     nonempty=[value for value in results if value]
-    return nonempty[0] if len(nonempty)==1 else []
+    from issuer_metric_depth import enrich
+    return enrich(doc, nonempty[0]) if len(nonempty)==1 else []

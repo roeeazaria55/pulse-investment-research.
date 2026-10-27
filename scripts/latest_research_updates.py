@@ -236,7 +236,28 @@ def dlo_update(observations):
             "previousValue": None, "changePercent": None,
             "comparison": "אין נתון קודם מאושר, תואם בתקופה ובהגדרה.",
         })
-    warnings = ["ארבעת המדדים, ככל שנמצאו, ממתינים לבדיקת אנליסט; אין השוואה לתחזית שנוצרה לאחר תאריך פרסום הדוח."]
+    # Optional issuer KPI rows from the SAME retained digest selected above.
+    doc = issuer_docs.get((rows[0].get("reportId"), key[1]))
+    if doc:
+        tables = [t for t in doc.get("tables", []) if t.get("rows", [])[:3] == [
+            ["", "Three months ended on June 30", "Six months ended on June 30"],
+            ["", "2026", "2025", "% change", "2026", "2025", "% change"],
+            ["Key Performance metrics", "(In millions of US$ except for %)"]]]
+        if len(tables) == 1:
+            for source, mid, label, basis in [
+                ("TPV", "tpv", "היקף תשלומים TPV", "Issuer TPV operational KPI; not IFRS revenue"),
+                ("Net Income", "netIncome", "רווח נקי", "Issuer performance summary net income, rounded USD million")]:
+                lines=[r for r in tables[0]["rows"] if r and r[0]==source]
+                if len(lines)!=1 or len(lines[0])!=7:continue
+                try: value=amount(lines[0][1])
+                except ValueError:continue
+                metrics.append({**metrics[0], "id":mid, "label":label, "value":value,
+                    "accountingBasis":basis, "sourceRow":source,
+                    "sourceRaw":lines[0][1], "sourcePreviousRaw":None,
+                    "periodStart":"2026-04-01", "periodEnd":"2026-06-30",
+                    "previousValue":None, "changePercent":None,
+                    "reviewStatus":"needs-reconciliation" if any(r["reviewStatus"]=="needs-reconciliation" for r in rows) else "pending-review"})
+    warnings = ["המדדים שנמצאו, ממתינים לבדיקת אנליסט; אין השוואה לתחזית שנוצרה לאחר תאריך פרסום הדוח."]
     if any(r["reviewStatus"] == "needs-reconciliation" for r in rows):
         warnings.insert(0, "גרסת המקור דורשת בירור (needs-reconciliation); הנתונים אינם מאושרים.")
     if len(groups) > 1:
@@ -305,6 +326,7 @@ def iren_update(source):
             "id": metric_id, "label": METRICS[metric_id], "value": round(current, 6),
             "previousValue": round(previous, 6), "changePercent": pct,
             "unit": "USD million", "periodStart": "2025-07-01", "periodEnd": "2026-06-30",
+            "previousPeriodStart": "2024-07-01", "previousPeriodEnd": "2025-06-30",
             "accountingBasis": basis, "sourceRaw": raw_current,
             "sourcePreviousRaw": raw_previous, "sourcePage": pdf_page,
             "sourceDocumentUrl": source["pdfUrl"],
@@ -341,7 +363,7 @@ def other_issuer_update(row):
     visible through the original document link but remain unparsed.
     """
     company = row["companyId"]
-    if company in ("us-dlo-nasdaq-a", "candidate-iren"):
+    if company == "us-dlo-nasdaq-a":
         raise ValueError("Dedicated issuer cannot use generic fallback")
     evidence = row.get("report")
     metrics = row.get("typedMetrics", [])
@@ -357,7 +379,7 @@ def other_issuer_update(row):
     version = evidence["sha256"]
     if not (SHA256.fullmatch(version) and all(m["sourceUrl"] == source and
             m["sourceSha256"] == version and m["reportId"] == evidence["id"] and
-            m["reviewStatus"] == "pending-review" and (m["unit"] == "USD million" or (company == "candidate-gilat-telecom" and m["unit"] == "ILS million")) for m in metrics)):
+            m["reviewStatus"] == "pending-review" and (m["unit"] == "USD million" or (company == "candidate-gilat-telecom" and m["unit"] == "ILS million") or (company == "us-lmnd-nyse-common" and m["id"] == "grossLossRatio" and m["unit"] == "percent")) for m in metrics)):
         raise ValueError("Inconsistent cross-source issuer XBRL evidence")
     allowed = {c["id"]: set(c["allowedHosts"]) for c in load(ROOT / "public/data/official-registry.json")["companies"]}
     if not trusted_url(source, allowed[company]):
@@ -365,8 +387,8 @@ def other_issuer_update(row):
     margins = source_margins(metrics)
     body = {
         "companyId": company, "ticker": COMPANIES[company],
-        "status": "pending-review", "kind": ("issuer-original-table-review-only" if metrics[0]["evidenceScope"] in ("retained-issuer-html-table","retained-issuer-pdf-table") else "structured-sec-xbrl-review-only"),
-        "reportPeriod": metrics[0]["periodStart"] + "/" + metrics[0]["periodEnd"],
+        "status": "historical-baseline-pending-review" if company == "candidate-iren" else "pending-review", "kind": ("issuer-original-table-review-only" if metrics[0]["evidenceScope"] in ("retained-issuer-html-table","retained-issuer-pdf-table") else "structured-sec-xbrl-review-only"),
+        "reportPeriod": evidence.get("documentPeriod") or metrics[0]["periodStart"] + "/" + metrics[0]["periodEnd"],
         "publishedDate": evidence.get("publishedDate"), "sourceUrl": source,
         "sourceVersion": version,
         "sourceDigestKind": ("retained-issuer-pdf-table-sha256" if metrics[0]["evidenceScope"]=="retained-issuer-pdf-table"
@@ -433,7 +455,7 @@ def build(observations, iren_source, source_inventory=None, coverage=None):
         if company == "us-dlo-nasdaq-a":
             report = model_context(dlo_update(observations))
         elif company == "candidate-iren":
-            report = model_context(iren_update(iren_source))
+            report = model_context(other_issuer_update(row) if row.get("typedMetrics") else iren_update(iren_source))
         else:
             report = other_issuer_update(row)
         report.setdefault("reportEvidence", row.get("report"))

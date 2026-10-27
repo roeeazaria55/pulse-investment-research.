@@ -56,7 +56,8 @@ class IssuerAIPacketBridgeTests(unittest.TestCase):
         self.assertEqual(set(packets), set(keys))
         self.assertEqual(packets["candidate-enlight"]["ticker"], "")
         self.assertFalse(packets["candidate-enlight"]["trustPolicy"]["mayModifyTargetsOrProbabilities"])
-        self.assertEqual(packets["FTAI"]["latestIssuerResearch"]["status"], "not-generated")
+        self.assertIn(packets["FTAI"]["latestIssuerResearch"]["status"], ("not-generated", "pending-review", "insufficient-evidence"))
+        self.assertFalse(packets["FTAI"]["latestIssuerResearch"]["modelEligible"])
 
     def test_source_bound_meta_is_never_target_approved_or_prediction(self):
         res = source_bound_issuer_research(self.meta, self.sample())

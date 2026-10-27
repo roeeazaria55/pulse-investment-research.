@@ -516,7 +516,7 @@ def provenance_ticker(company):
 
 ISSUER_METRIC_IDS = frozenset((
     "revenue", "grossProfit", "operatingIncome", "operatingCash", "capex",
-    "revenuesAndIncome", "netIncome", "cash", "inventory", "accountsReceivable", "debt", "freeCashFlow",
+    "revenuesAndIncome", "netIncome", "cash", "inventory", "accountsReceivable", "adjustedEbitda", "grossEarnedPremium", "inForcePremium", "commonNetIncome", "aiRevenue", "tpv", "grossLossRatio", "debt", "freeCashFlow",
 ))
 
 
@@ -582,8 +582,9 @@ def source_bound_issuer_research(company, latest):
                 period_start > period_end or
                 m.get("sourceUrl") != url or
                 m.get("reviewStatus") not in ("pending-review", "needs-reconciliation") or
-                m.get("unit") not in ("USD million", "ILS million") or
+                m.get("unit") not in ("USD million", "ILS million", "percent") or
                 (m.get("unit") == "ILS million" and company["id"] != "candidate-gilat-telecom") or
+                (m.get("unit") == "percent" and (company["id"] != "us-lmnd-nyse-common" or mid != "grossLossRatio")) or
                 not text(m.get("accountingBasis"), 1000) or
                 not text(m.get("sourceRow"), 500) or
                 not text(m.get("sourceRaw"), 500) or

@@ -1,3 +1,4 @@
+import {FinancialModelQuestions} from './FinancialModelQuestions';
 import {useEffect, useState} from 'react';
 import issuerRegistry from '../../public/data/official-registry.json';
 
@@ -45,7 +46,7 @@ export interface ResearchHistory {version:1;updatedAt:string;entries:HistoryEntr
 const allowed:Record<string,string[]> = Object.fromEntries(issuerRegistry.companies.map(c=>[c.id,c.allowedHosts]));
 const companyStatuses:Record<string,string[]> = Object.fromEntries(issuerRegistry.companies.map(c=>[
  c.id, c.id==='us-dlo-nasdaq-a'?['needs-reconciliation','pending-review','insufficient-evidence']:
- c.id==='candidate-iren'?['historical-baseline-pending-review','insufficient-evidence']:
+ c.id==='candidate-iren'?['historical-baseline-pending-review','pending-review','insufficient-evidence']:
  ['pending-review','insufficient-evidence']
 ]));
 
@@ -57,7 +58,7 @@ export function verifiedLink(url:string|null,companyId:string):string|null {
  } catch {return null;}
 }
 
-const knownMetrics=new Set(['revenue','grossProfit','operatingCash','capex','operatingIncome','netIncome','revenuesAndIncome','cash','inventory','accountsReceivable']);
+const knownMetrics=new Set(['revenue','grossProfit','operatingCash','capex','operatingIncome','netIncome','revenuesAndIncome','cash','inventory','accountsReceivable','adjustedEbitda','grossEarnedPremium','inForcePremium','commonNetIncome','aiRevenue','tpv','debt','grossLossRatio']);
 const hash=/^[a-f0-9]{64}$/;
 const day=/^\d{4}-\d{2}-\d{2}$/;
 function shortText(value:unknown,max=2000):value is string{
@@ -117,8 +118,8 @@ export function parseLatestSnapshot(x:unknown):LatestSnapshot {
    (r.publishedDate!==null&&!validDay(r.publishedDate)))throw Error('ייחוס מקור חסר');
   if(r.metrics.length>8||r.modelReview.length>8)throw Error('יותר מדי מדדים');
   if(r.companyId==='us-dlo-nasdaq-a'&&!insufficient&&r.sourceDigestKind!=='retained-issuer-html-sha256')throw Error('סוג גרסת DLO שגוי');
-  if(r.companyId==='candidate-iren'&&!insufficient&&r.sourceDigestKind!=='curated-extract-json-sha256-not-original-pdf')throw Error('זהות ראיית IREN שגויה');
-  if(!['us-dlo-nasdaq-a','candidate-iren'].includes(r.companyId)&&!insufficient&&(
+  if(r.companyId==='candidate-iren'&&!insufficient&&!['curated-extract-json-sha256-not-original-pdf','retained-issuer-html-table-sha256'].includes(r.sourceDigestKind||''))throw Error('זהות ראיית IREN שגויה');
+  if((!['us-dlo-nasdaq-a','candidate-iren'].includes(r.companyId)||r.companyId==='candidate-iren'&&r.sourceDigestKind==='retained-issuer-html-table-sha256')&&!insufficient&&(
     !['retained-sec-inline-xbrl-sha256','retained-sec-companyfacts-json-sha256','retained-issuer-html-table-sha256','retained-issuer-pdf-table-sha256'].includes(r.sourceDigestKind||'')||!evidence||
     r.sourceUrl!==evidence.url||r.sourceVersion!==evidence.sha256))throw Error('נתוני XBRL אינם קשורים למקור');
   const metricIds=new Set<string>();
@@ -126,7 +127,7 @@ export function parseLatestSnapshot(x:unknown):LatestSnapshot {
    if(!knownMetrics.has(m.id)||metricIds.has(m.id)||!shortText(m.label,100)||typeof m.value!=='number'||!Number.isFinite(m.value)||
     m.previousValue!==null&&(typeof m.previousValue!=='number'||!Number.isFinite(m.previousValue))||
     m.changePercent!==null&&(typeof m.changePercent!=='number'||!Number.isFinite(m.changePercent))||
-    (m.unit!=='USD million'&&!(r.companyId==='candidate-gilat-telecom'&&m.unit==='ILS million'))||!verifiedLink(m.sourceUrl,r.companyId)||m.sourceUrl!==r.sourceUrl||
+    (m.unit!=='USD million'&&!(r.companyId==='candidate-gilat-telecom'&&m.unit==='ILS million')&&!(r.companyId==='us-lmnd-nyse-common'&&m.id==='grossLossRatio'&&m.unit==='percent'))||!verifiedLink(m.sourceUrl,r.companyId)||m.sourceUrl!==r.sourceUrl||
     !validDay(m.periodStart)||!validDay(m.periodEnd)||m.periodStart>m.periodEnd||
     !shortText(m.accountingBasis,500)||!shortText(m.sourceRow,500)||!shortText(m.sourceRaw,200)||!shortText(m.comparison,500)||
     !['pending-review','needs-reconciliation'].includes(m.reviewStatus))throw Error('נתון פיננסי לא תקין');
@@ -139,7 +140,7 @@ export function parseLatestSnapshot(x:unknown):LatestSnapshot {
       throw Error('תקופת השוואה היסטורית אינה תקינה');
    metricIds.add(m.id);
    if(r.companyId==='us-dlo-nasdaq-a'&&(m.previousValue!==null||m.changePercent!==null||m.reviewStatus==='needs-reconciliation'&&r.status!=='needs-reconciliation'))throw Error('השוואת DLO לא מאושרת');
-   if(r.companyId==='candidate-iren'&&(!shortText(m.sourcePreviousRaw,200)||!Number.isInteger(m.sourcePage)||!(m.sourcePage!>=1&&m.sourcePage!<=100)||!verifiedLink(m.sourceDocumentUrl||null,r.companyId)||m.previousValue===null))throw Error('חסרה ראיית מקור IREN');
+   if(r.companyId==='candidate-iren'&&r.sourceDigestKind==='curated-extract-json-sha256-not-original-pdf'&&(!shortText(m.sourcePreviousRaw,200)||!Number.isInteger(m.sourcePage)||!(m.sourcePage!>=1&&m.sourcePage!<=100)||!verifiedLink(m.sourceDocumentUrl||null,r.companyId)||m.previousValue===null))throw Error('חסרה ראיית מקור IREN');
   }
   if(!insufficient&&['us-dlo-nasdaq-a','candidate-iren'].includes(r.companyId)){
    const v=r.activeValuationContext;
@@ -275,6 +276,7 @@ export function LatestResearchUpdate({companyId,onPrepare}:{companyId:string;onP
        <h5>{m.label}</h5>
        <p><strong dir="ltr">{formatAmount(m.value)} {m.unit}</strong></p>
        {m.previousValue!==null&&<p>בסיס תקופה קודמת <bdi>{m.previousPeriodStart&&m.previousPeriodEnd?(m.previousPeriodStart===m.previousPeriodEnd?'ליום '+m.previousPeriodEnd:m.previousPeriodStart+'–'+m.previousPeriodEnd):'תקופת השוואה לא זמינה'}</bdi>: <bdi>{formatAmount(m.previousValue)} {m.unit}</bdi>
+         · שינוי מספרי: <bdi>{formatAmount(m.value-m.previousValue)} {m.unit==='percent'?'נקודות אחוז':m.unit}</bdi>
         {m.changePercent!==null&&<> · שינוי מול תקופת ההשוואה: <bdi>{m.changePercent>0?'+':''}{formatAmount(m.changePercent)}%</bdi></>}</p>}
        <p><small>{m.comparison}</small></p>
        <details><summary>הגדרה, מקור ומצב אימות</summary>
@@ -287,6 +289,8 @@ export function LatestResearchUpdate({companyId,onPrepare}:{companyId:string;onP
        </details>
       </div>)}
      </div>}
+    <h5>השינויים המשמעותיים · ממצאים מוגבלים לראיות</h5>
+    {report.findings.length?<ul>{report.findings.map((f,i)=><li key={i}>{f}</li>)}</ul>:<p>אין מסקנה חדשה מאושרת.</p>}
     {report.activeValuationContext&&<p><strong>הערכת השווי שמוצגת במחקר:</strong> {report.activeValuationContext.status==='unverified-supplied-research'?
      'מחקר מלא שסופק, תרחיש בסיס '+formatAmount(report.activeValuationContext.baseTargetPerShare||0)+' דולר למניה ('+report.activeValuationContext.weight+'%).':
      'מודל תרחישים קיים מ־'+report.activeValuationContext.asOf+'.'} {report.activeValuationContext.note}</p>}
@@ -299,8 +303,7 @@ export function LatestResearchUpdate({companyId,onPrepare}:{companyId:string;onP
       <small>מודל {c.modelAsOf} · מחקר {c.researchAsOf} · {c.researchTextMatch===true?'התאמה טקסטואלית למחקר שסופק (לא ראיה עצמאית)':'לא נמצאה תחזית מאושרת לתקופה ולהגדרה'}</small>
      </li>)}</ul>
     </section>:null}
-    <h5>ממצאים מוגבלים לראיות</h5>
-    {report.findings.length?<ul>{report.findings.map((f,i)=><li key={i}>{f}</li>)}</ul>:<p>אין מסקנה חדשה מאושרת.</p>}
+    <FinancialModelQuestions companyId={companyId} metrics={report.metrics}/>
     <p><strong>השפעה על המודל:</strong> {report.modelChange}</p>
     <details open={report.metrics.length===0||undefined}><summary>מה חסר ומה חשוב לבדוק?</summary>
      <ul>{[...report.missing,...report.questions].map((q,i)=><li key={i}>{q}</li>)}</ul>

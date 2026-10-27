@@ -5,6 +5,7 @@ issuer, source, currency, current AND prior periods and positive revenue.
 """
 from __future__ import annotations
 import math
+import re
 
 
 def _finite(v):
@@ -15,6 +16,8 @@ def source_margins(metrics):
     if not isinstance(metrics, list):
         raise ValueError("Malformed source metrics")
     by_id = {x.get("id"): x for x in metrics if isinstance(x, dict)}
+    if len(by_id) != len(metrics):
+        return []
     rev = by_id.get("revenue")
     if not rev:
         return []
@@ -28,7 +31,10 @@ def source_margins(metrics):
         profit=by_id.get(key)
         if not profit:
             continue
-        if not (rev.get("unit") == profit.get("unit")
+        if any(re.search(r"non[- ](?:gaap|ifrs)|adjusted", str(m.get("accountingBasis", "")),re.I) for m in (rev,profit)):
+            continue
+        if not (all(rev.get(k) and profit.get(k) for k in ("sourceUrl","sourceSha256","reportId"))
+            and rev.get("unit") == profit.get("unit")
             and rev.get("sourceUrl") == profit.get("sourceUrl")
             and rev.get("sourceSha256") == profit.get("sourceSha256")
             and rev.get("reportId") == profit.get("reportId")

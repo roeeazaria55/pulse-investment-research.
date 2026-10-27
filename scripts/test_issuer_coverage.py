@@ -69,7 +69,7 @@ class CoverageTests(unittest.TestCase):
         rows = build(self.registry, self.intake)["coverage"]
         nbis = next(r for r in rows if r["companyId"] == "candidate-nebius")
         self.assertEqual(nbis["metricCoverage"], "provisional-structured")
-        self.assertEqual(len(nbis["typedMetrics"]), 1)
+        self.assertGreaterEqual(len(nbis["typedMetrics"]), 1)
         revenue=nbis["typedMetrics"][0]
         self.assertEqual(revenue["id"], "revenue")
         self.assertEqual(revenue["value"], 582.3)

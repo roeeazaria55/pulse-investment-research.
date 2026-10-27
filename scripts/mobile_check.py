@@ -41,7 +41,7 @@ with sync_playwright() as pw:
     coverage_asset=assets.get(urljoin(URL,'data/issuer-coverage.json'),timeout=30000)
     assert latest_asset.status==200 and history_asset.status==200 and coverage_asset.status==200,'Research JSON assets unavailable'
     published=latest_asset.json()
-    archive=history_asset.json()
+    history_data=history_asset.json()
     coverage=coverage_asset.json()
     registry=json.loads(Path('public/data/official-registry.json').read_text(encoding='utf-8'))
     registered_ids={c['id'] for c in registry['companies']}
@@ -52,7 +52,7 @@ with sync_playwright() as pw:
     assert all(r['metricCoverage'] in ('no-document','report-only','provisional-structured')
                for r in coverage['coverage'])
 
-    assert published['version']==1 and archive['version']==1,'Research JSON version mismatch'
+    assert published['version']==1 and history_data['version']==1,'Research JSON version mismatch'
     current_by_ticker={r['ticker']:r for r in published['reports']}
     for ticker,ids in [('DLO',{'revenue','grossProfit','operatingCash','capex'}),
                        ('IREN',{'revenue','operatingCash','capex'})]:
@@ -60,7 +60,7 @@ with sync_playwright() as pw:
         assert ids.issubset({m['id'] for m in report['metrics']}),f'Missing published {ticker} metrics'
         assert report['reviewRequired'] is True and report['aiAnalysisEnabled'] is False
         assert any(item['companyId']==report['companyId'] and item['contentId']==report['contentId']
-                   for item in archive['entries']),f'Published {ticker} history does not match latest source'
+                   for item in history_data['entries']),f'Published {ticker} history does not match latest source'
     assert current_by_ticker['DLO']['status']=='needs-reconciliation'
     assert current_by_ticker['IREN']['status']=='historical-baseline-pending-review'
     for ticker, expected, unit in [('אנלייט','165.99','USD million'),('גילת טלקום','71.446','ILS million')]:
@@ -68,7 +68,7 @@ with sync_playwright() as pw:
         selfmetric=next((m for m in r['metrics'] if m['id']=='revenue'),None)
         assert selfmetric and str(selfmetric['value'])==expected and selfmetric['unit']==unit,ticker
         assert r['reviewRequired'] is True and r['aiAnalysisEnabled'] is False
-        assert any(item['companyId']==r['companyId'] and item['contentId']==r['contentId'] for item in archive['entries'])
+        assert any(item['companyId']==r['companyId'] and item['contentId']==r['contentId'] for item in history_data['entries'])
     # Every generated AI packet is a read-only source *input*, never a
     # deployed AI response, approved valuation or private portfolio snapshot.
     ai_packet_count=0
@@ -108,11 +108,11 @@ with sync_playwright() as pw:
     assert smci['revenue']['previousValue']==21972.042
     assert smci['revenue']['reviewStatus']=='pending-review'
     assert any(item['companyId']=='us-smci-nasdaq-common' and item['contentId']==current_by_ticker['SMCI']['contentId']
-               for item in archive['entries']),'No SEC XBRL history for SMCI'
+               for item in history_data['entries']),'No SEC XBRL history for SMCI'
 
     Path('work/mobile-published-research.json').write_text(
         json.dumps({'url':URL,'companyStatuses':{k:r['status'] for k,r in current_by_ticker.items()},
-                    'historyEntries':len(archive['entries']),
+                    'historyEntries':len(history_data['entries']),
                     'aiReadOnlyIssuerPackets':ai_packet_count,
                     'companies':len(published['reports']), 'retainedDocCompanies':len([r for r in coverage['coverage'] if r['report']]),
                     'verifiedAgainstActualPublishedJson':True},ensure_ascii=False,indent=2))
@@ -177,7 +177,7 @@ with sync_playwright() as pw:
                 expect(latest).to_contain_text('399.7 USD million')
                 expect(latest).to_contain_text('21.14')
                 expect(latest).to_contain_text('מודל משני בארכיון')
-                expect(latest).to_contain_text('היסטוריית גרסאות מחקר (1)')
+                expect(latest).to_contain_text('היסטוריית גרסאות מחקר ('+str(sum(x['ticker']==label for x in history_data['entries']))+')')
                 expect(latest).to_contain_text('לא ניתוח AI')
                 latest.scroll_into_view_if_needed()
                 page.screenshot(path=f'work/mobile-{width}-latest-research-dlo.png',full_page=False)
@@ -187,7 +187,7 @@ with sync_playwright() as pw:
                 expect(latest).to_contain_text('4,333.1 USD million')
                 expect(latest).to_contain_text('4,500 USD million')
                 expect(latest).to_contain_text('אין הפתעת תחזית מוכחת')
-                expect(latest).to_contain_text('היסטוריית גרסאות מחקר (1)')
+                expect(latest).to_contain_text('היסטוריית גרסאות מחקר ('+str(sum(x['ticker']==label for x in history_data['entries']))+')')
                 latest.scroll_into_view_if_needed()
                 page.screenshot(path=f'work/mobile-{width}-latest-research-iren.png',full_page=False)
             if label=='NBIS':

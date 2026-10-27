@@ -19,6 +19,9 @@ TAGS = (
     "Revenues",
     "OperatingIncomeLoss",
     "NetIncomeLoss",
+    "NetIncomeLossAvailableToCommonStockholdersBasic",
+    "NetCashProvidedByUsedInOperatingActivities",
+    "PaymentsToAcquirePropertyPlantAndEquipment",
 )
 ALIASES = ("FTAI AVIATION LTD", "FTAI AVIATION LTD.")
 
@@ -26,8 +29,8 @@ ALIASES = ("FTAI AVIATION LTD", "FTAI AVIATION LTD.")
 def read_ftai_companyfacts(body, url, company):
     """Return one safe FTAI retained original-JSON digest + same-accession facts.
 
-    Only issuer's 2026 Q2 10-Q accession and exactly aligned comparative
-    quarterly periods are accepted. No human-written text can become a fact.
+    Only issuer's 2026 Q2 10-Q accession and explicitly aligned quarter,
+    half-year or balance-sheet comparative periods are accepted. No human-written text can become a fact.
     """
     if company.get("id") != "candidate-ftai" or url != SEC_URL:
         raise ValueError("SEC companyfacts URL or issuer not authorized")
@@ -54,12 +57,13 @@ def read_ftai_companyfacts(body, url, company):
         usd = data.get("units", {}).get("USD", [])
         if not isinstance(usd, list):
             continue
+        periods = (("2026-01-01", "2026-06-30"), ("2025-01-01", "2025-06-30")) if name in ("NetCashProvidedByUsedInOperatingActivities", "PaymentsToAcquirePropertyPlantAndEquipment") else (CURRENT, PRIOR)
         matched = {}
         for row in usd:
             if not isinstance(row, dict):
                 continue
             if (row.get("accn") != Q2_ACCESSION or row.get("form") != "10-Q" or
-                (row.get("start"), row.get("end")) not in (CURRENT, PRIOR) or
+                (row.get("start"), row.get("end")) not in periods or
                 not isinstance(row.get("filed"), str)):
                 continue
             try:
@@ -78,11 +82,11 @@ def read_ftai_companyfacts(body, url, company):
                 matched[key] = val
         # A quarter comparison must be derived from the same official
         # filing, not another accession, frame, FY or H1 context.
-        if len(matched) != 2 or any(matched.get(k) is None for k in (CURRENT, PRIOR)):
+        if len(matched) != 2 or any(matched.get(k) is None for k in periods):
             continue
         if name in TAGS[:2]:
             revenue_found = True
-        for (start, end) in (CURRENT, PRIOR):
+        for (start, end) in periods:
             extracted.append({
                 "concept": "us-gaap:" + name.lower(),
                 "value": matched[(start, end)],
@@ -90,8 +94,25 @@ def read_ftai_companyfacts(body, url, company):
                 "context": "SEC-CompanyFacts:" + Q2_ACCESSION,
                 "status": "structured-source",
                 "definition": "Official SEC Company Facts: " + name +
-                              " 2026-07-31 accession, unaudited Q2 duration",
+                              " 2026-07-31 accession, exact source duration",
             })
+    # Balance sheet comparisons use the same accession and explicitly named
+    # as-of dates. Never relabel the December balance as a prior-year quarter.
+    for name in ("CashAndCashEquivalentsAtCarryingValue", "DebtInstrumentCarryingAmount"):
+        rows=gaap.get(name, {}).get("units", {}).get("USD", [])
+        values={}
+        for end in ("2026-06-30", "2025-12-31"):
+            matched=[r.get("val") for r in rows if r.get("accn")==Q2_ACCESSION and
+                     r.get("form")=="10-Q" and r.get("filed")=="2026-07-31" and
+                     r.get("end")==end and r.get("start") is None]
+            if matched and all(not isinstance(v,bool) and isinstance(v,(int,float)) and math.isfinite(v) and abs(v)<=1e15 for v in matched) and len(set(matched))==1:
+                values[end]=matched[0]
+        if len(values)!=2:continue
+        for end,value in values.items():
+            extracted.append({"concept":"us-gaap:"+name.lower(), "value":value,
+                "unit":"iso4217:USD", "start":None, "end":end,
+                "context":"SEC-CompanyFacts:"+Q2_ACCESSION,
+                "status":"structured-source", "definition":"US GAAP "+name+"; balance as-of date, not a quarterly flow"})
     if not extracted:
         raise ValueError("No uniquely comparable FTAI SEC Q2 issuer facts")
     return {
@@ -105,5 +126,5 @@ def read_ftai_companyfacts(body, url, company):
         "reviewStatus": "pending-review", "links": [],
         "secAccession": Q2_ACCESSION, "cik": FTAI_CIK,
         "notice": "SHA-256 of original downloaded SEC Company Facts JSON bytes; "
-                  "only SEC GAAP Q2 2026/2025 facts extracted, not a retained original binary archive.",
+                  "selected SEC GAAP quarter, half-year and balance-sheet facts extracted; original JSON archived separately when available.",
     }

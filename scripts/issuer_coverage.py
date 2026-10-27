@@ -21,9 +21,12 @@ XBRL = {
     "us-gaap:revenues": ("revenue", "הכנסות", "US GAAP Revenues"),
     "us-gaap:grossprofit": ("grossProfit", "רווח גולמי", "US GAAP Gross Profit"),
     "us-gaap:operatingincomeloss": ("operatingIncome", "רווח תפעולי", "US GAAP Operating Income/Loss"),
+    "us-gaap:netincomelossavailabletocommonstockholdersbasic": ("commonNetIncome", "רווח זמין לבעלי מניות רגילות", "US GAAP income available to common shareholders; not consolidated net income"),
+    "us-gaap:paymentstoacquirepropertyplantandequipment": ("capex", "רכישת רכוש וציוד במזומן", "US GAAP cash PPE purchases only; excludes leased equipment acquisitions"),
     "us-gaap:netincomeloss": ("netIncome", "רווח נקי", "US GAAP Net Income/Loss"),
     "us-gaap:netcashprovidedbyusedinoperatingactivities": ("operatingCash", "תזרים תפעולי", "US GAAP Net Cash Provided by Operating Activities"),
     "us-gaap:cashandcashequivalentsatcarryingvalue": ("cash", "מזומנים ושווי מזומנים", "US GAAP cash and cash equivalents — balance sheet instant"),
+    "us-gaap:debtinstrumentcarryingamount": ("debt", "יתרת מכשירי חוב", "US GAAP DebtInstrumentCarryingAmount; not all liabilities or lease obligations"),
     "us-gaap:inventorynet": ("inventory", "מלאי", "US GAAP net inventory — balance sheet instant"),
     "us-gaap:accountsreceivablenetcurrent": ("accountsReceivable", "לקוחות נטו", "US GAAP accounts receivable net current — balance sheet instant"),
 }
@@ -88,13 +91,16 @@ SMCI_BALANCES = {
 
 def smci_balance_instant_facts(doc):
     """Exact SEC original balance-sheet dates; never quarter duration flows."""
-    if doc.get("companyId") != "us-smci-nasdaq-common" or doc.get("format") != "html":
+    ftai = doc.get("companyId") == "candidate-ftai" and doc.get("format") == "sec-json"
+    if not ftai and (doc.get("companyId") != "us-smci-nasdaq-common" or doc.get("format") != "html"):
         return []
+    prior_date = "2025-12-31" if ftai else "2025-06-30"
+    concepts = {"us-gaap:cashandcashequivalentsatcarryingvalue", "us-gaap:debtinstrumentcarryingamount"} if ftai else SMCI_BALANCES
     results=[]
     facts=doc.get("facts",[])
     if not isinstance(facts,list):
         return []
-    for concept in sorted(SMCI_BALANCES):
+    for concept in sorted(concepts):
         rows={}
         for row in facts:
             if not isinstance(row,dict) or row.get("concept")!=concept:
@@ -102,29 +108,29 @@ def smci_balance_instant_facts(doc):
             if row.get("start") is not None or row.get("unit")!="iso4217:USD":
                 continue
             end=row.get("end")
-            if end not in ("2026-06-30","2025-06-30"):
+            if end not in ("2026-06-30",prior_date):
                 continue
             val=row.get("value")
             if isinstance(val,bool) or not isinstance(val,(int,float)) or not math.isfinite(val):
                 continue
             rows.setdefault(end,[]).append(val)
-        if any(len(rows.get(k,[]))!=1 for k in ("2026-06-30","2025-06-30")):
+        if any(len(rows.get(k,[]))!=1 for k in ("2026-06-30",prior_date)):
             continue
-        cur=rows["2026-06-30"][0];prior=rows["2025-06-30"][0]
+        cur=rows["2026-06-30"][0];prior=rows[prior_date][0]
         key,label,basis=XBRL[concept]
         results.append({
             "id":key,"label":label,"value":round(cur/1e6,6),
             "previousValue":round(prior/1e6,6),
             "changePercent":round((cur-prior)/abs(prior)*100,2) if prior else None,
             "unit":"USD million","periodStart":"2026-06-30","periodEnd":"2026-06-30",
-            "previousPeriodStart":"2025-06-30","previousPeriodEnd":"2025-06-30",
+            "previousPeriodStart":prior_date,"previousPeriodEnd":prior_date,
             "accountingBasis":basis+" (point-in-time; not a quarterly flow)",
             "sourceRow":concept,"sourceRaw":str(cur),"sourcePreviousRaw":str(prior),
             "sourcePage":None,"sourceDocumentUrl":None,"sourceUrl":doc["url"],
             "reviewStatus":"pending-review",
-            "comparison":"Balance sheet as-of dates 2026-06-30 vs 2025-06-30, "
+            "comparison":f"Balance sheet as-of dates 2026-06-30 vs {prior_date}, "
                          "same instant tag; not YoY flow or model surprise.",
-            "evidenceScope":"retained-sec-inline-xbrl",
+            "evidenceScope":"retained-sec-companyfacts-xbrl" if ftai else "retained-sec-inline-xbrl",
             "sourceSha256":doc["sha256"],"reportId":doc["id"],
             "sourceContext":"Un-dimensioned US GAAP balance-sheet instant",
         })
@@ -220,7 +226,9 @@ def reviewed_html_table_candidates(doc):
     ):
         return []
     label_map = {"Revenues": ("revenue", "הכנסות"),
-                 "Gross profit": ("grossProfit", "רווח גולמי")}
+                 "Gross profit": ("grossProfit", "רווח גולמי"),
+                 "Operating Income": ("operatingIncome", "רווח תפעולי"),
+                 "Net income": ("netIncome", "רווח נקי")}
     result = []
     for label, (metric, hebrew) in label_map.items():
         source_rows = [r for r in rows if isinstance(r, list) and r and r[0] == label]
