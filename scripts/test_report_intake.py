@@ -1,6 +1,6 @@
 import copy
 import unittest
-from report_intake import collect,extract,safe_report_url
+from report_intake import collect,extract,safe_report_url,PILOTS,ascii_report_url,candidates
 C={'id':'us-smci-nasdaq-common','name':'Super Micro Computer','label':'SMCI','aliases':['Supermicro'],'allowedHosts':['www.sec.gov'],'documentPaths':['/Archives/edgar/data/1375365/'],'sources':[{'cik':'1375365'}]}
 URL='https://www.sec.gov/Archives/edgar/data/1375365/test.htm'
 HTML='''<html><h1>Super Micro Computer financial results</h1><script>revenue is fake</script><p>These are financial statements for the company and not an announcement of a future earnings call.</p><table><tr><th>USD millions</th><th>2026</th><th>2025</th></tr><tr><td>Revenue</td><td>100</td><td>80</td></tr></table><xbrli:context id="annual"><xbrli:entity><xbrli:identifier>0001375365</xbrli:identifier></xbrli:entity><xbrli:period><xbrli:startdate>2025-07-01</xbrli:startdate><xbrli:enddate>2026-06-30</xbrli:enddate></xbrli:period></xbrli:context><xbrli:unit id="usd"><xbrli:measure>iso4217:USD</xbrli:measure></xbrli:unit><ix:nonFraction name="us-gaap:Revenues" contextRef="annual" unitRef="usd" scale="6" format="ixt:num-dot-decimal">39,100</ix:nonFraction></html>'''.encode()
@@ -41,11 +41,148 @@ class IntakeTests(unittest.TestCase):
    return (parent,'text/html',url) if url==URL else (HTML,'text/html',url)
   result=collect({'items':[ITEM]},{'companies':[C]}, {},'2026-10-20T12:00:00Z',fetcher=fetch)
   self.assertEqual(len(calls),2);self.assertTrue(result['documents'][0]['finalUrl'].endswith('attached.htm.pdf'));self.assertEqual(result['documents'][0]['facts'][0]['value'],39100000000)
+ def test_first_issuer_403_falls_back_to_second_official_document(self):
+  alternative={**ITEM,'id':'official:backup','url':'https://www.sec.gov/Archives/edgar/data/1375365/backup.htm',
+               'lastSeenAt':'2026-10-19'}
+  first={**ITEM,'lastSeenAt':'2026-10-25'}
+  calls=[]
+  def fetch(url,c):
+   calls.append(url)
+   if url==URL:raise PermissionError('HTTP Error 403: Forbidden')
+   return HTML,'text/html',url
+  result=collect({'items':[first,alternative]},{'companies':[C]}, {},
+                 '2026-10-25T12:00:00Z',fetcher=fetch,limit=3)
+  self.assertEqual(calls,[URL,alternative['url']])
+  self.assertEqual(result['sources'][0]['status'],'partial')
+  self.assertEqual(len(result['documents']),1)
+  self.assertEqual(result['documents'][0]['url'],alternative['url'])
+  self.assertEqual(result['documents'][0]['status'],'extracted')
+
  def test_clinical_results_are_not_financial_candidates(self):
   item={**ITEM,'title':'SMCI Reports Promising Pilot Study Results','kind':'results'}
   def fail(u,c):self.fail('Clinical release should not be fetched')
   result=collect({'items':[item]},{'companies':[C]}, {},'2026-10-20T12:00:00Z',fetcher=fail)
   self.assertEqual(result['documents'],[])
+ def test_all_12_registry_issuers_allowed_but_request_budget_rotates(self):
+  self.assertEqual(len(PILOTS),12)
+  second={**C,'id':'candidate-iren','name':'IREN Test','label':'IREN'}
+  alt={**ITEM,'companyId':'candidate-iren','title':'IREN financial results'}
+  fetched=[]
+  def fetch(url,c):
+   fetched.append(c['id'])
+   return HTML,'text/html',url
+  first=collect({'items':[ITEM,alt]},{'companies':[C,second]}, {},
+                '2026-10-25T10:00:00Z',fetcher=fetch,limit=1)
+  self.assertEqual(len(fetched),1)
+  second_run=collect({'items':[ITEM,alt]},{'companies':[C,second]},first,
+                     '2026-10-25T11:00:00Z',fetcher=fetch,limit=1)
+  self.assertEqual(len(fetched),2)
+  self.assertEqual(set(fetched),{C['id'],second['id']})
+  self.assertEqual(len(second_run['documents']),2)
+  self.assertTrue(all(d['status']=='extracted' for d in second_run['documents']))
+
+ def test_unicode_official_gilat_pdf_is_encoded_not_bypassed(self):
+  company={'id':'candidate-gilat-telecom',
+           'allowedHosts':['satcom-gilat.co.il'],
+           'documentPaths':['/wp-content/uploads/']}
+  link='https://satcom-gilat.co.il/wp-content/uploads/2026/08/דוח-רבעון-2חצי-שנתי.pdf'
+  normalized=ascii_report_url(link,company)
+  self.assertIn('%D7',normalized)
+  self.assertTrue(all(ord(char)<128 for char in normalized))
+  self.assertTrue(safe_report_url(normalized,company))
+  with self.assertRaisesRegex(ValueError,'allowlist'):
+   ascii_report_url('https://evil.test/wp-content/uploads/2026/08/דוח.pdf',company)
+
+ def test_fallback_verified_official_reports_are_only_fetch_candidates(self):
+  from pathlib import Path
+  import json
+  registry=json.loads(Path('public/data/official-registry.json').read_text(encoding='utf-8'))
+  for company_id,path_part in [
+      ('us-meta-nasdaq-a','Meta-Reports-Third-Quarter-2026-Results'),
+      ('candidate-ftai','/node/13051/pdf'),
+      ('candidate-enlight','2Q26-Earnings-Release-Eng.pdf'),
+      ('candidate-gilat-telecom','%')]:
+   company=next(c for c in registry['companies'] if c['id']==company_id)
+   matches=candidates({'items':[]},company)
+   self.assertTrue(matches,company_id)
+   self.assertTrue(all(safe_report_url(c['url'],company) for c in matches))
+   self.assertTrue(any(path_part in c['url'] for c in matches) if path_part!='%' else
+                   any('דוח' in c['url'] for c in matches))
+  company=next(c for c in registry['companies'] if c['id']=='candidate-enlight')
+  forged=dict(company)
+  forged['curatedReportCandidates']=[{'title':'Q2 2026 earnings results','url':'https://evil.invalid/2026.pdf',
+       'publishedDate':'2026-08-04','evidence':'https://evil.invalid/'}]
+  with self.assertRaisesRegex(ValueError,'Invalid curated'):
+   candidates({'items':[]},forged)
+
+ def test_company_report_candidate_prioritized_ahead_of_transcript(self):
+  import json
+  from pathlib import Path
+  registry=json.loads(Path('public/data/official-registry.json').read_text(encoding='utf-8'))
+  company=next(c for c in registry['companies'] if c['id']=='candidate-enlight')
+  # A conference call already exists in discovery, but original issuer Q2
+  # financial statement must be first actual download attempt.
+  transcript={'id':'official:transcript','companyId':company['id'],'kind':'results',
+      'title':'Enlight Q2 2026 prepared remarks conference call financial results',
+      'url':'https://enlightenergy.com/wp-content/uploads/2026/08/Enlight-prepared-remarks-Q2-2026-1.pdf',
+      'documentPeriod':'Q2 2026','publishedDate':'2026-08-16'}
+  original=company['curatedReportCandidates'][0]['url']
+  attempted=[]
+  def fetch(url,c):
+   attempted.append(url)
+   raise PermissionError('HTTP Error 403: Forbidden')
+  collect({'items':[transcript]}, {'companies':[company]}, {},
+          '2026-10-25T15:00:00Z',fetcher=fetch,limit=1)
+  self.assertEqual(attempted,[original])
+
+ def test_issuer_distributed_press_release_is_first_ftai_fallback(self):
+  import json
+  from pathlib import Path
+  registry=json.loads(Path('public/data/official-registry.json').read_text(encoding='utf-8'))
+  company=next(c for c in registry['companies'] if c['id']=='candidate-ftai')
+  attempted=[]
+  def fetch(url,c):
+   attempted.append(url)
+   raise PermissionError('HTTP Error 403: Forbidden')
+  collect({'items':[]},{'companies':[company]}, {},
+          '2026-10-25T15:00:00Z',fetcher=fetch,limit=1)
+  self.assertEqual(len(attempted),1)
+  self.assertEqual(attempted[0],'https://data.sec.gov/api/xbrl/companyfacts/CIK0001590364.json')
+
+ def test_newer_official_filing_outscores_old_curated_quarter(self):
+  # Pure synthetic ranking fixture. This is NOT evidence that a Q3 filing exists.
+  import json
+  from pathlib import Path
+  registry=json.loads(Path('public/data/official-registry.json').read_text(encoding='utf-8'))
+  company=next(c for c in registry['companies'] if c['id']=='candidate-ftai')
+  q3='https://ftandi.gcs-web.com/news-releases/news-release-details/ftai-aviation-test-quarter-2026'
+  discovery={'id':'synthetic-q3','companyId':company['id'],'kind':'results',
+      'title':'FTAI Aviation third quarter 2026 financial results',
+      'url':q3,'publishedDate':'2026-10-30','documentPeriod':'Q3 2026'}
+  attempted=[]
+  def fetch(url,c):
+   attempted.append(url)
+   raise PermissionError('Synthetic 403')
+  collect({'items':[discovery]},{'companies':[company]}, {},
+          '2026-11-01T00:00:00Z',fetcher=fetch,limit=1)
+  self.assertEqual(attempted,[q3])
+
+ def test_uncovered_ftai_rotates_four_distinct_official_fallbacks(self):
+  import json
+  from pathlib import Path
+  company=next(c for c in json.loads(Path('public/data/official-registry.json').read_text())['companies']
+               if c['id']=='candidate-ftai')
+  tried=[]
+  def fail(url,c):
+   tried.append(url)
+   raise PermissionError('Synthetic HTTP 403')
+  result=collect({'items':[]},{'companies':[company]}, {},
+                 '2026-10-26T19:00:00Z',fetcher=fail,limit=4,budget=40)
+  self.assertEqual(len(tried),4)
+  self.assertEqual(len(set(tried)),4)
+  self.assertEqual(result['documents'],[])
+  self.assertEqual(result['sources'][0]['status'],'failed')
+
  def test_zero_budget_and_schedule_skip_fetch(self):
   def fail(u,c):self.fail('Network should not be called')
   result=collect({'items':[ITEM]},{'companies':[C]}, {},'2026-10-20T12:00:00Z',fetcher=fail,limit=0)

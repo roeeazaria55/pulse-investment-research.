@@ -1,7 +1,7 @@
 import {ReportIntake} from './ReportIntake';
 import {CompanyFinancialResults} from './CompanyFinancialResults';
 import {AutomaticFinancialObservations} from './AutomaticFinancialObservations';
-import {ResearchUpdateProposal} from './ResearchUpdateProposal';
+import {LatestResearchUpdate} from './LatestResearchUpdate';
 import {ResearchCandidatePreview} from './ResearchCandidatePreview';
 import {ResearchIntakeStatus} from './ResearchIntakeStatus';
 import {ThesisMonitor,ValuationContext} from './ThesisMonitor';
@@ -41,10 +41,10 @@ export function ResearchExchange({company,current,onChange,onPrepare,view='overv
    {target&&<div className="research-target-summary"><div><small>{target.caption||'מחיר יעד משוקלל'} · {target.label}</small><strong dir="ltr">{target.approximate?'≈':''}{modelMoney(target.target,target.currency)}</strong><small>{target.horizonLabel||('עד '+target.horizon.split('-').reverse().join('.'))} · {target.note}</small></div><button className="text-button" onClick={()=>onNavigate?.('valuation')}>למודל השווי ←</button></div>}
    <ValuationContext companyId={company.id}/>
    <div className="research-thesis"><h4>התזה בקצרה</h4><p>{published.fields.thesis.includes('פרשנות:')?published.fields.thesis.slice(published.fields.thesis.indexOf('פרשנות:')+7).trim():published.fields.thesis}</p></div>
+   <LatestResearchUpdate companyId={company.id} onPrepare={onPrepare}/>
    <ThesisMonitor companyId={company.id}/>
    <CompanyFinancialResults companyId={company.id}/>
    <AutomaticFinancialObservations companyId={company.id}/>
-   <ResearchUpdateProposal companyId={company.id}/>
    <ReportIntake companyId={company.id}/>
    {model&&!hasFullResearch(company.id)&&<div className="research-next-checks"><h4>מה לבדוק בהמשך</h4><ul>{model.checks.map(c=><li key={c}>{c}</li>)}</ul></div>}
    <details className="research-full-reading" open={hasFullResearch(company.id)||undefined}><summary>קריאת המחקר המלא</summary>{hasFullResearch(company.id)?<FullCompanyResearch analysis={published}/>:<>{researchFields.map(k=><div key={k}><h4>{labels[k]}</h4><p>{published.fields[k]}</p></div>)}<h4>מקורות שנקראו</h4>{published.sourceUrls.map((url,i)=><p key={url}><a href={url} target="_blank" rel="noopener noreferrer">מקור {i+1}: {new URL(url).hostname}</a></p>)}<h4>מידע חסר ומגבלות</h4>{published.missing.map((m,i)=><p key={i}>{m}</p>)}</>}</details>

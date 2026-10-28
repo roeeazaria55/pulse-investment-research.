@@ -1,0 +1,27 @@
+name: Analyst packet preflight (free, no AI call)
+on:
+  workflow_dispatch:
+    inputs:
+      ticker:
+        description: 'Choose one issuer for read-only evidence preflight'
+        required: true
+        type: choice
+        options: [DLO, IREN, NBIS, SMCI]
+        default: DLO
+permissions:
+  contents: read
+jobs:
+  analyst:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate issuer evidence packet (no token, no external AI call)
+        run: python3 scripts/run_optional_ai_review.py --ticker "${{ inputs.ticker }}"
+      - name: Explain private AI review execution
+        run: |
+          echo 'Paid AI is NOT available in public GitHub Actions without a private output destination.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Run the local CLI with --execute --private-output <absolute-path-outside-repo>, an API key and explicit approval, after reviewing docs/PULSE_RELEASE.md.' >> "$GITHUB_STEP_SUMMARY"

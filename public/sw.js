@@ -1,5 +1,5 @@
 /* Bump this identifier when publishing a new application shell. */
-const VERSION = "pulse-v4-research";
+const VERSION = "pulse-v8-unified-intelligence-20261028";
 const SCOPE = new URL(self.registration.scope);
 const CACHE = `${VERSION}-${SCOPE.pathname}`;
 const local = (path) => new URL(path, SCOPE).href;
@@ -23,6 +23,19 @@ self.addEventListener("install", (event) => {
         local("data/feed.json"),
         local("data/official-sources.json"),
       ]);
+      // Research is optional during installation; a missing feed must not
+      // prevent the application shell from installing.
+      for (const path of ["data/latest-research-updates.json", "data/research-update-history.json"]) {
+        try {
+          const url = local(path);
+          const result = await fetch(url, { cache: "no-store" });
+          if (result.ok) {
+            const body = await result.clone().json();
+            if (body.version === 1 && Array.isArray(path.includes("history") ? body.entries : body.reports))
+              await cache.put(url, result);
+          }
+        } catch {/* Remain installable with an honest unavailable state. */}
+      }
       await self.skipWaiting();
     })(),
   );
@@ -73,6 +86,26 @@ self.addEventListener("fetch", (event) => {
         }
       })(),
     );
+    return;
+  }
+  const researchPath = ["data/latest-research-updates.json", "data/research-update-history.json"]
+    .find((path) => url.href === local(path));
+  if (researchPath) {
+    event.respondWith((async () => {
+      const key = local(researchPath);
+      try {
+        const response = await fetch(event.request);
+        if (!response.ok) throw Error("Research feed unavailable");
+        const body = await response.clone().json();
+        if (body.version !== 1 || !Array.isArray(researchPath.includes("history") ? body.entries : body.reports))
+          throw Error("Invalid research feed");
+        await (await caches.open(CACHE)).put(key, response.clone());
+        return response;
+      } catch {
+        return (await caches.match(key)) ||
+          new Response("Research unavailable", { status: 503 });
+      }
+    })());
     return;
   }
   if (event.request.mode === "navigate") {

@@ -75,6 +75,15 @@
         "מטא",
         "Facebook",
         "פייסבוק"
+      ],
+      "curatedReportCandidates": [
+        {
+          "title": "Meta Reports Third Quarter 2026 Results (issuer release)",
+          "url": "https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Third-Quarter-2026-Results/default.aspx",
+          "publishedDate": "2026-10-21",
+          "documentPeriod": "Q3 2026",
+          "evidence": "https://investor.atmeta.com/investor-news/default.aspx"
+        }
       ]
     },
     {
@@ -130,12 +139,19 @@
       "allowedHosts": [
         "ir.ftaiaviation.com",
         "www.globenewswire.com",
-        "rss.globenewswire.com"
+        "rss.globenewswire.com",
+        "www.sec.gov",
+        "data.sec.gov",
+        "ftandi.gcs-web.com"
       ],
       "documentPaths": [
         "/news-releases/news-release-details/",
         "/static-files/",
-        "/news-release/"
+        "/news-release/",
+        "/Archives/edgar/data/1590364/",
+        "/node/",
+        "/sec-filings/sec-filing/",
+        "/api/xbrl/companyfacts/"
       ],
       "sources": [
         {
@@ -153,9 +169,11 @@
         },
         {
           "id": "candidate-ftai-reports-fallback",
-          "label": "דף רשמי חלופי — מסמכים והודעות",
-          "url": "https://ir.ftaiaviation.com/",
-          "reviewedAt": "2026-10-19"
+          "label": "SEC EDGAR — FTAI Aviation (CIK 1590364)",
+          "url": "https://data.sec.gov/submissions/CIK0001590364.json",
+          "reviewedAt": "2026-10-19",
+          "format": "sec-submissions",
+          "cik": "1590364"
         }
       ],
       "questions": [
@@ -167,6 +185,57 @@
         "FTAI Aviation",
         "FTAI",
         "אפטיאיי"
+      ],
+      "curatedReportCandidates": [
+        {
+          "title": "FTAI Aviation Q2 2026 10-Q — Official SEC CompanyFacts XBRL JSON",
+          "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001590364.json",
+          "publishedDate": "2026-07-31",
+          "documentPeriod": "Q2 2026",
+          "evidence": "https://www.sec.gov/Archives/edgar/data/1590364/000162828026051412/ftai-20260630.htm"
+        },
+        {
+          "title": "FTAI Aviation Ltd Reports Second Quarter 2026 Results — issuer-distributed full GAAP financial statements",
+          "url": "https://www.globenewswire.com/news-release/2026/07/29/3335598/35538/en/FTAI-Aviation-Ltd-Reports-Second-Quarter-2026-Results-Increases-Dividend-to-0-50-per-Ordinary-Share.html",
+          "publishedDate": "2026-07-29",
+          "documentPeriod": "Q2 2026",
+          "evidence": "https://ftandi.gcs-web.com/news-releases/news-release-details/ftai-aviation-ltd-reports-second-quarter-2026-results-increases"
+        },
+        {
+          "title": "FTAI Aviation Ltd Reports Second Quarter 2026 Results — official IR HTML",
+          "url": "https://ftandi.gcs-web.com/news-releases/news-release-details/ftai-aviation-ltd-reports-second-quarter-2026-results-increases",
+          "publishedDate": "2026-07-29",
+          "documentPeriod": "Q2 2026",
+          "evidence": "https://ftandi.gcs-web.com/news-releases/news-release-details/ftai-aviation-ltd-reports-second-quarter-2026-results-increases"
+        },
+        {
+          "title": "FTAI Aviation Ltd Reports Second Quarter 2026 Results — official IR PDF",
+          "url": "https://ftandi.gcs-web.com/node/13051/pdf",
+          "publishedDate": "2026-07-29",
+          "documentPeriod": "Q2 2026",
+          "evidence": "https://ftandi.gcs-web.com/news-releases/news-release-details/ftai-aviation-ltd-reports-second-quarter-2026-results-increases"
+        },
+        {
+          "title": "FTAI Aviation Ltd Reports Second Quarter 2026 Financial Results — official issuer HTML",
+          "url": "https://ir.ftaiaviation.com/news-releases/news-release-details/ftai-aviation-ltd-reports-second-quarter-2026-results-increases",
+          "publishedDate": "2026-07-29",
+          "documentPeriod": "Q2 2026",
+          "evidence": "https://ir.ftaiaviation.com/news-events/press-releases"
+        },
+        {
+          "title": "FTAI Aviation Ltd Reports Second Quarter 2026 Results — official issuer PDF",
+          "url": "https://ir.ftaiaviation.com/node/13051/pdf",
+          "publishedDate": "2026-07-29",
+          "documentPeriod": "Q2 2026",
+          "evidence": "https://ir.ftaiaviation.com/news-events/press-releases"
+        },
+        {
+          "title": "FTAI Aviation Q2 2026 Form 10-Q — official SEC filing",
+          "url": "https://www.sec.gov/Archives/edgar/data/1590364/000162828026051412/ftai-20260630.htm",
+          "publishedDate": null,
+          "documentPeriod": "Q2 2026",
+          "evidence": "https://www.sec.gov/Archives/edgar/data/1590364/000162828026051412/ftai-20260630.htm"
+        }
       ]
     },
     {
@@ -324,13 +393,15 @@
         "enlightenergy.com"
       ],
       "documentPaths": [
-        "/wp-content/uploads/"
+        "/wp-content/uploads/",
+        "/data/financial-reports/",
+        "/earnings-releases/"
       ],
       "sources": [
         {
           "id": "candidate-enlight-official",
-          "label": "מקור משקיעים רשמי",
-          "url": "https://enlightenergy.com/data/events-presentations/"
+          "label": "מאגר דוחות כספיים רשמי — Enlight",
+          "url": "https://enlightenergy.com/earnings-releases/"
         }
       ],
       "questions": [
@@ -341,6 +412,15 @@
       "aliases": [
         "Enlight",
         "אנלייט"
+      ],
+      "curatedReportCandidates": [
+        {
+          "title": "Enlight Renewable Energy Reports Second Quarter 2026 Financial Results",
+          "url": "https://enlightenergy.com/wp-content/uploads/2026/08/2Q26-Earnings-Release-Eng.pdf",
+          "publishedDate": "2026-08-04",
+          "documentPeriod": "Q2 2026",
+          "evidence": "https://enlightenergy.com/earnings-releases/"
+        }
       ]
     },
     {
@@ -426,7 +506,20 @@
       "label": "גילת טלקום",
       "aliases": [
         "Gilat Telecom",
-        "גילת טלקום"
+        "גילת טלקום",
+        "גילת טלקום גלובל",
+        "GILAT TELECOM GLOBAL LTD",
+        "סאטקום מערכות",
+        "SATCOM SYSTEMS LTD"
+      ],
+      "curatedReportCandidates": [
+        {
+          "title": "גילת טלקום — דוח רבעון וחצי שנתי, קישור מקורי רשמי",
+          "url": "https://satcom-gilat.co.il/wp-content/uploads/2026/08/דוח-רבעון-2חצי-שנתי.pdf",
+          "publishedDate": null,
+          "documentPeriod": null,
+          "evidence": "https://satcom-gilat.co.il/דוחות-כספיים/"
+        }
       ]
     },
     {

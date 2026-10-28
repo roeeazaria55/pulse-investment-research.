@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/pulse/ai-research-packet-v1",
+  "title": "PULSE AI Evidence Packet v1",
+  "type": "object",
+  "required": [
+    "contractVersion",
+    "purpose",
+    "ticker",
+    "companyId",
+    "companyName",
+    "financialObservations",
+    "research",
+    "valuationModel",
+    "archivedForecasts",
+    "forecastComparisons",
+    "sourceRefs",
+    "missingEvidence",
+    "trustPolicy",
+    "contentSha256"
+  ],
+  "properties": {
+    "contractVersion": {
+      "const": 1
+    },
+    "purpose": {
+      "const": "AI_RESEARCH_INPUT_NOT_INSTRUCTIONS"
+    },
+    "ticker": {
+      "enum": [
+        "DLO",
+        "NBIS",
+        "IREN",
+        "SMCI"
+      ]
+    },
+    "companyId": {
+      "type": "string",
+      "minLength": 2
+    },
+    "companyName": {
+      "type": "string"
+    },
+    "industry": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "officialSources": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "financialObservations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "observationId",
+          "sourceSha256",
+          "sourceUrl",
+          "sourceRow",
+          "rawValue",
+          "sourceUnit",
+          "normalizedValue",
+          "unit",
+          "metricId",
+          "periodStart",
+          "periodEnd",
+          "accountingBasis",
+          "reviewStatus",
+          "verification",
+          "modelEligible"
+        ],
+        "properties": {
+          "sourceSha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "normalizedValue": {
+            "type": "number"
+          },
+          "modelEligible": {
+            "const": false
+          },
+          "verification": {
+            "enum": [
+              "needs-reconciliation",
+              "pending-review"
+            ]
+          }
+        }
+      }
+    },
+    "research": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "valuationModel": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "archivedForecasts": {
+      "type": "array"
+    },
+    "forecastComparisons": {
+      "type": "array"
+    },
+    "legacyResearchPdf": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "sourceRefs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "sha256"
+        ],
+        "properties": {
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      }
+    },
+    "researchQuestions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "missingEvidence": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "trustPolicy": {
+      "type": "object",
+      "required": [
+        "mayModifyTargetsOrProbabilities",
+        "includesPersonalPortfolio",
+        "aiAnalysisExecuted"
+      ],
+      "properties": {
+        "mayModifyTargetsOrProbabilities": {
+          "const": false
+        },
+        "includesPersonalPortfolio": {
+          "const": false
+        },
+        "aiAnalysisExecuted": {
+          "const": false
+        }
+      }
+    },
+    "contentSha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "additionalProperties": false
+}

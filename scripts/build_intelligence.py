@@ -1,4 +1,4 @@
-"""Independent headline intelligence, fixed 13:00 windows, public calendar."""
+"""Independent headline intelligence, fixed 08:00/19:00 windows, public calendar."""
 import datetime as dt
 import hashlib
 import json
@@ -16,11 +16,28 @@ UTC=dt.timezone.utc
 ZONE=ZoneInfo('Asia/Jerusalem')
 
 def window(now):
+    """Previous completed 08:00/19:00 Jerusalem boundary, DST-aware.
+
+    Overnight windows may differ in UTC duration during clock changes.
+    Delayed scheduled runs do not pretend to have executed at the boundary.
+    """
     local=dt.datetime.fromisoformat(now).astimezone(ZONE)
-    date=local.date() if local.hour>=13 else local.date()-dt.timedelta(days=1)
-    end=dt.datetime.combine(date,dt.time(13),ZONE).astimezone(UTC)
-    return {'id':'daily:'+date.isoformat(),'date':date.isoformat(),'startAt':(end-dt.timedelta(hours=24)).isoformat(),
-            'endAt':end.isoformat(),'timezone':'Asia/Jerusalem','scheduledLocalTime':'13:00'}
+    date=local.date()
+    if local.hour>=19:
+        hour=19
+        previous=dt.datetime.combine(date,dt.time(8),ZONE)
+    elif local.hour>=8:
+        hour=8
+        previous=dt.datetime.combine(date-dt.timedelta(days=1),dt.time(19),ZONE)
+    else:
+        date-=dt.timedelta(days=1)
+        hour=19
+        previous=dt.datetime.combine(date,dt.time(8),ZONE)
+    end=dt.datetime.combine(date,dt.time(hour),ZONE)
+    return {'id':f'briefing:{date.isoformat()}:{hour:02d}',
+            'date':date.isoformat(),'startAt':previous.astimezone(UTC).isoformat(),
+            'endAt':end.astimezone(UTC).isoformat(),
+            'timezone':'Asia/Jerusalem','scheduledLocalTime':f'{hour:02d}:00'}
 
 def within(item,win):
     stamp=item.get('publishedAt')

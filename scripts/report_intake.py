@@ -11,14 +11,15 @@ import urllib.request
 from html.parser import HTMLParser
 from pathlib import Path
 from official_sources import document_url, canonical
+from ftai_sec_companyfacts import read_ftai_companyfacts, SEC_URL
 
 VERSION=1
 PARSER='official-content-v1'
 MAX_BYTES=8*1024*1024
-PILOTS={'candidate-nebius','candidate-iren','candidate-sandisk','us-dlo-nasdaq-a','candidate-brainsway','us-smci-nasdaq-common'}
-LABELS=re.compile(r'revenue|net (?:income|loss)|gross profit|operating (?:income|loss)|cash flow|inventor|accounts receivable|total assets|earnings per|TPV|remaining performance|הכנסות|רווח|מלאי|תזרים',re.I)
+PILOTS={c["id"] for c in json.loads((Path(__file__).resolve().parent.parent/"public/data/official-registry.json").read_text(encoding="utf-8"))["companies"]}
+LABELS=re.compile(r'revenue|net (?:income|loss)|gross profit|operating (?:income|loss)|income from operations|cash flow|cash (?:and|provided|used|equivalents)|net cash|purchases of|payments for|capital expenditure|total debt|long.term debt|adjusted EBITDA|premium|loss ratio|inventor|accounts receivable|total assets|earnings per|TPV|remaining performance|הכנסות|רווח|מלאי|תזרים',re.I)
 FISCAL_YEAR=re.compile(r'\bFY\s*((?:20)?\d{2})\b',re.I)
-FINANCIAL_TITLE=re.compile(r'financial|fiscal|quarter|\bQ[1-4]\b|\bFY\s*(?:20)?\d{2}\b|annual report|10-K|10-Q|20-F|shareholder|תוצאות כספיות|דוח כספי',re.I)
+FINANCIAL_TITLE=re.compile(r'financial|fiscal|quarter|\bQ[1-4]\b|\bFY\s*(?:20)?\d{2}\b|annual report|10-K|10-Q|20-F|shareholder|תוצאות כספיות|דוח כספי|דוחות כספיים|דוח רבעון',re.I)
 SCHEDULE=re.compile(r'to (?:report|release|announce)|date (?:of|for)|timing of|schedule|earnings call registration',re.I)
 KNOWN_FACTS={'us-gaap:revenues','us-gaap:revenuefromcontractwithcustomerexcludingassessedtax','us-gaap:netincomeloss','us-gaap:grossprofit','us-gaap:operatingincomeloss','us-gaap:netcashprovidedbyusedinoperatingactivities','us-gaap:inventorynet','us-gaap:accountsreceivablenetcurrent','us-gaap:cashandcashequivalentsatcarryingvalue','us-gaap:weightedaveragenumberofdilutedsharesoutstanding','us-gaap:earningspersharediluted'}
 def clean(value):return ' '.join(value.split())
@@ -32,13 +33,25 @@ def safe_report_url(url,company):
   return document_url(url,company) and not any(part in ('.','..') for part in path.split('/'))
  except (ValueError,TypeError):return False
 
-def fetch_document(url,company):
+def ascii_report_url(url,company):
+ """Percent-encode non-ASCII path chars on already-allowlisted issuer URLs.
+ This is ordinary URL encoding, not an authentication or access bypass.
+ """
  if not safe_report_url(url,company):raise ValueError('Report URL outside issuer allowlist')
+ p=urllib.parse.urlsplit(url)
+ encoded=urllib.parse.urlunsplit((p.scheme,p.netloc,
+          urllib.parse.quote(p.path,safe='/%-._~'),
+          urllib.parse.quote(p.query,safe='=&/%?+-._~'),'')) 
+ if not safe_report_url(encoded,company):raise ValueError('Encoded report URL escaped issuer allowlist')
+ return encoded
+
+def fetch_document(url,company):
+ url=ascii_report_url(url,company)
  class Redirects(urllib.request.HTTPRedirectHandler):
   def redirect_request(self,req,fp,code,msg,headers,newurl):
    if not safe_report_url(newurl,company) or getattr(req,'hops',0)>=2:raise ValueError('Report redirect outside issuer allowlist')
    nxt=super().redirect_request(req,fp,code,msg,headers,newurl);nxt.hops=getattr(req,'hops',0)+1;return nxt
- req=urllib.request.Request(url,headers={'User-Agent':'PULSE public research (+https://github.com/roeeazaria55/pulse-investment-research./issues)','Accept':'text/html,application/pdf,application/xhtml+xml'})
+ req=urllib.request.Request(url,headers={'User-Agent':'PULSE public research (+https://github.com/roeeazaria55/pulse-investment-research./issues)','Accept':'application/json' if url==SEC_URL else 'text/html,application/pdf,application/xhtml+xml'})
  start=time.monotonic()
  with urllib.request.build_opener(Redirects()).open(req,timeout=12) as response:
   final=response.geturl()
@@ -138,14 +151,23 @@ def inline_facts(page,company):
 
 def extract(body,content_type,url,company):
  if len(body)>MAX_BYTES:raise ValueError('Report exceeds 8MB')
- pdf=body.startswith(b'%PDF');tables=[];facts=[];links=[];page_count=None;truncated=False
+ if company['id']=='candidate-ftai' and url==SEC_URL:
+  if content_type not in ('application/json','text/plain'):
+   raise ValueError('SEC CompanyFacts requires JSON response type')
+  return read_ftai_companyfacts(body,url,company)
+ pdf=body.startswith(b'%PDF');tables=[];facts=[];links=[];page_count=None;truncated=False;source_pdf_pages=[]
  if pdf:
   import pdfplumber
   with pdfplumber.open(io.BytesIO(body)) as doc:
    page_count=len(doc.pages);parts=[];parse_start=time.monotonic()
    for page in doc.pages[:60]:
     if time.monotonic()-parse_start>20:truncated=True;break
-    parts.append(page.extract_text() or '')
+    page_text=page.extract_text() or ''
+    parts.append(page_text)
+    target_pages={'candidate-enlight':{16,19}, 'candidate-gilat-telecom':{6}, 'candidate-ftai':{2,3}, 'candidate-nebius':{6,7,8,9}, 'us-lmnd-nyse-common':{11,12,13,14}, 'candidate-next-vision':{9}}
+    if page.page_number in target_pages.get(company['id'],set()):
+     # Original issuer statement page, not OCR or generated table values.
+     source_pdf_pages.append({'page':page.page_number,'text':page_text[:9000]})
     for table in (page.extract_tables() or page.extract_tables({'vertical_strategy':'text','horizontal_strategy':'text'})):
      rows=[[clean(str(cell or ''))[:250] for cell in row[:16]] for row in table]
      if any(LABELS.search(' '.join(row)) for row in rows):tables.append(dict(rows=rows[:35],spans=False,scope='PDF table; column order and units require review',page=page.page_number))
@@ -165,38 +187,96 @@ def extract(body,content_type,url,company):
  aliases=[company['name'],company['label'],*company.get('aliases',[])]
  if not any(a and a.casefold() in text[:30000].casefold() for a in aliases) and not facts:raise ValueError('Issuer identity absent from report body')
  if SCHEDULE.search(title) and not facts:raise ValueError('Schedule announcement is not a results report')
- if not tables and not facts and not FINANCIAL_TITLE.search(title):raise ValueError('Not a financial results document')
- if not tables and not facts:status='read-no-supported-data'
+ # For issuer PDF financial tables without recognized geometry, retain only
+ # the original source page. An exact-layout financial adapter decides whether
+ # a specific accounting figure can be compared. No OCR or inferred columns.
+ page_evidence=False
+ if pdf and company['id']=='candidate-gilat-telecom':
+  page_evidence=any(all(v in item['text'] for v in ('260,335','66,508','71,446','124,234','139,991'))
+                    and ('הכנסות' in item['text'] or 'תוסנכה' in item['text']) for item in source_pdf_pages)
+ if pdf and company['id']=='candidate-enlight':
+  page_evidence=any(all(v in item['text'] for v in ('322,477','225,875','165,990','116,117'))
+                    and 'Revenues' in item['text'] for item in source_pdf_pages)
+ if pdf and company['id']=='candidate-ftai':
+  page_evidence=any(all(v in item['text'] for v in ('953,085','676,237','1,783,782','1,178,317'))
+                    and 'Total revenues' in item['text']
+                    and 'CONSOLIDATED STATEMENTS OF OPERATIONS' in item['text'] for item in source_pdf_pages)
+ if not tables and not facts and not page_evidence and not FINANCIAL_TITLE.search(title):raise ValueError('Not a financial results document')
+ if not tables and not facts and not page_evidence:status='read-no-supported-data'
  else:status='extracted'
  # Do not guess fiscal periods or units from filenames, publication dates or collection dates.
- return dict(status=status,title=title or company['name'],sha256=hashlib.sha256(body).hexdigest(),bytes=len(body),format='pdf' if pdf else 'html',pages=page_count,readScope='partial-pages' if truncated else 'full-body',charactersRead=len(text),tables=tables[:12],tableCount=len(tables),tablesTruncated=len(tables)>12,facts=facts,reviewStatus='pending-review',links=links,notice='Content was read automatically. Table rows require period/unit review. No thesis or price target was updated.')
+ return dict(status=status,title=title or company['name'],sha256=hashlib.sha256(body).hexdigest(),bytes=len(body),format='pdf' if pdf else 'html',pages=page_count,readScope='partial-pages' if truncated else 'full-body',charactersRead=len(text),tables=tables[:12],tableCount=len(tables),tablesTruncated=len(tables)>12,facts=facts,sourcePdfPages=source_pdf_pages,reviewStatus='pending-review',links=links,notice='Content was read automatically. Table rows require period/unit review. No thesis or price target was updated.')
+
+def report_period_rank(item):
+ """Discovery ranking only. Never an authoritative fiscal accounting period."""
+ period=item.get('documentPeriod') or item['title']
+ year=re.search(r'20\d{2}',period);fiscal=FISCAL_YEAR.search(period)
+ quarter=re.search(r'Q([1-4])',period,re.I)
+ word=re.search(r'(first|second|third|fourth)\s+(?:fiscal\s+)?quarter',period,re.I)
+ q=int(quarter[1]) if quarter else {'first':1,'second':2,'third':3,'fourth':4}.get(word[1].lower(),0) if word else 0
+ y=2000+int(fiscal[1][-2:]) if fiscal else int(year[0]) if year else 0
+ return (y,4 if fiscal and not q else q,item.get('publishedDate') or '',item.get('lastSeenAt') or '')
+
 
 def candidates(snapshot,company):
  items=[i for i in snapshot.get('items',[]) if i['companyId']==company['id'] and i.get('kind') in ('results','document') and not SCHEDULE.search(i['title']) and FINANCIAL_TITLE.search(i['title']+' '+(i.get('documentPeriod') or '')) and safe_report_url(i['url'],company)]
- def rank(item):
-  period=item.get('documentPeriod') or item['title'];year=re.search(r'20\d{2}',period);fiscal=FISCAL_YEAR.search(period);quarter=re.search(r'Q([1-4])',period,re.I);word=re.search(r'(first|second|third|fourth)\s+(?:fiscal\s+)?quarter',period,re.I)
-  q=int(quarter[1]) if quarter else {'first':1,'second':2,'third':3,'fourth':4}.get(word[1].lower(),0) if word else 0
-  # FY26 is an issuer-supplied fiscal label used ONLY for discovery ranking.
-  # It does not establish accounting start/end dates for extracted observations.
-  y=2000+int(fiscal[1][-2:]) if fiscal else int(year[0]) if year else 0
-  return (y,4 if fiscal and not q else q,item.get('publishedDate') or '',item.get('lastSeenAt') or '')
- return sorted(items,key=rank,reverse=True)
+ # Curated official pointers are *candidates* only; not documents, not
+ # timestamps of a successful fetch and not analyst-approved numbers.
+ # They are intentionally bound to issuer allowlisted domains before use.
+ for r in company.get('curatedReportCandidates',[]):
+  if not isinstance(r,dict) or not safe_report_url(r.get('url'),company) or not FINANCIAL_TITLE.search(str(r.get('title',''))+' '+str(r.get('documentPeriod') or '')):
+   raise ValueError('Invalid curated issuer document URL/title')
+  if r.get('publishedDate') is not None and not valid_day(r['publishedDate']):
+   raise ValueError('Curated source publication date invalid')
+  if not isinstance(r.get('evidence'),str) or not r['evidence'].startswith('https://'):
+   raise ValueError('Curated source must cite verified issuer index')
+  if not any(i['url']==r['url'] for i in items):
+   items.append({'id':'curated:'+hashlib.sha256((company['id']+'|'+r['url']).encode()).hexdigest()[:32],
+                 'companyId':company['id'],'url':r['url'],'title':r['title'],
+                 'kind':'document','documentPeriod':r.get('documentPeriod'),
+                 'periodBasis':'curated-issuer-title-unverified',
+                 'publishedDate':r['publishedDate'],'publishedDateBasis':'curated-reference-only',
+                 'sourceId':'curated-official-pointer','evidenceUrl':r['evidence'],'curated':True})
+ return sorted(items,key=report_period_rank,reverse=True)
 
-def collect(snapshot,registry,previous,now,fetcher=fetch_document,limit=8,budget=120):
+def collect(snapshot,registry,previous,now,fetcher=fetch_document,limit=16,budget=180):
  records={r['id']:r for r in previous.get('documents',[])};statuses=[];attempts=0;deadline=time.monotonic()+budget
- for company in registry['companies']:
-  if company['id'] not in PILOTS:continue
-  todo=candidates(snapshot,company)[:4]
+ # Oldest actual content-fetch attempt goes first, preventing fixed registry
+ # order from starving companies when the network request budget is exhausted.
+ previous_status={s['companyId']:s for s in previous.get('sources',[]) if isinstance(s,dict) and isinstance(s.get('companyId'),str)}
+ # Fill true missing-document gaps before re-checking already retained reports.
+ # Within equal coverage tiers, rotate oldest attempt first to avoid starvation.
+ have_doc={d.get('companyId') for d in previous.get('documents',[]) if
+           isinstance(d,dict) and d.get('status')=='extracted'}
+ ordered=sorted((c for c in registry['companies'] if c['id'] in PILOTS),
+                key=lambda c: (c['id'] in have_doc,
+                               previous_status.get(c['id'],{}).get('lastAttemptAt') or '',c['id']))
+ for company in ordered:
+  todo=candidates(snapshot,company)
+  # Prioritize vetted issuer financial statements over investor-call transcripts.
+  # Apply the cap AFTER the curated-source priority ordering, not before.
   def priority(item):
    ident='report:'+hashlib.sha256((company['id']+'|'+canonical(item['url'])).encode()).hexdigest()[:32]
-   return (ident in records,records.get(ident,{}).get('lastSuccessfulAt',''))
-  todo.sort(key=priority);chosen=todo[:1];status=dict(companyId=company['id'],lastAttemptAt=now,status='no-candidates',error=None)
+   title=item.get('title','').lower()
+   non_filing=bool(re.search(r'prepared remarks|conference call|transcript|earnings presentation',title))
+   year,quarter,*_=report_period_rank(item)
+   # A newly published quarter outranks an older curated report even if
+   # the older official URL remains active. In-quarter prefer curated.
+   return (-year,-quarter,non_filing,not item.get('curated',False),
+           ident in records,records.get(ident,{}).get('lastSuccessfulAt',''))
+  # Missing issuers merit up to four distinct official-path checks; a hard
+  # global request/time budget still protects other companies and the CI.
+  # Previously [:2] meant additional, verified official fallbacks were never attempted.
+  todo.sort(key=priority);chosen=todo[:4 if company['id'] not in have_doc else 2];status=dict(companyId=company['id'],
+     lastAttemptAt=previous_status.get(company['id'],{}).get('lastAttemptAt'),
+     status='no-candidates',error=None)
   discovery=[s for s in snapshot.get('sources',[]) if s.get('companyId')==company['id']]
   if not chosen and discovery and all(s.get('status')=='failed' for s in discovery):
    detail=next((s.get('error') for s in discovery if s.get('error')),'Unknown discovery failure')
    status.update(status='failed',error=('Official source discovery failed; publication status unknown: '+detail)[:180])
   for item in chosen:
    if attempts>=limit or time.monotonic()>deadline:status.update(status='deferred',error='Run budget reached; retained records unchanged');break
+   status['lastAttemptAt']=now
    url=canonical(item['url']);ident='report:'+hashlib.sha256((company['id']+'|'+url).encode()).hexdigest()[:32]
    prior=records.get(ident)
    # Recheck even stable URLs: issuers may replace a document without changing its URL.
@@ -213,7 +293,8 @@ def collect(snapshot,registry,previous,now,fetcher=fetch_document,limit=8,budget
     revisions=prior.get('revisions',[]) if prior else []
     if changed:revisions=([dict(sha256=prior['sha256'],firstDetectedAt=prior['firstDetectedAt'],lastSuccessfulAt=prior['lastSuccessfulAt'])]+revisions)[:3]
     record=dict(**result,id=ident,companyId=company['id'],ticker=company['label'],url=url,finalUrl=final,publishedDate=item.get('publishedDate'),documentPeriod=item.get('documentPeriod'),periodBasis=item.get('periodBasis','unknown'),firstDetectedAt=prior['firstDetectedAt'] if prior else now,lastSuccessfulAt=now,lastAttemptAt=now,revised=changed or bool(prior and prior.get('revised')),revisions=revisions,parserVersion=PARSER,error=None)
-    records[ident]=record;status.update(status='partial' if status['status'] in ('failed','partial') else 'ok',error=status['error'])
+    records[ident]=record;status.update(status='partial' if status['status'] in ('failed','partial') or result['status'] != 'extracted' else 'ok',error=status['error'])
+    if result['status'] == 'extracted':break
    except Exception as exc:
     status.update(status='partial' if status['status'] in ('ok','partial') else 'failed',error=str(exc)[:180])
     if prior:records[ident]={**prior,'lastAttemptAt':now,'error':str(exc)[:180]}

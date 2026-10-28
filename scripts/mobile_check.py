@@ -36,6 +36,86 @@ with sync_playwright() as pw:
         pages=response.json()['pages']
         assert len(pages)==item['pages'] and all(p['text'].strip() for p in pages),f'Research page content missing: {pages_url}'
         checked_assets.append({'pdf':pdf_url,'sha256':item['sha256'],'pages':pages_url})
+    latest_asset=assets.get(urljoin(URL,'data/latest-research-updates.json'),timeout=30000)
+    history_asset=assets.get(urljoin(URL,'data/research-update-history.json'),timeout=30000)
+    coverage_asset=assets.get(urljoin(URL,'data/issuer-coverage.json'),timeout=30000)
+    assert latest_asset.status==200 and history_asset.status==200 and coverage_asset.status==200,'Research JSON assets unavailable'
+    published=latest_asset.json()
+    history_data=history_asset.json()
+    coverage=coverage_asset.json()
+    registry=json.loads(Path('public/data/official-registry.json').read_text(encoding='utf-8'))
+    registered_ids={c['id'] for c in registry['companies']}
+    assert len(coverage['coverage'])==len(published['reports'])==12,'Not every issuer covered'
+    assert {r['companyId'] for r in coverage['coverage']}==registered_ids,'Coverage identity mismatch'
+    assert {r['companyId'] for r in published['reports']}==registered_ids,'Report identity mismatch'
+    assert len([r for r in coverage['coverage'] if r['report']])>=6,'Unexpected loss of retained reports'
+    assert all(r['metricCoverage'] in ('no-document','report-only','provisional-structured')
+               for r in coverage['coverage'])
+
+    assert published['version']==1 and history_data['version']==1,'Research JSON version mismatch'
+    current_by_ticker={r['ticker']:r for r in published['reports']}
+    for ticker,ids in [('DLO',{'revenue','grossProfit','operatingCash','capex'}),
+                       ('IREN',{'revenue','operatingCash','capex'})]:
+        report=current_by_ticker[ticker]
+        assert ids.issubset({m['id'] for m in report['metrics']}),f'Missing published {ticker} metrics'
+        assert report['reviewRequired'] is True and report['aiAnalysisEnabled'] is False
+        assert any(item['companyId']==report['companyId'] and item['contentId']==report['contentId']
+                   for item in history_data['entries']),f'Published {ticker} history does not match latest source'
+    assert current_by_ticker['DLO']['status']=='needs-reconciliation'
+    assert current_by_ticker['IREN']['status']=='historical-baseline-pending-review'
+    for ticker, expected, unit in [('אנלייט','165.99','USD million'),('גילת טלקום','71.446','ILS million')]:
+        r=current_by_ticker[ticker]
+        selfmetric=next((m for m in r['metrics'] if m['id']=='revenue'),None)
+        assert selfmetric and str(selfmetric['value'])==expected and selfmetric['unit']==unit,ticker
+        assert r['reviewRequired'] is True and r['aiAnalysisEnabled'] is False
+        assert any(item['companyId']==r['companyId'] and item['contentId']==r['contentId'] for item in history_data['entries'])
+    # Every generated AI packet is a read-only source *input*, never a
+    # deployed AI response, approved valuation or private portfolio snapshot.
+    ai_packet_count=0
+    for issuer in registry['companies']:
+        key=issuer['ticker'] or issuer['id']
+        packet_resp=assets.get(urljoin(URL,'data/ai-research-packets/'+key+'.json'),timeout=30000)
+        assert packet_resp.status==200,f'Missing AI context for {key}'
+        packet=packet_resp.json()
+        assert packet['companyId']==issuer['id'],f'Cross-issuer packet for {key}'
+        assert packet['trustPolicy']['aiAnalysisExecuted'] is False
+        assert packet['trustPolicy']['mayModifyTargetsOrProbabilities'] is False
+        assert packet['trustPolicy']['includesPersonalPortfolio'] is False
+        current=next(r for r in published['reports'] if r['companyId']==issuer['id'])
+        bridge=packet['latestIssuerResearch']
+        assert len(bridge['sourceBoundMetrics'])==len(current['metrics']),f'AI context facts dropped for {key}'
+        assert bridge['modelEligible'] is False
+        if key=='FTAI':
+            if current['metrics']:
+                assert bridge['status']=='pending-review' and bridge['report']['digest']
+                assert all(m['reviewStatus']=='pending-review' and m['modelEligible'] is False
+                           for m in bridge['sourceBoundMetrics'])
+            else:
+                assert bridge['status']=='insufficient-evidence' and not bridge['sourceBoundMetrics']
+        ai_packet_count+=1
+    assert ai_packet_count==12
+
+    ftai=current_by_ticker['FTAI']
+    if ftai['metrics']:
+        assert ftai['status']=='pending-review' and ftai['reviewRequired'] is True
+        assert ftai['reportEvidence'] and ftai['sourceVersion']==ftai['reportEvidence']['sha256']
+        assert all(m['reviewStatus']=='pending-review' for m in ftai['metrics'])
+    else:
+        assert ftai['status']=='insufficient-evidence', 'No FTAI metrics must be labeled as insufficient evidence'
+    assert current_by_ticker['SMCI']['status']=='pending-review'
+    smci={m['id']:m for m in current_by_ticker['SMCI']['metrics']}
+    assert smci['revenue']['value']==39063.072
+    assert smci['revenue']['previousValue']==21972.042
+    assert smci['revenue']['reviewStatus']=='pending-review'
+    assert any(item['companyId']=='us-smci-nasdaq-common' and item['contentId']==current_by_ticker['SMCI']['contentId']
+               for item in history_data['entries']),'No SEC XBRL history for SMCI'
+
+    Path('work/mobile-published-research.json').write_text(
+        json.dumps({'url':URL,'companyStatuses':{k:r['status'] for k,r in current_by_ticker.items()},
+                    'historyEntries':len(history_data['entries']),
+                    'aiReadOnlyIssuerPackets':ai_packet_count,
+                    'companies':len(published['reports']), 'retainedDocCompanies':len([r for r in coverage['coverage'] if r['report']]),
+                    'verifiedAgainstActualPublishedJson':True},ensure_ascii=False,indent=2))
     assets.dispose()
     Path('work/mobile-research-assets.json').write_text(json.dumps({'url':URL,'checked':checked_assets},ensure_ascii=False))
     for width in (320,390,430):
@@ -90,6 +170,64 @@ with sync_playwright() as pw:
             company_select.select_option(option)
             page.get_by_role('tab',name='סקירה',exact=True).click()
             exchange.get_by_role('heading',name=f'מחקר בסיס ל־{label}',exact=True).wait_for()
+            latest=exchange.get_by_role('region',name='עדכון המחקר האחרון',exact=True)
+            latest.get_by_role('heading',name='עדכון המחקר האחרון שנקלט',exact=True).wait_for()
+            if label=='DLO':
+                expect(latest).to_contain_text('נדרש בירור גרסת מקור')
+                expect(latest).to_contain_text('399.7 USD million')
+                expect(latest).to_contain_text('21.14')
+                expect(latest).to_contain_text('מודל משני בארכיון')
+                expect(latest).to_contain_text('היסטוריית גרסאות מחקר ('+str(sum(x['ticker']==label for x in history_data['entries']))+')')
+                expect(latest).to_contain_text('לא ניתוח AI')
+                latest.scroll_into_view_if_needed()
+                page.screenshot(path=f'work/mobile-{width}-latest-research-dlo.png',full_page=False)
+            if label=='IREN':
+                expect(latest).to_contain_text('נתוני בסיס היסטוריים')
+                expect(latest).to_contain_text('707 USD million')
+                expect(latest).to_contain_text('4,333.1 USD million')
+                expect(latest).to_contain_text('4,500 USD million')
+                expect(latest).to_contain_text('אין הפתעת תחזית מוכחת')
+                expect(latest).to_contain_text('היסטוריית גרסאות מחקר ('+str(sum(x['ticker']==label for x in history_data['entries']))+')')
+                latest.scroll_into_view_if_needed()
+                page.screenshot(path=f'work/mobile-{width}-latest-research-iren.png',full_page=False)
+            if label=='NBIS':
+                expect(latest).to_contain_text('582.3 USD million')
+                expect(latest).to_contain_text('105.1 USD million')
+                expect(latest).to_contain_text('ממתין לבדיקה')
+                expect(latest).to_contain_text('מסמך מקור שמור')
+                latest.scroll_into_view_if_needed()
+                page.screenshot(path=f'work/mobile-{width}-issuer-nbis.png',full_page=False)
+            if label in ('SNDK','בריינסוויי'):
+                expect(latest).to_contain_text('מסמך מקור שמור')
+                if label=='SNDK':
+                    expect(latest).to_contain_text('8,965 USD million')
+                    expect(latest).to_contain_text('1,901 USD million')
+                    expect(latest).to_contain_text('2026-07-03')
+                latest.scroll_into_view_if_needed()
+                page.screenshot(path=f'work/mobile-{width}-issuer-{("sndk" if label=="SNDK" else "brainsway")}.png',full_page=False)
+            if label=='אנלייט':
+                expect(latest).to_contain_text('165.99 USD million')
+                expect(latest).to_contain_text('209.691 USD million')
+                expect(latest).to_contain_text('מסמך מקור שמור')
+                latest.scroll_into_view_if_needed()
+                page.screenshot(path=f'work/mobile-{width}-issuer-enlight.png',full_page=False)
+            if label=='גילת טלקום':
+                expect(latest).to_contain_text('71.446 ILS million')
+                expect(latest).to_contain_text('66.508 ILS million')
+                expect(latest).to_contain_text('מסמך מקור שמור')
+                latest.scroll_into_view_if_needed()
+                page.screenshot(path=f'work/mobile-{width}-issuer-gilat-telecom.png',full_page=False)
+            if label=='FTAI':
+                if ftai['metrics']:
+                    expect(latest).to_contain_text('ממתין לבדיקה')
+                else:
+                    expect(latest).to_contain_text('אין עדכון פיננסי מבוסס מקור')
+            if label=='SMCI':
+                expect(latest).to_contain_text('39,063.072 USD million')
+                expect(latest).to_contain_text('21,972.042 USD million')
+                expect(latest).to_contain_text('ממתין לבדיקת אנליסט')
+                latest.scroll_into_view_if_needed()
+                page.screenshot(path=f'work/mobile-{width}-issuer-smci.png',full_page=False)
             if label=='IREN':
                 actuals=exchange.get_by_role('region',name='נתוני בסיס IREN FY2026 מהדוח הרשמי',exact=True)
                 expect(actuals).to_contain_text('$707.0M')
@@ -276,6 +414,20 @@ with sync_playwright() as pw:
         assert page.locator('html').evaluate("e=>e.classList.contains('keyboard-open')")
         assert dialog.bounding_box()['height']<=340
         dialog.get_by_role('button',name='סגירה',exact=True).click()
+        if width==390:
+            # Browser-level offline smoke: ensure the *deployed PWA shell* and
+            # last validated research snapshot remain readable with no network.
+            page.wait_for_function("navigator.serviceWorker && !!navigator.serviceWorker.controller",timeout=20000)
+            context.set_offline(True)
+            page.reload(wait_until='domcontentloaded')
+            page.get_by_role('heading',name='התדריך היומי.',exact=True).wait_for(timeout=10000)
+            page.get_by_role('navigation',name='ניווט נייד').get_by_role('button',name='מחקר',exact=True).click()
+            page.get_by_label('חברה למחקר',exact=True).select_option('initial-2')
+            offline_latest=page.get_by_role('region',name='עדכון המחקר האחרון',exact=True)
+            expect(offline_latest).to_contain_text('מצב לא מקוון')
+            expect(offline_latest).to_contain_text('399.7 USD million')
+            page.screenshot(path='work/mobile-390-offline-research.png',full_page=False)
+            context.set_offline(False)
         assert not errors,errors
         results.append({'width':width,'rtl':True,'textScale':'200%','keyboard':'simulated visual viewport','overflow':False,'pageErrors':errors})
         context.close()

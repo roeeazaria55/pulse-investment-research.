@@ -1,3 +1,18 @@
+> **October 2026 expanded research branch — NO MERGE under the owner's strict 12/12 requirement.**
+> All twelve issuers have research/source-status pages. **11/12** now have
+> financial observations linked to issuer-origin source content and marked
+> review-only: NBIS, META, DLO, LMND, SNDK, IREN, Next Vision (historical
+> FY2025), Enlight (Q2 2026 IFRS and tax-benefit-inclusive revenue separately),
+> BrainsWay, Gilat Telecom Global (Q2 2026 ILS), SMCI. **FTAI Q2 2026
+> remains blocked at GitHub Actions with HTTP 403**, even from issuer IR, SEC
+> and issuer-distributed press release alternatives. Original PDF review-only
+> manual staging is now supported but requires a real PDF file obtained from
+> the issuer and human identity/period review. No values update targets,
+> scenarios or portfolios; `main` was not changed and no paid AI was used.
+> See [release gates](docs/PULSE_RELEASE.md) and
+> [manual original PDF import](docs/MANUAL_OFFICIAL_REPORT_IMPORT.md).
+> See [v1 release gates, production checks and rollback](docs/PULSE_RELEASE.md).
+>
 # PULSE — Investment Research
 
 A Hebrew, RTL, mobile-first investment research PWA. Built with React, Vite, TypeScript and Tailwind CSS. Runs entirely in the browser. No backend, credentials, paid services, tracking, or market-data API.
@@ -98,4 +113,4 @@ The public format is documented by [feed.schema.json](schemas/feed.schema.json) 
 
 ## Remaining scope
 
-The scoped SEC filings collector, persisted deduplication, rule-template briefings and morning/evening schedule are implemented by `Publish PULSE`. Availability must be confirmed by an actual manual run and the published source statuses. Eight registry companies await reviewed mappings/sources. No live quotes, article crawler, IR/RSS ingestion, AI summarization, financial metric extraction, authentication, cloud sync, private-data ingestion or broker integration is included. The application is not an investment recommendation engine.
+The scoped SEC filings collector, persisted deduplication, rule-template briefings and morning/evening schedule are implemented by `Publish PULSE`. Availability must be confirmed by an actual manual run and the published source statuses. Eight registry companies await reviewed mappings/sources. Real headline discovery, limited official issuer-source intake, provisional financial extraction and review-only research updates are present, but coverage is partial and no source is a substitute for analyst verification. Live stock quotes, autonomous paid AI summarization, authentication, cloud sync, private-data ingestion and brokerage integration are not included. The application is not an investment recommendation engine.
