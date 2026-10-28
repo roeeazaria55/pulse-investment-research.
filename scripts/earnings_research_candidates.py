@@ -83,7 +83,9 @@ def build(latest,previous,registry,monitors,now):
         if (not isinstance(row,dict) or not isinstance(row.get("id"),str)
                 or row["id"] in saved or row.get("companyId") not in companies
                 or row.get("publicationStatus")!="not-approved"
-                or row.get("modelChange")!="none"):
+                or row.get("modelChange")!="none"
+                or not isinstance(row.get("payloadSha256"),str)
+                or row["payloadSha256"]!=digest({k:v for k,v in row.items() if k!="payloadSha256"})):
             raise ValueError("Invalid or mutable previous candidate")
         saved[row["id"]]=row
     new=0
@@ -140,6 +142,7 @@ def build(latest,previous,registry,monitors,now):
                 "sourceResearchContentId":report.get("contentId"),
                 "limitations":list(report.get("missing",[]))[:10],
             }
+            saved[ident]["payloadSha256"]=digest(saved[ident])
             new+=1
         seen[cid]=ident
     return {"version":1,"updatedAt":now if new or not previous.get("updatedAt") else previous["updatedAt"],
