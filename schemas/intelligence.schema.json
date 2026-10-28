@@ -774,7 +774,7 @@
                 "const": "Asia/Jerusalem"
               },
               "scheduledLocalTime": {
-                "const": "13:00"
+                "enum": ["08:00", "19:00", "13:00"]
               },
               "generatedAt": {
                 "type": "string",
