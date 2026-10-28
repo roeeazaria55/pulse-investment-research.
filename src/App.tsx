@@ -740,7 +740,7 @@ export default function App() {
           )}
           {tab === "news" && (
             <>
-              <ResearchAlertInbox items={news} readIds={readIds} onRead={toggleRead}/>
+              <ResearchAlertInbox items={news} readIds={readIds} groups={feed?.version===2?feed.intelligence?.eventGroups:undefined} onRead={toggleRead}/>
               <div className="news-controls">
                 <label className="search-field">
                   <Search size={18} />
