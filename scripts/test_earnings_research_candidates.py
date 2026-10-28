@@ -80,6 +80,10 @@ class EarningsResearchCandidatesTests(unittest.TestCase):
         prior["candidates"][0]["modelChange"]="automatic"
         with self.assertRaises(ValueError):
             self.build(prior=prior)
+        tampered=self.build()
+        tampered["candidates"][0]["metrics"][0]["value"]=1
+        with self.assertRaises(ValueError):
+            self.build(prior=tampered)
     def test_meta_original_gaap_q3_adapter_passes_into_versioned_candidate(self):
         doc={"companyId":"us-meta-nasdaq-a","format":"html",
              "title":"Meta Reports Third Quarter 2026 Results",
