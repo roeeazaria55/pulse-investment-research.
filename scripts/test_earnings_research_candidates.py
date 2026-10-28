@@ -1,6 +1,7 @@
 import copy
 import unittest
 from earnings_research_candidates import build
+from issuer_table_adapters import meta_q3
 
 COMPANY_IDS=["us-meta-nasdaq-a","us-dlo-nasdaq-a"]+[f"issuer-{i}" for i in range(10)]
 REGISTRY={"companies":[{"id":cid,"ticker":cid,"allowedHosts":["investor.atmeta.com" if cid=="us-meta-nasdaq-a" else "example.org"]} for cid in COMPANY_IDS]}
@@ -79,6 +80,27 @@ class EarningsResearchCandidatesTests(unittest.TestCase):
         prior["candidates"][0]["modelChange"]="automatic"
         with self.assertRaises(ValueError):
             self.build(prior=prior)
+    def test_meta_original_gaap_q3_adapter_passes_into_versioned_candidate(self):
+        doc={"companyId":"us-meta-nasdaq-a","format":"html",
+             "title":"Meta Reports Third Quarter 2026 Results",
+             "id":"report:"+"c"*32,"url":URL,"sha256":"a"*64,
+             "tables":[{"page":None,"rows":[
+                ["META PLATFORMS, INC."],["CONDENSED CONSOLIDATED STATEMENTS OF INCOME"],
+                ["(In millions, except per share amounts)"],["(Unaudited)"],
+                ["","Three Months Ended September 30,","","Nine Months Ended September 30,"],
+                ["","2026","","2025","","2026","","2025"],
+                ["Revenue","$ 64,601","", "$ 51,242","", "$ 181,712","", "$ 141,073"]]}]}
+        actual=meta_q3(doc)
+        self.assertEqual(len(actual),1)
+        data=latest()
+        data["reports"][0]["metrics"]=actual
+        out=self.build(data)
+        candidate=next(c for c in out["candidates"] if c["companyId"]=="us-meta-nasdaq-a")
+        self.assertEqual(candidate["metrics"][0]["value"],64601)
+        self.assertEqual(candidate["metrics"][0]["periodEnd"],"2026-09-30")
+        self.assertEqual(candidate["metrics"][0]["previousPeriodEnd"],"2025-09-30")
+        self.assertEqual(candidate["metrics"][0]["sourceSha256"],doc["sha256"])
+        self.assertEqual(candidate["publicationStatus"],"not-approved")
     def test_no_invented_source_for_missing_report(self):
         data=latest()
         data["reports"][0].update({"sourceUrl":None,"sourceVersion":None,"metrics":[]})
