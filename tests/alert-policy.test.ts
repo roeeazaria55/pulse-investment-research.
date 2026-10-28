@@ -18,6 +18,10 @@ describe('Research alert policy',()=>{
  });
  it('respects unread state, deduplication and source evidence',()=>{
   expect(unreadResearchAlerts([official,official],[])).toHaveLength(1);
+  const sibling={...official,id:'sec:1:3'};
+  const groups=[{id:'event:results',itemIds:[official.id,sibling.id]}];
+  expect(unreadResearchAlerts([official,sibling],[],5,groups)).toHaveLength(1);
+  expect(unreadResearchAlerts([sibling],[official.id],5,groups)).toEqual([]);
   expect(unreadResearchAlerts([official],[official.id])).toEqual([]);
   expect(unreadResearchAlerts([{...official,demo:true}],[])).toEqual([]);
   expect(unreadResearchAlerts([{...official,sourceUrl:'http://bad'}],[])).toEqual([]);
