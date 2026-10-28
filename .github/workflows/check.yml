@@ -34,6 +34,7 @@ jobs:
           python3 scripts/latest_research_updates.py
           python3 scripts/financial_integrity_audit.py
           python3 scripts/research_update_history.py
+          python3 scripts/earnings_research_candidates.py
           python3 scripts/ai_research_packets.py
           python3 scripts/run_optional_ai_review.py --ticker DLO
       - name: Retain newly collected official issuer evidence before slow browser tests
@@ -78,6 +79,7 @@ jobs:
             public/data/latest-research-updates.json
             public/data/research-update-history.json
             public/data/issuer-coverage.json
+            public/data/earnings-research-candidates.json
             public/data/ai-research-packets/*.json
           retention-days: 7
       - uses: actions/upload-artifact@v4
