@@ -1,5 +1,6 @@
 import {useEffect,useState} from 'react';
 import registry from '../../public/data/official-registry.json';
+import {publishedFor} from '../data/publishedResearch';
 
 type Evidence={id:string;label:string;value:number;unit:string;periodStart:string;periodEnd:string;
  previousValue:number|null;absoluteChange:number|null;percentChange:number|null;comparisonStatus:string;
@@ -57,6 +58,7 @@ export function EarningsResearchCandidates({companyId,onPrepare}:{companyId:stri
   return ()=>{active=false;};
  },[companyId]);
  const current=items?.[0];
+ const baseline=publishedFor(companyId);
  return <section className="thesis-metric" dir="rtl" aria-label="טיוטות עדכון מחקר מדוחות" data-testid="earnings-research-candidates">
   <h4>טיוטות מחקר אוטומטיות · לא מאושרות</h4>
   <p><small>טיוטות נתוני מקור בלבד. אין החלפה אוטומטית של המחקר הקיים, מחירי יעד או משקולות Bear/Base/Bull.</small></p>
@@ -79,6 +81,19 @@ export function EarningsResearchCandidates({companyId,onPrepare}:{companyId:stri
     <ul>{current.analystReviewQuestions.map(q=><li key={q.metricId}><strong>{q.metricId}:</strong> {q.nextCheck}
      <p><small>סיכון שנשמר בתזה: {q.thesisRisk}</small></p></li>)}</ul>
    </details>}
+   <details><summary>מחקר קיים לעומת טיוטת הדוח (ללא שינוי אוטומטי)</summary>
+    {baseline?<div className="report-intake-grid">
+      <div className="thesis-metric"><h5>המחקר הציבורי הקיים</h5>
+       <p><strong>תזה:</strong> {baseline.analysis.fields.thesis}</p>
+       <p><strong>שווי ותרחישים קיימים:</strong> {baseline.analysis.fields.valuation}</p>
+      </div>
+      <div className="thesis-metric"><h5>הטיוטה שנקלטה · לא אושרה</h5>
+       <p>{current.summary}</p>
+       <p>{current.metrics.length} מדדים מקוריים; {current.metrics.filter(m=>m.absoluteChange!==null).length} השוואות היסטוריות מתאימות.</p>
+       <p>תזת ההשקעה והמודל טרם הוערכו מחדש.</p>
+      </div>
+     </div>:<p>טרם פורסם מחקר בסיס לחברה זו. נתוני המקור אינם תחליף למחקר מאושר.</p>}
+   </details>
    <p><strong>השפעה על התזה:</strong> {current.thesisImpact}</p>
    <p><strong>תחזית ומחיר יעד:</strong> לא עודכנו. {current.scenarioReview.reason}</p>
    {onPrepare&&<button type="button" onClick={()=>onPrepare('בדוק טיוטת מחקר ל־'+current.ticker+
