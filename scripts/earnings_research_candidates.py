@@ -47,7 +47,7 @@ def comparable(metric):
     return (a==b and c==d) or (a!=b and c!=d and (b-a).days==(d-c).days)
 
 def metric_evidence(row,company,source,source_hash):
-    if (row.get("reviewStatus")!="pending-review"
+    if (row.get("reviewStatus") not in ("pending-review","needs-reconciliation")
             or row.get("sourceUrl")!=source or not source_allowed(row.get("sourceUrl"),company)
             or not isinstance(row.get("id"),str) or not isinstance(row.get("label"),str)):
         return None
@@ -68,7 +68,7 @@ def metric_evidence(row,company,source,source_hash):
             "absoluteChange":difference,"percentChange":percent,
             "comparisonStatus":"historical-arithmetic-review-only" if eligible else "blocked-incomparable-or-unreconciled",
             "sourceUrl":source,"sourceSha256":source_hash,"accountingBasis":row.get("accountingBasis"),
-            "reviewStatus":"pending-review"}
+            "reviewStatus":row.get("reviewStatus")}
 
 def build(latest,previous,registry,monitors,now):
     if (latest.get("version")!=1 or previous.get("version",1)!=1 or
