@@ -34,7 +34,7 @@ class AIWorkflowIsolationTests(unittest.TestCase):
 
     def test_pwa_cache_is_rotated_for_new_research_shell(self):
         sw = (ROOT / "public/sw.js").read_text(encoding="utf-8")
-        self.assertIn('pulse-v7-financial-depth-20261027', sw)
+        self.assertIn('pulse-v8-unified-intelligence-20261028', sw)
         self.assertIn('research-update-history.json', sw)
 
 
