@@ -5,8 +5,8 @@ on:
     paths-ignore: ["public/data/feed.json", "public/data/ingestion-state.json", "public/data/official-sources.json", "public/data/report-intake.json", "public/data/report-review-queue.json", "public/data/auto-financial-observations.json", "public/data/forecast-archive.json", "public/data/forecast-actual-comparisons.json", "public/data/research-update-proposals.json", "public/data/latest-research-updates.json", "public/data/research-update-history.json", "public/data/issuer-coverage.json"]
   workflow_dispatch:
   schedule:
-    # About every 30 minutes; 13:00 Jerusalem daily window is generated on
-    # the first actual run after its boundary, including weekends and DST.
+    # Existing ~30-minute collection polls. Two Jerusalem briefings are classified
+    # after the 08:00 and 19:00 local boundaries (DST-aware); runs can be delayed.
     - cron: "17,47 * * * *"
 permissions: {}
 concurrency:
