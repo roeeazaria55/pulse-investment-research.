@@ -94,9 +94,13 @@ def build(latest,previous,registry,monitors,now):
         if not company: raise ValueError("Unknown issuer")
         source=report.get("sourceUrl")
         version=report.get("sourceVersion")
-        if not (source and source_allowed(source,company) and isinstance(version,str)
-                and len(version)==64 and all(ch in "0123456789abcdef" for ch in version)):
+        if source is None or version is None:
+            if report.get("metrics"):
+                raise ValueError("Financial facts without bound report source")
             continue  # No attested report bytes; never invent a new filing.
+        if not (source_allowed(source,company) and isinstance(version,str)
+                and len(version)==64 and all(ch in "0123456789abcdef" for ch in version)):
+            raise ValueError("Unapproved or malformed report identity")
         evidence=report.get("reportEvidence")
         if evidence and (evidence.get("url")!=source or evidence.get("sha256")!=version):
             raise ValueError("Document evidence identity differs from mapped report")
