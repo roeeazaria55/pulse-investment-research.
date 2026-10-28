@@ -219,7 +219,8 @@ def meta_q3(doc):
     for three months ended September 30 (2026 and 2025). YTD ignored.
     """
     if (doc.get("companyId")!="us-meta-nasdaq-a" or doc.get("format")!="html"
-        or doc.get("title")!="Meta Reports Third Quarter 2026 Results"):
+        or not re.fullmatch(r"Meta Reports Third Quarter 2026 Results(?:\\s*[|–-]\\s*[^\\n]{1,80})?",
+                            str(doc.get("title","")).strip(),re.I)):
         return []
     matches=[]
     for table in doc.get("tables",[]):
@@ -238,11 +239,16 @@ def meta_q3(doc):
         if len(lines)!=1 or len(lines[0])!=8:
             return []
         r=lines[0]
-        if r[1]!="$ 64,601" or r[3]!="$ 51,242":
-            # This adapter was reviewed for this issuer release only.
+        # The reviewed period/header and GAAP statement columns bind the cells;
+        # the figures themselves must not be hardcoded or a later issuer revision
+        # would silently disappear. The nine-month columns are NEVER substituted.
+        if not (isinstance(r[1],str) and isinstance(r[3],str)
+                and r[1].startswith("$ ") and r[3].startswith("$ ")):
             return []
-        value=_number(r[1].removeprefix("$ ").strip())
-        prior=_number(r[3].removeprefix("$ ").strip())
+        value=_number(r[1][2:].strip())
+        prior=_number(r[3][2:].strip())
+        if value is None or prior is None or value<=0 or prior<=0:
+            return []
         m=_proposal(doc,"revenue","הכנסות GAAP",value,prior,r[1],r[3],
             "2026-07-01","2026-09-30","2025-07-01","2025-09-30",
             "USD million","Meta third-quarter 2026 GAAP condensed consolidated income statement, three months ended Sept 30",
