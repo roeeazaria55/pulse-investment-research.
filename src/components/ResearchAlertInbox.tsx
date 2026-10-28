@@ -1,8 +1,8 @@
 import type {News} from '../types';
 import {unreadResearchAlerts} from '../research/alertPolicy';
-interface Props {items:readonly News[];readIds:readonly string[];onRead:(id:string)=>void;}
-export function ResearchAlertInbox({items,readIds,onRead}:Props){
- const alerts=unreadResearchAlerts(items,readIds);
+interface Props {items:readonly News[];readIds:readonly string[];groups?:readonly {id:string;itemIds:string[]}[];onRead:(id:string)=>void;}
+export function ResearchAlertInbox({items,readIds,groups=[],onRead}:Props){
+ const alerts=unreadResearchAlerts(items,readIds,5,groups);
  if(!alerts.length)return null;
  return <details className="panel" aria-label="התראות מחקר חדשות" data-testid="research-alert-inbox">
   <summary>אירועים למחקר · {alerts.length} התראות שלא נקראו</summary>
