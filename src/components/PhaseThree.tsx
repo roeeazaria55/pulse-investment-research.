@@ -10,10 +10,10 @@ export function WhyImportant({rating}:{rating:Rating}){
   </details>;
 }
 export function DailyPanel({intel,date,news=[]}:{intel:Intelligence;date?:string;news?:News[]}){
-  const b:DailyBriefing|undefined=intel.dailyBriefings.find(b=>b.date===date)||intel.dailyBriefings[0];
-  if(!b)return <Section title="התדריך היומי"><p>טרם הופק תדריך לחלון שהסתיים ב־13:00.</p></Section>;
-  return <Section title={`התדריך היומי • ${b.date}`} eyebrow="עברית • חלון קבוע עד 13:00">
-    <div id={`briefing-${b.date}`} className="anchor-target"/>
+  const b:DailyBriefing|undefined=intel.dailyBriefings.find(b=>b.id===date)||intel.dailyBriefings.find(b=>b.date===date)||intel.dailyBriefings[0];
+  if(!b)return <Section title="תדריך בוקר / ערב"><p>טרם הופק תדריך לחלון 08:00 או 19:00.</p></Section>;
+  return <Section title={`תדריך ${b.scheduledLocalTime==='08:00'?'בוקר':b.scheduledLocalTime==='19:00'?'ערב':'יומי'} • ${b.date}`} eyebrow={`עברית • חלון עד ${b.scheduledLocalTime} (שעון ישראל)`}>
+    <div id={`briefing-${b.id}`} className="anchor-target"/>
     <p>חלון פרסום: {dateTime(b.startAt)} עד {dateTime(b.endAt)} • שעון ישראל</p>
     <p>הופק בפועל: {dateTime(b.generatedAt)}. ייתכנו עיכובים בריצות GitHub.</p>
     {!!b.revision&&<p>תיקון גרסה {b.revision} לאחר עדכון כללי חיפוש; מזהה התדריך והחלון נשמרו. הפקה ראשונה: {b.firstGeneratedAt?dateTime(b.firstGeneratedAt):'לא נמסר'}.</p>}
@@ -33,7 +33,7 @@ export function DailyPanel({intel,date,news=[]}:{intel:Intelligence;date?:string
     </details>)}
     <details><summary>מקורות תעשייה ומצב סיכום עברי</summary><p>{intel.summary.reason}</p><a className="text-button" href={intel.summary.proofRun} target="_blank" rel="noopener noreferrer">בדיקת היתכנות הסיכום</a>{intel.industries.sources.map(s=><p key={s.industryId}>{intel.industries.config.industries.find(i=>i.id===s.industryId)?.name} • {s.status==='results'?`${s.count} כותרות`:s.status==='zero-results'?'החיפוש הצליח ללא תוצאות':'כשל; נשמר מידע קודם'} • נבדק {dateTime(s.lastAttemptAt)}{s.error?` • ${s.error}`:''}</p>)}</details>
     {intel.industries.items.some(n=>!n.publishedAt)&&<details><summary>כותרות תעשייה ללא תאריך — אינן כלולות בחלון</summary>{intel.industries.items.filter(n=>!n.publishedAt).slice(0,10).map(n=><a className="text-button" href={n.sourceUrl} key={n.id} target="_blank" rel="noopener noreferrer" dir="auto">{n.headline} ↗</a>)}</details>}
-    {intel.dailyBriefings.length>1&&<details><summary>תדריכים קודמים</summary>{intel.dailyBriefings.slice(1,8).map(b=><a className="text-button" href={`#briefing=${b.date}`} key={b.id}>{b.date}</a>)}</details>}
+    {intel.dailyBriefings.length>1&&<details><summary>תדריכים קודמים</summary>{intel.dailyBriefings.slice(1,8).map(b=><a className="text-button" href={`#briefing=${encodeURIComponent(b.id)}`} key={b.id}>{b.date} · {b.scheduledLocalTime}</a>)}</details>}
   </Section>;
 }
 export function CalendarPanel({intel,focus}:{intel:Intelligence;focus?:string}){return <WeeklyEarnings intel={intel} focus={focus}/>;}
