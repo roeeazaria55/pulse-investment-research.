@@ -32,6 +32,7 @@ jobs:
           python3 scripts/research_update_proposals.py
           python3 scripts/issuer_coverage.py
           python3 scripts/latest_research_updates.py
+          python3 scripts/financial_integrity_audit.py
           python3 scripts/research_update_history.py
           python3 scripts/ai_research_packets.py
           python3 scripts/run_optional_ai_review.py --ticker DLO
@@ -44,8 +45,11 @@ jobs:
             public/data/report-intake.json
             public/data/issuer-coverage.json
             public/data/latest-research-updates.json
+            work/financial-integrity-audit.json
           retention-days: 3
       - run: npm test
+      - run: npm run typecheck
+      - run: npm run validate:data
       - run: npm run build
         env:
           VITE_BASE_PATH: /${{ github.event.repository.name }}/
