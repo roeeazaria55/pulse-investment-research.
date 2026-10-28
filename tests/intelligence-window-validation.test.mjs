@@ -18,7 +18,8 @@ describe('Jerusalem briefing validation',()=>{
     expect(()=>validateIntelligence(makeFeed(morning))).not.toThrow();
     expect(()=>validateIntelligence(makeFeed({
       ...morning,id:'briefing:2026-10-28:19',scheduledLocalTime:'19:00',
-      startAt:'2026-10-28T06:00:00+00:00',endAt:'2026-10-28T17:00:00+00:00'
+      startAt:'2026-10-28T06:00:00+00:00',endAt:'2026-10-28T17:00:00+00:00',
+      generatedAt:'2026-10-28T18:00:00+00:00'
     }))).not.toThrow();
     expect(()=>validateIntelligence(makeFeed({
       ...morning,id:'daily:2026-10-28',scheduledLocalTime:'13:00',
