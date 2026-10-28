@@ -51,16 +51,24 @@ class EvidenceTests(unittest.TestCase):
         self.assertEqual(len(groups),1);self.assertEqual(groups[0]['independentConfirmations'],0)
 
 class DailyWindowTests(unittest.TestCase):
-    def test_fixed_boundary_when_late_or_weekend(self):
-        for now in ['2026-10-18T16:00:00+00:00','2026-10-17T12:00:00+00:00']:
-            w=window(now);self.assertEqual((dt.datetime.fromisoformat(w['endAt'])-dt.datetime.fromisoformat(w['startAt'])).total_seconds(),86400)
-            self.assertEqual(w['endAt'][11:16],'10:00')
-        self.assertEqual(window('2026-10-18T08:00:00+00:00')['date'],'2026-10-17')
-    def test_dst_is_24_elapsed_hours_and_13_local(self):
-        for now in ['2026-03-27T14:00:00+00:00','2026-10-25T14:00:00+00:00']:
-            w=window(now);self.assertEqual((dt.datetime.fromisoformat(w['endAt'])-dt.datetime.fromisoformat(w['startAt'])).total_seconds(),86400)
+    def test_two_jerusalem_boundaries_without_mislabeling_delayed_runs(self):
+        evening=window('2026-10-18T16:00:00+00:00')
+        self.assertEqual(evening['date'],'2026-10-18')
+        self.assertEqual(evening['scheduledLocalTime'],'19:00')
+        self.assertEqual(evening['id'],'briefing:2026-10-18:19')
+        morning=window('2026-10-18T05:00:00+00:00')
+        self.assertEqual(morning['scheduledLocalTime'],'08:00')
+        self.assertEqual(morning['startAt'],window('2026-10-17T16:00:00+00:00')['endAt'])
+        self.assertEqual(window('2026-10-18T04:59:00+00:00')['date'],'2026-10-17')
+        self.assertEqual(window('2026-10-18T20:00:00+00:00')['id'],evening['id'])
+    def test_dst_window_is_local_08_or_19_not_fixed_utc_duration(self):
+        spring=window('2026-03-27T05:00:00+00:00')
+        autumn=window('2026-10-25T06:00:00+00:00')
+        for w in (spring,autumn):
+            self.assertEqual(w['scheduledLocalTime'],'08:00')
             self.assertTrue(w['endAt'].endswith('+00:00'))
-        self.assertIn('T11:00',window('2026-10-25T14:00:00+00:00')['endAt'])
+        self.assertEqual((dt.datetime.fromisoformat(spring['endAt'])-dt.datetime.fromisoformat(spring['startAt'])).total_seconds(),12*3600)
+        self.assertEqual((dt.datetime.fromisoformat(autumn['endAt'])-dt.datetime.fromisoformat(autumn['startAt'])).total_seconds(),14*3600)
     def test_undated_and_collection_time_not_window_evidence(self):
         w=window(NOW)
         self.assertFalse(within({'publishedAt':None,'collectedAt':NOW},w))
