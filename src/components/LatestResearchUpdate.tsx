@@ -1,4 +1,5 @@
 import {FinancialModelQuestions} from './FinancialModelQuestions';
+import {buildEvidenceInsights} from '../research/evidenceInsights';
 import {useEffect, useState} from 'react';
 import issuerRegistry from '../../public/data/official-registry.json';
 
@@ -289,6 +290,20 @@ export function LatestResearchUpdate({companyId,onPrepare}:{companyId:string;onP
        </details>
       </div>)}
      </div>}
+    {(()=>{
+     const insights=buildEvidenceInsights(report.metrics,report.status);
+     return insights.length?<details className="thesis-metric" aria-label="שינויי מדדים פיננסיים לחקירת אנליסט">
+      <summary>מה השתנה במדדים? ({insights.length} חישובים לבדיקה)</summary>
+      <p><small>חישובים מתמטיים על תקופות תואמות, ממתינים לאימות; אינם תחזית, הפתעה מול קונצנזוס או המלצת השקעה.</small></p>
+      <ul>{insights.map(item=><li key={item.metricId}>
+       <strong>{item.label}:</strong> שינוי <bdi>{item.difference>0?'+':''}{formatAmount(item.difference)} {item.unit==='percent'?'נקודות אחוז':item.unit}</bdi>
+       {item.changePercent!==null&&<> (<bdi>{item.changePercent>0?'+':''}{formatAmount(item.changePercent)}%</bdi>)</>}
+       <p><small>{item.comparisonLabel} · חישוב נגזר · ממתין לבדיקת אנליסט. לא נקבעה השפעה על התזה.</small></p>
+       <p><strong>שאלת מחקר:</strong> {item.hypothesis}</p>
+       {verifiedLink(item.sourceUrl,report.companyId)&&<a href={verifiedLink(item.sourceUrl,report.companyId)!} target="_blank" rel="noopener noreferrer">ראיית מקור</a>}
+      </li>)}</ul>
+     </details>:null;
+    })()}
     <h5>השינויים המשמעותיים · ממצאים מוגבלים לראיות</h5>
     {report.findings.length?<ul>{report.findings.map((f,i)=><li key={i}>{f}</li>)}</ul>:<p>אין מסקנה חדשה מאושרת.</p>}
     {report.activeValuationContext&&<p><strong>הערכת השווי שמוצגת במחקר:</strong> {report.activeValuationContext.status==='unverified-supplied-research'?
