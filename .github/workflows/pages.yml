@@ -29,6 +29,12 @@ jobs:
           persist-credentials: false
       - id: base
         run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      # Unit/regression tests use repository-retained issuer fixtures. Loading
+      # mutable pulse-data first changes their evidence and makes them brittle.
+      # The production snapshot is loaded after these tests and is independently
+      # validated during the collection pipeline below.
+      - name: Test version-controlled financial fixtures before pulse-data seed
+        run: python3 -m unittest discover -s scripts -p 'test_*.py'
       - name: Load prior public collection state from a separate branch
         id: seed
         run: |
@@ -45,8 +51,6 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Test public intelligence and private notification planning
-        run: python3 -m unittest discover -s scripts -p 'test_*.py'
       - name: Preserve prior public snapshot for independent enrichment
         run: |
           mkdir -p work
