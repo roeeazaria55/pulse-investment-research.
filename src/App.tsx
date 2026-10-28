@@ -1,6 +1,7 @@
 import {nextEarnings,dateLabel} from './research/earningsCalendar';
 import {MacroPanel,NextEarnings} from './components/MarketContext';
 import {compareNews} from './research/newsPresentation';
+import {ResearchAlertInbox} from './components/ResearchAlertInbox';
 import { useEffect, useRef, useState } from "react";
 import {
   Activity,
@@ -739,6 +740,7 @@ export default function App() {
           )}
           {tab === "news" && (
             <>
+              <ResearchAlertInbox items={news} readIds={readIds} onRead={toggleRead}/>
               <div className="news-controls">
                 <label className="search-field">
                   <Search size={18} />
