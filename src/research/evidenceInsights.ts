@@ -49,7 +49,7 @@ export function buildEvidenceInsights(metrics:readonly EvidenceMetric[],reportSt
    Math.round(difference/prev*10000)/100:null;
   result.push({
    metricId:m.id,label:m.label,current:m.value,previous:prev,
-   difference:Math.round(difference*1e6)/1e6,changePercent:percent,unit:m.unit,
+   difference:Number(difference.toFixed(6)),changePercent:percent,unit:m.unit,
    comparisonLabel:m.periodStart===m.periodEnd?'השוואת שתי נקודות מאזן':'תקופות דיווח באורך תואם',
    sourceUrl:m.sourceUrl,reviewStatus:'pending-review',kind:'calculation',
    hypothesis:questions[m.id],thesisStatus:'requires-analyst-review'
