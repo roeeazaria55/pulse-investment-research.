@@ -118,7 +118,7 @@ def write_ledger(path, ledger):
         if dest.exists():dest.unlink()
 
 
-def run_paid_review(ticker, packet, content, model, key, target, ledger_path):
+def run_paid_review(ticker, packet, content, model, key, target, ledger_path, *, reservation_precommitted=False):
     """One reservation, one API attempt. Uncertain/failed requests retain a hold
     until a person reconciles the provider bill; no automatic retry."""
     now=dt.datetime.now(dt.timezone.utc).isoformat()
@@ -128,11 +128,20 @@ def run_paid_review(ticker, packet, content, model, key, target, ledger_path):
         with os.fdopen(lock_fd,"r+") as lock:
             fcntl.flock(lock.fileno(),fcntl.LOCK_EX)
             ledger=read_ledger(ledger_path)
-            # Conservative UTF-8-byte upper proxy; estimate is not a tokenizer.
-            ledger,hold=reserve(ledger,ticker,packet["contentSha256"],model,now,
-                                input_ceiling=min(100000,len(content.encode("utf-8"))*2),
-                                output_ceiling=MAX_OUTPUT_TOKENS)
-            write_ledger(ledger_path,ledger)
+            if reservation_precommitted:
+                from pulse_ai_cost_guard import packet_key
+                key_id=packet_key(ticker,packet["contentSha256"],model)
+                holds=[h for h in ledger.get("holds",[]) if h["id"]==key_id]
+                if len(holds)!=1:
+                    raise ValueError("Remote-persisted reservation missing: refuse paid request")
+                hold=holds[0]
+            else:
+                # Local private usage only; not sufficient for unattended GitHub
+                # Actions. That workflow commits the reservation FIRST.
+                ledger,hold=reserve(ledger,ticker,packet["contentSha256"],model,now,
+                                    input_ceiling=min(100000,len(content.encode("utf-8"))*2),
+                                    output_ceiling=MAX_OUTPUT_TOKENS)
+                write_ledger(ledger_path,ledger)
             schema=json.loads((ROOT/"schemas/ai-analyst-review-proposal-v1.schema.json").read_text(encoding="utf-8"))
             payload={
                 "model":model,"store":False,"max_output_tokens":MAX_OUTPUT_TOKENS,
@@ -184,6 +193,8 @@ def main():
     p.add_argument("--execute", action="store_true", help="Chargeable API call; requires separate affirmative environment gate")
     p.add_argument("--private-output", help="Absolute JSON path outside the repository, never a GitHub artifact")
     p.add_argument("--cost-ledger", help="Durable private JSON ledger outside repository; required for all paid calls")
+    p.add_argument("--reservation-precommitted", action="store_true",
+                   help="Only after remote ledger reservation is committed; required in trusted Actions")
     a = p.parse_args()
     packet, content = prepare(a.ticker)
     if not a.execute:
@@ -196,11 +207,14 @@ def main():
     key = os.getenv("OPENAI_API_KEY")
     if not key:
         raise ValueError("OPENAI_API_KEY secret missing; cannot execute AI")
-    model = os.getenv("PULSE_AI_MODEL", "gpt-5-mini")
+    model = os.getenv("PULSE_AI_MODEL", "gpt-6.1-sol")
     if model not in ALLOWED_MODELS:
         raise ValueError("Model not in audited cost-bounded allowlist")
     ledger_path=checked_ledger(a.cost_ledger)
-    run_paid_review(a.ticker,packet,content,model,key,target,ledger_path)
+    if a.reservation_precommitted and os.getenv("PULSE_REMOTE_RESERVATION_PERSISTED")!="YES":
+        raise ValueError("Remote-reservation attestation missing")
+    run_paid_review(a.ticker,packet,content,model,key,target,ledger_path,
+                    reservation_precommitted=a.reservation_precommitted)
 
 
 if __name__ == "__main__":
