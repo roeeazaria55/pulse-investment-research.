@@ -21,7 +21,8 @@ class ResearchProposalWorkflowChecks(unittest.TestCase):
  def test_only_unapproved_staged_versions_are_written_to_draft_pr(self):
   workflow=(ROOT/".github/workflows/research-release-proposal.yml").read_text(encoding="utf-8")
   self.assertIn("public/data/research-release-proposals/",workflow)
-  self.assertIn("public/approved-research/",workflow)
+  self.assertIn("public/research-release-proposals/",workflow)
+  self.assertNotIn("git add -- public/approved-research/",workflow)
   self.assertNotIn("git add -- public/data/approved-research-versions.json",workflow)
   self.assertNotIn("OPENAI_API_KEY",workflow)
  def test_pdf_generation_is_separate_from_actual_research_publication(self):
