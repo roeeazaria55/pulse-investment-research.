@@ -51,7 +51,17 @@ def packet_key(ticker: str, packet_sha: str, model: str) -> str:
 def validate_ledger(ledger):
     if not isinstance(ledger,dict) or ledger.get("version") != 1 or not isinstance(ledger.get("calls"),list):
         raise ValueError("Cost ledger missing or malformed")
+    if "holds" in ledger and not isinstance(ledger["holds"],list):
+        raise ValueError("Invalid reservations")
     seen=set()
+    for hold in ledger.get("holds",[]):
+        if (not isinstance(hold,dict) or set(hold)!={"id","ticker","model","packetSha256","heldAt","maxUsd"}
+                or hold["id"]!=packet_key(hold["ticker"],hold["packetSha256"],hold["model"])
+                or Decimal(str(hold["maxUsd"]))<=0):
+            raise ValueError("Invalid reserved call")
+        month_key(hold["heldAt"])
+        if hold["id"] in seen:raise ValueError("Duplicate call reservation")
+        seen.add(hold["id"])
     for row in ledger["calls"]:
         if not isinstance(row,dict) or set(row)!={"id","ticker","model","packetSha256","calledAt","inputTokens","outputTokens","cachedTokens","usd"}:
             raise ValueError("Ledger row malformed")
@@ -66,14 +76,15 @@ def validate_ledger(ledger):
 
 def used_in_month(ledger, month: str) -> Decimal:
     validate_ledger(ledger)
-    return sum((Decimal(str(r["usd"])) for r in ledger["calls"] if month_key(r["calledAt"])==month),Decimal("0"))
+    return (sum((Decimal(str(r["usd"])) for r in ledger["calls"] if month_key(r["calledAt"])==month),Decimal("0"))
+            +sum((Decimal(str(h["maxUsd"])) for h in ledger.get("holds",[]) if month_key(h["heldAt"])==month),Decimal("0")))
 
 def preflight(ledger, ticker: str, packet_sha: str, model: str, now: str,
               input_token_ceiling: int, output_token_ceiling: int=MAX_OUTPUT_TOKENS):
     validate_ledger(ledger)
     key=packet_key(ticker,packet_sha,model)
-    if any(r["id"]==key for r in ledger["calls"]):
-        return {"allowed":False,"reason":"already-processed","estimatedMaxUsd":None}
+    if any(r["id"]==key for r in ledger["calls"]) or any(h["id"]==key for h in ledger.get("holds",[])):
+        return {"allowed":False,"reason":"already-processed-or-reserved","estimatedMaxUsd":None}
     month=month_key(now)
     spent=used_in_month(ledger,month)
     estimate=cents(quoted_cost(model,input_token_ceiling,output_token_ceiling))
@@ -85,6 +96,14 @@ def preflight(ledger, ticker: str, packet_sha: str, model: str, now: str,
             "spentUsd":str(spent),"estimatedMaxUsd":str(estimate),
             "warning":str(max((x for x in WARN_USD if spent>=x), default=Decimal("0")))}
 
+def reserve(ledger, ticker, packet_sha, model, now, input_ceiling, output_ceiling=MAX_OUTPUT_TOKENS):
+    decision=preflight(ledger,ticker,packet_sha,model,now,input_ceiling,output_ceiling)
+    if not decision["allowed"]:
+        raise ValueError("Budget refused: "+decision["reason"])
+    hold={"id":decision["id"],"ticker":ticker,"model":model,"packetSha256":packet_sha,
+          "heldAt":now,"maxUsd":decision["estimatedMaxUsd"]}
+    return {"version":1,"calls":ledger["calls"],"holds":[*ledger.get("holds",[]),hold]},hold
+
 def record_call(ledger, ticker, packet_sha, model, now, usage):
     # Record successful usage in a durable ledger; failed API calls also need
     # reconciliation against the provider before any further spending.
@@ -92,10 +111,14 @@ def record_call(ledger, ticker, packet_sha, model, now, usage):
     key=packet_key(ticker,packet_sha,model)
     if any(r["id"]==key for r in ledger["calls"]):
         raise ValueError("Duplicate billable call identity")
+    holds=ledger.get("holds",[])
+    if not any(h["id"]==key for h in holds):
+        raise ValueError("No prior reserved call")
     input_tokens=usage.get("input_tokens"); output_tokens=usage.get("output_tokens")
     cached_tokens=(usage.get("input_tokens_details") or {}).get("cached_tokens",0)
     amount=cents(quoted_cost(model,input_tokens,output_tokens,cached_tokens))
     row={"id":key,"ticker":ticker,"model":model,"packetSha256":packet_sha,
          "calledAt":now,"inputTokens":input_tokens,"outputTokens":output_tokens,
          "cachedTokens":cached_tokens,"usd":str(amount)}
-    return {"version":1,"calls":[*ledger["calls"],row]},row
+    return {"version":1,"calls":[*ledger["calls"],row],
+            "holds":[h for h in holds if h["id"]!=key]},row
