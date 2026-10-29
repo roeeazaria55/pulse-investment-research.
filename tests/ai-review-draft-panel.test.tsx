@@ -16,6 +16,12 @@ describe('AI report draft visibility never means publication',()=>{
  it('permits review-only model output with source hashes',()=>{
   expect(validateAIReviewFeed({version:1,drafts:[item]},cid)).toHaveLength(1);
  });
+ it('refuses to display an unsupported full report or uncited risk sections',()=>{
+  const missing={...item,fullResearch:{contractVersion:2,headline:'Test',executiveSummary:'Test',
+   sections:{financialResults:{summary:'Reported',interpretation:'Hypothesis',
+    evidenceIds:['invented-id'],unknowns:[]}},limitations:[],confidence:'low'}};
+  expect(()=>validateAIReviewFeed({version:1,drafts:[missing]},cid)).toThrow();
+ });
  it('rejects self-promoted prices, approvals and probability totals',()=>{
   const show=(v:unknown)=>validateAIReviewFeed({version:1,drafts:[v]},cid);
   expect(()=>show({...item,publicationStatus:'approved'})).toThrow();
