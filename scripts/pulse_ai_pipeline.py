@@ -12,6 +12,7 @@ import json
 from pathlib import Path
 
 from ai_analyst_review_contract import validate_ai_proposal
+from pulse_ai_full_research import SECTIONS,LIMITATION_TEXT,validate_full_research
 from ai_research_packets import build_all
 from pulse_ai_analysis_queue import ROOT, build_queue, validate, utc_at
 
@@ -57,13 +58,26 @@ class MockAIProvider:
                               "evidenceIds":[evidence],"unknowns":["מודל AI לא הופעל"]}]
         else:
             citations=[];interpretations=[]
-        return {"version":1,"companyId":packet["companyId"],
+        primary=citations[0]["evidenceId"] if citations else None
+        sections={}
+        for section in SECTIONS:
+            sections[section]={
+                "summary":"TEST/MOCK בלבד — מידע זה נוצר בסימולציה מקומית, ללא מודל AI.",
+                "interpretation":("יש להשוות את המקור לדוח הרשמי לפני הסקת מסקנות."
+                                  if primary else LIMITATION_TEXT),
+                "evidenceIds":[primary] if primary else [],
+                "unknowns":["אין הפעלת מודל AI","אין אישור מחקר או מחיר יעד"]}
+        return {"version":2,"companyId":packet["companyId"],
                 "packetContentSha256":packet["contentSha256"],
                 "status":"requires-human-review","analysisMode":"deterministic-no-ai",
-                "evidenceCitations":citations,
+                "headline":"TEST/MOCK — הדגמת זרימת מחקר, לא ניתוח השקעה",
+                "executiveSummary":"סימולציית מחקר להוכחת קליטה, אימות, תור וטיוטה. לא הופעל מודל בתשלום.",
+                "sections":sections,"evidenceCitations":citations,
                 "analystQuestions":["Mock בלבד: האם המדדים תואמים לדוח הרשמי ולהנחות הקודמות?"],
-                "interpretations":interpretations,"suggestedScenarioReview":[],
-                "proposedValuationAction":"no-automatic-change"}
+                "suggestedScenarioReview":[],"targetPriceProposal":None,
+                "proposedValuationAction":"no-automatic-change",
+                "limitations":["לא הופעל OpenAI API","אין מסקנת הערכת שווי אמיתית"],
+                "confidence":"low"}
 
 class OpenAIProvider:
     """Guarded provider bridge; deliberately never called by replay or CI."""
@@ -95,7 +109,7 @@ def simulate(queue,packets,ticker,now):
         raise ValueError("Current source version has no financial observation in packet")
     model=MockAIProvider()
     proposal=model.analyze(packet)
-    checked=validate_ai_proposal(packet,proposal)
+    checked=validate_full_research(packet,proposal)
     if checked["modelChanges"]!=0:raise ValueError("Mock attempted a model change")
     return {"version":1,"simulation":True,"analysisMode":"mock-simulation-no-model",
             "paidAiExecuted":False,"authorizedBy":None,"publicationStatus":"not-approved",
