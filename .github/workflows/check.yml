@@ -18,6 +18,10 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Install offline Hebrew release-PDF dependencies
+        run: |
+          python3 -m pip install --disable-pip-version-check -r scripts/requirements-pulse-release.txt
+          test -s /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf
       - run: python3 -m unittest discover -s scripts -p 'test_*.py'
       - name: Check live official source metadata read-only
         run: python3 scripts/official_sources.py
