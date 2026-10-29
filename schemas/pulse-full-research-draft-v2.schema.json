@@ -1,0 +1,550 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PULSE Full Hebrew Investment Research Draft v2 (UNAPPROVED ONLY)",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "const": 2
+    },
+    "companyId": {
+      "type": "string",
+      "minLength": 2
+    },
+    "packetContentSha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "status": {
+      "const": "requires-human-review"
+    },
+    "analysisMode": {
+      "enum": [
+        "model-generated-unverified",
+        "deterministic-no-ai"
+      ]
+    },
+    "headline": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 350
+    },
+    "executiveSummary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4500
+    },
+    "sections": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "financialResults": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "summary": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2500
+            },
+            "interpretation": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2500
+            },
+            "evidenceIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 20
+            },
+            "unknowns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 10
+            }
+          },
+          "required": [
+            "summary",
+            "interpretation",
+            "evidenceIds",
+            "unknowns"
+          ]
+        },
+        "growthDrivers": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "summary": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2500
+            },
+            "interpretation": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2500
+            },
+            "evidenceIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 20
+            },
+            "unknowns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 10
+            }
+          },
+          "required": [
+            "summary",
+            "interpretation",
+            "evidenceIds",
+            "unknowns"
+          ]
+        },
+        "profitability": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "summary": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2500
+            },
+            "interpretation": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2500
+            },
+            "evidenceIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 20
+            },
+            "unknowns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 10
+            }
+          },
+          "required": [
+            "summary",
+            "interpretation",
+            "evidenceIds",
+            "unknowns"
+          ]
+        },
+        "cashFlow": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "summary": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2500
+            },
+            "interpretation": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2500
+            },
+            "evidenceIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 20
+            },
+            "unknowns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 10
+            }
+          },
+          "required": [
+            "summary",
+            "interpretation",
+            "evidenceIds",
+            "unknowns"
+          ]
+        },
+        "balanceSheet": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "summary": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2500
+            },
+            "interpretation": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2500
+            },
+            "evidenceIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 20
+            },
+            "unknowns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 10
+            }
+          },
+          "required": [
+            "summary",
+            "interpretation",
+            "evidenceIds",
+            "unknowns"
+          ]
+        },
+        "riskChanges": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "summary": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2500
+            },
+            "interpretation": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2500
+            },
+            "evidenceIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 20
+            },
+            "unknowns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 10
+            }
+          },
+          "required": [
+            "summary",
+            "interpretation",
+            "evidenceIds",
+            "unknowns"
+          ]
+        },
+        "catalysts": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "summary": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2500
+            },
+            "interpretation": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2500
+            },
+            "evidenceIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 20
+            },
+            "unknowns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 10
+            }
+          },
+          "required": [
+            "summary",
+            "interpretation",
+            "evidenceIds",
+            "unknowns"
+          ]
+        },
+        "thesisComparison": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "summary": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2500
+            },
+            "interpretation": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2500
+            },
+            "evidenceIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 20
+            },
+            "unknowns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 10
+            }
+          },
+          "required": [
+            "summary",
+            "interpretation",
+            "evidenceIds",
+            "unknowns"
+          ]
+        },
+        "forecastSensitivity": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "summary": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2500
+            },
+            "interpretation": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2500
+            },
+            "evidenceIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 20
+            },
+            "unknowns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 10
+            }
+          },
+          "required": [
+            "summary",
+            "interpretation",
+            "evidenceIds",
+            "unknowns"
+          ]
+        },
+        "valuationMethodology": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "summary": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2500
+            },
+            "interpretation": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2500
+            },
+            "evidenceIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 20
+            },
+            "unknowns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 10
+            }
+          },
+          "required": [
+            "summary",
+            "interpretation",
+            "evidenceIds",
+            "unknowns"
+          ]
+        }
+      },
+      "required": [
+        "financialResults",
+        "growthDrivers",
+        "profitability",
+        "cashFlow",
+        "balanceSheet",
+        "riskChanges",
+        "catalysts",
+        "thesisComparison",
+        "forecastSensitivity",
+        "valuationMethodology"
+      ]
+    },
+    "evidenceCitations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "evidenceId": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "financial-observation",
+              "issuer-report-metric",
+              "archived-forecast",
+              "research-section",
+              "valuation-scenario"
+            ]
+          },
+          "claim": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "uncertainty": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          }
+        },
+        "required": [
+          "evidenceId",
+          "kind",
+          "claim",
+          "uncertainty"
+        ]
+      },
+      "maxItems": 100
+    },
+    "analystQuestions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 2500
+      },
+      "maxItems": 30
+    },
+    "suggestedScenarioReview": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "enum": [
+              "bear",
+              "base",
+              "bull"
+            ]
+          },
+          "suggestedProbability": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "evidenceIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "maxItems": 15
+          },
+          "status": {
+            "type": "string",
+            "const": "review-only"
+          }
+        },
+        "required": [
+          "id",
+          "suggestedProbability",
+          "reason",
+          "evidenceIds",
+          "status"
+        ]
+      },
+      "maxItems": 3
+    },
+    "targetPriceProposal": {
+      "type": "null"
+    },
+    "proposedValuationAction": {
+      "const": "no-automatic-change"
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 2500
+      },
+      "maxItems": 20
+    },
+    "confidence": {
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    }
+  },
+  "required": [
+    "version",
+    "companyId",
+    "packetContentSha256",
+    "status",
+    "analysisMode",
+    "headline",
+    "executiveSummary",
+    "sections",
+    "evidenceCitations",
+    "analystQuestions",
+    "suggestedScenarioReview",
+    "targetPriceProposal",
+    "proposedValuationAction",
+    "limitations",
+    "confidence"
+  ]
+}
