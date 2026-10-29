@@ -70,7 +70,12 @@ def choose(state,model):
         packet=packets.get(j["ticker"])
         if packet is None or packet["companyId"]!=j["companyId"]:
             raise ValueError("Issuer packet mismatch")
-        if j["sourceSha256"] not in {ob["sourceSha256"] for ob in packet["financialObservations"]}:
+        supported={ob["sourceSha256"] for ob in packet["financialObservations"]}
+        issuer=packet.get("latestIssuerResearch") or {}
+        report=issuer.get("report") or {}
+        if issuer.get("sourceBoundMetrics"):
+            supported.add(report.get("digest"))
+        if j["sourceSha256"] not in supported:
             # Do not pay for an unsupported or missing report.
             continue
         _,payload=prepare(j["ticker"])
