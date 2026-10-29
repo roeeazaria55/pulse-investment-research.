@@ -2316,3 +2316,47 @@ summary { cursor: pointer; min-height: 44px; padding-block: .55rem; line-height:
  .pulse-ai-queue .pulse-ai-queue-head>.pulse-ai-pill{margin-top:10px;white-space:normal}
  .pulse-ai-queue .pulse-ai-queue-items{grid-template-columns:minmax(0,1fr)}
 }
+
+/* Current-versus-proposed: readable comparison, no anonymous approval buttons. */
+.pulse-ai-model-compare{
+ margin:16px 0 22px;border:1px solid #385665;border-radius:14px;
+ padding:clamp(12px,2vw,20px);background:rgba(12,29,41,.52)
+}
+.pulse-ai-model-compare-header{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:baseline}
+.pulse-ai-model-compare-header h5{margin:0;color:#effaf9;font-size:1.06rem}
+.pulse-ai-model-compare-header small,.pulse-ai-model-compare-table>small{
+ color:#b7cdd3;line-height:1.6;display:block;margin-top:10px
+}
+.pulse-ai-model-compare-table{overflow-x:auto;min-width:0}
+.pulse-ai-model-compare-table table{
+ width:100%;border-collapse:collapse;font-size:.86rem;
+ table-layout:fixed;margin:12px 0
+}
+.pulse-ai-model-compare-table th,.pulse-ai-model-compare-table td{
+ text-align:right;vertical-align:top;padding:12px 9px;overflow-wrap:anywhere;
+ border-bottom:1px solid rgba(136,173,187,.21);
+}
+.pulse-ai-model-compare-table thead th{
+ color:#86ded0;font-size:.74rem;font-weight:750;
+ background:rgba(68,167,151,.07)
+}
+.pulse-ai-model-compare-table tbody th{color:#e9f8f6;font-weight:700}
+.pulse-ai-model-compare-table td{color:#c9dce2}
+.pulse-ai-model-compare-table td small{display:block;line-height:1.6;margin-top:6px}
+.pulse-ai-model-review-note{
+ padding:10px 13px;border:1px solid rgba(193,159,85,.4);
+ background:rgba(176,131,59,.09);color:#ead4aa!important;
+ border-radius:10px;font-size:.81rem!important
+}
+:root[data-pulse-theme="light"] .pulse-ai-model-compare{background:#f3faf9;border-color:#b4cfd3}
+:root[data-pulse-theme="light"] .pulse-ai-model-compare-header h5,
+:root[data-pulse-theme="light"] .pulse-ai-model-compare-table tbody th{color:#1b4e51}
+:root[data-pulse-theme="light"] .pulse-ai-model-compare-table td{color:#456573}
+:root[data-pulse-theme="light"] .pulse-ai-model-compare-table thead th{color:#146858}
+:root[data-pulse-theme="light"] .pulse-ai-model-review-note{
+ color:#805b16!important;background:#fff2d6;border-color:#e0c482
+}
+@media(max-width:420px){
+ .pulse-ai-model-compare-table table{font-size:.79rem}
+ .pulse-ai-model-compare-table th,.pulse-ai-model-compare-table td{padding:9px 5px}
+}
