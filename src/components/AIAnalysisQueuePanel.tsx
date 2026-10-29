@@ -75,12 +75,12 @@ export function AIAnalysisQueuePanel({companyId,compact=false}:{companyId?:strin
   {store===null&&!error&&<p role="status">טוען תור ניתוחים…</p>}
   {error&&<p role="status">נתוני תור הניתוחים טרם פורסמו. קליטת הדוחות הקיימת לא נפגעה.</p>}
   {store&&<p className="pulse-ai-queue-summary">משימות נוכחיות: <bdi>{rows.length}</bdi> · לטיפול: <bdi>{pending.length}</bdi>. נתוני התור אינם ניתוח השקעה.</p>}
-  {!!rows.length&&<div className="pulse-ai-queue-items">{rows.slice(0,compact?4:12).map(j=><article key={j.id}>
+  {!!rows.length&&<div className="pulse-ai-queue-items">{rows.slice(0,compact?4:12).map(j=><div className="pulse-ai-queue-item" key={j.id}>
    <div><strong><bdi>{j.ticker}</bdi></strong><span><bdi>{j.reportPeriod||'תקופה בבדיקה'}</bdi></span></div>
    <p>{descriptions[j.status]||'סטטוס לא מוכר'}</p>
    <a href={j.sourceUrl} target="_blank" rel="noopener noreferrer" aria-label={'מקור רשמי עבור '+j.ticker}>
     מקור רשמי <Clock3 size={13}/></a>
-  </article>)}</div>}
+  </div>)}</div>}
   {store&&rows.length===0&&<p>אין כרגע משימות ניתוח נתמכות לחברה או לסינון שבחרת.</p>}
   {store&&rows.some(j=>j.status==='blocked')&&<p className="pulse-ai-queue-warning"><AlertTriangle size={16}/> דוח חסום מחייב אימות מקור; לא יפעיל AI.</p>}
   {!store&&error&&<small>הפעלת מפתח API לא נדרשת כדי לראות את התור, לאחר שגרסת הקוד תאושר לפרסום.</small>}
