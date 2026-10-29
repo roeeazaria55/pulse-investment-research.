@@ -2305,3 +2305,14 @@ summary { cursor: pointer; min-height: 44px; padding-block: .55rem; line-height:
 :root[data-pulse-theme="light"] .pulse-ai-full-sections p{color:#425f70!important}
 :root[data-pulse-theme="light"] .pulse-ai-full-limits{color:#865a12!important;background:#fff5db}
 @media(max-width:700px){.pulse-ai-full-sections{grid-template-columns:1fr}}
+
+/* No new AI metadata is allowed to widen 320px/200%-text news layout. */
+.pulse-ai-queue,.pulse-ai-queue *{min-width:0}
+.pulse-ai-queue-items .pulse-ai-queue-item>div{flex-wrap:wrap}
+.pulse-ai-queue bdi,.pulse-ai-queue strong,.pulse-ai-queue .pulse-ai-pill,
+.pulse-ai-queue-summary{overflow-wrap:anywhere;word-break:break-word}
+@media(max-width:650px){
+ .pulse-ai-queue .pulse-ai-queue-head{display:block}
+ .pulse-ai-queue .pulse-ai-queue-head>.pulse-ai-pill{margin-top:10px;white-space:normal}
+ .pulse-ai-queue .pulse-ai-queue-items{grid-template-columns:minmax(0,1fr)}
+}
