@@ -148,7 +148,11 @@ def settle(state,private,now):
     proposal_path=private/"review.json"
     try:
         proposal=read_json(proposal_path)
-        draft=build_public_draft(packet,proposal,model,execution_attested=True)
+        if proposal.get("version")==2:
+            from pulse_ai_full_research import build_public_full_research_draft
+            draft=build_public_full_research_draft(packet,proposal,model,execution_attested=True)
+        else:
+            draft=build_public_draft(packet,proposal,model,execution_attested=True)
     except (ValueError,KeyError,TypeError,OSError):
         # If a paid response was malformed, record ACTUAL billing anyway,
         # mark it failed and never publish the unsafe text.
