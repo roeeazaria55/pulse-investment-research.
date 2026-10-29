@@ -4,6 +4,7 @@ import {compareNews} from './research/newsPresentation';
 import {ResearchAlertInbox} from './components/ResearchAlertInbox';
 import {AIResearchOverview} from './components/AIResearchOverview';
 import {AIAnalysisQueuePanel} from './components/AIAnalysisQueuePanel';
+import {AISettingsPanel} from './components/AISettingsPanel';
 import { useEffect, useRef, useState } from "react";
 import {
   Activity,
@@ -27,6 +28,7 @@ import {
   Copy,
   Pencil,
   WifiOff,
+  Settings2,
 } from "lucide-react";
 import { usePersonalState, STORAGE_KEY } from "./state/storage";
 import { blankResearch } from "./data/initial";
@@ -88,6 +90,15 @@ export default function App() {
   const [prompt, setPrompt] = useState<string | null>(null);
   const [install, setInstall] = useState<InstallEvent | null>(null);
   const [help, setHelp] = useState(false);
+  const [settingsOpen,setSettingsOpen] = useState(false);
+  const [theme,setTheme] = useState<'dark'|'light'>(()=>{
+    try{return localStorage.getItem('pulse-theme-v1')==='light'?'light':'dark';}
+    catch{return 'dark';}
+  });
+  useEffect(()=>{
+    document.documentElement.setAttribute('data-pulse-theme',theme);
+    try{localStorage.setItem('pulse-theme-v1',theme);}catch{/* Optional */}
+  },[theme]);
   const heading = useRef<HTMLHeadingElement>(null);
   const allSecurities = [
     ...state.watchlist,
@@ -329,6 +340,10 @@ export default function App() {
             <b>{tabs.find((t) => t.id === tab)?.label}</b>
           </div>
           <div className="topbar-actions">
+            <button className="icon-button pulse-settings-trigger"
+              onClick={() => setSettingsOpen(true)} aria-label="הגדרות PULSE">
+              <Settings2 size={19}/>
+            </button>
             <span className="local-tag">
               <span /> מקומי ופרטי
             </span>
@@ -1246,6 +1261,11 @@ export default function App() {
               <ExternalLink size={16} />
             </a>
           </div>
+        </Modal>
+      )}
+      {settingsOpen && (
+        <Modal title="הגדרות PULSE · מחקר ותצוגה" close={() => setSettingsOpen(false)}>
+          <AISettingsPanel theme={theme} onThemeChange={setTheme}/>
         </Modal>
       )}
       {help && (
