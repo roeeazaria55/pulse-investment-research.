@@ -3,6 +3,7 @@ import {MacroPanel,NextEarnings} from './components/MarketContext';
 import {compareNews} from './research/newsPresentation';
 import {ResearchAlertInbox} from './components/ResearchAlertInbox';
 import {AIResearchOverview} from './components/AIResearchOverview';
+import {AIAnalysisQueuePanel} from './components/AIAnalysisQueuePanel';
 import { useEffect, useRef, useState } from "react";
 import {
   Activity,
@@ -743,6 +744,7 @@ export default function App() {
           {tab === "news" && (
             <>
               <ResearchAlertInbox items={news} readIds={readIds} groups={feed?.version===2?feed.intelligence?.eventGroups:undefined} onRead={toggleRead}/>
+              <AIAnalysisQueuePanel compact/>
               <div className="news-controls">
                 <label className="search-field">
                   <Search size={18} />
