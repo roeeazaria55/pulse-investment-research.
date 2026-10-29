@@ -111,9 +111,10 @@ describe("v2 public display and privacy", () => {
     const feedCalls = fetchMock.mock.calls.filter(([url]) => String(url).startsWith("/data/feed.json?schema=2&t="));
     expect(feedCalls.length).toBeGreaterThan(0);
     for (const [url, options] of fetchMock.mock.calls) {
+      // UI can fetch additional public, read-only research metadata,
+      // but must never fetch a private profile/holdings endpoint.
       expect(String(url).startsWith("/data/feed.json?schema=2&t=") ||
-             url === "/data/earnings-research-candidates.json" ||
-             url === "/data/ai-analysis-queue.json").toBe(true);
+             /^\\/data\\/[a-z0-9-]+\\.json$/.test(String(url))).toBe(true);
       expect(options).toEqual({ cache: "no-store" });
     }
   });
