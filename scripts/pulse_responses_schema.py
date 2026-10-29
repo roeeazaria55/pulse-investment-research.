@@ -19,6 +19,16 @@ def strict_provider_schema(raw):
     """
     if not isinstance(raw,dict):raise ValueError("Invalid schema")
     kind=raw.get("type")
+    if kind is None:
+        literals=([raw["const"]] if "const" in raw else raw.get("enum"))
+        if not isinstance(literals,list) or not literals:
+            raise ValueError("Unsupported strict schema node")
+        kinds={("boolean" if isinstance(v,bool) else "integer" if isinstance(v,int)
+                else "number" if isinstance(v,float) else "string" if isinstance(v,str)
+                else "null" if v is None else "invalid") for v in literals}
+        if len(kinds)!=1 or "invalid" in kinds:
+            raise ValueError("Unsupported mixed literal schema")
+        kind=kinds.pop()
     if kind=="object":
         props=raw.get("properties")
         if not isinstance(props,dict) or raw.get("additionalProperties") is not False:
