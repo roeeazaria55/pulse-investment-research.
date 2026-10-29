@@ -2129,3 +2129,151 @@ summary { cursor: pointer; min-height: 44px; padding-block: .55rem; line-height:
  --pulse-premium-radius:16px;
  --pulse-premium-shadow:0 14px 38px rgba(0,0,0,.13);
 }
+
+
+/* PULSE user-controlled appearance and functional AI settings. */
+.pulse-ai-settings{display:grid;gap:14px;max-width:690px;line-height:1.75}
+.pulse-ai-settings>section{
+ border:1px solid #35495b;border-radius:15px;padding:17px;
+ background:linear-gradient(145deg,#162537,#0f1b2d)
+}
+.pulse-ai-settings h3{display:flex;align-items:center;gap:10px;color:#eaf6fa;font-size:1rem}
+.pulse-ai-settings p{font-size:.88rem;line-height:1.8;margin:9px 0;color:#bcced8}
+.pulse-appearance-switch{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.pulse-appearance-switch button{
+ min-height:48px;padding:9px 13px;border:1px solid #3b5064;border-radius:11px;
+ display:flex;align-items:center;justify-content:center;gap:9px;
+ background:#152337;color:#d4e2eb;
+}
+.pulse-appearance-switch button.selected{
+ border-color:#4bc9b3;background:rgba(71,194,171,.18);color:#bcfff0;
+ box-shadow:inset 0 0 0 1px rgba(74,192,173,.14)
+}
+.pulse-ai-settings-status{
+ display:flex;align-items:center;gap:8px;
+ border:1px solid #49635d;border-radius:10px;
+ padding:12px;background:rgba(35,132,110,.1);
+ color:#b8eee3;font-size:.86rem
+}
+.pulse-ai-usage{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+.pulse-ai-usage>div{
+ border:1px solid #354d5d;border-radius:11px;padding:12px;background:rgba(11,23,37,.45)
+}
+.pulse-ai-usage span,.pulse-ai-usage strong{display:block}
+.pulse-ai-usage span{color:#b9cad2;font-size:.72rem}
+.pulse-ai-usage strong{color:#effffb;font-size:1.15rem;margin-top:7px;font-variant-numeric:tabular-nums}
+.pulse-ai-usage>small{grid-column:1/-1;line-height:1.6}
+.pulse-settings-trigger{border:1px solid #2d4754;background:rgba(56,117,121,.1)}
+@media(max-width:450px){.pulse-ai-usage{grid-template-columns:1fr}.pulse-ai-settings>section{padding:13px}}
+/* Light mode for all five main routes, keeping the dark premium mode unchanged.
+   Source/PDF colors are never used as data validation. */
+:root[data-pulse-theme="light"]{
+ color-scheme:light;
+ color:#1e3444;
+ background:#eef4f7;
+ --pulse-premium-bg:#edf4f7;
+ --pulse-premium-surface:#ffffff;
+ --pulse-premium-edge:#cbdbe4;
+ --pulse-premium-accent:#0d786a;
+ --pulse-premium-secondary:#4e6776;
+ --pulse-premium-warning:#855b15;
+ --pulse-premium-shadow:0 12px 32px rgba(42,70,83,.10);
+}
+:root[data-pulse-theme="light"] body{background:#eef4f7;color:#203849}
+:root[data-pulse-theme="light"] p,
+:root[data-pulse-theme="light"] small,
+:root[data-pulse-theme="light"] .muted{color:#526979}
+:root[data-pulse-theme="light"] .sidebar,
+:root[data-pulse-theme="light"] .topbar{
+ background:#fcfeff;border-color:#d5e0e7;
+ box-shadow:0 6px 32px rgba(40,71,89,.04)
+}
+:root[data-pulse-theme="light"] .workspace,
+:root[data-pulse-theme="light"] main{background:transparent;color:#233e50}
+:root[data-pulse-theme="light"] .panel,
+:root[data-pulse-theme="light"] .research-field,
+:root[data-pulse-theme="light"] .news-card,
+:root[data-pulse-theme="light"] .portfolio-summary,
+:root[data-pulse-theme="light"] .thesis-metric,
+:root[data-pulse-theme="light"] .data-status,
+:root[data-pulse-theme="light"] .holdings-grid article{
+ background:#ffffff;border-color:#d2e1e8;
+ color:#213c4f;box-shadow:var(--pulse-premium-shadow)
+}
+:root[data-pulse-theme="light"] .desktop-nav button{color:#496475}
+:root[data-pulse-theme="light"] .desktop-nav button.active{
+ background:#e2f3ee;color:#126e60
+}
+:root[data-pulse-theme="light"] .topbar-actions,
+:root[data-pulse-theme="light"] .breadcrumb,
+:root[data-pulse-theme="light"] .breadcrumb b,
+:root[data-pulse-theme="light"] .sidebar-footer b{color:#355164}
+:root[data-pulse-theme="light"] .secondary,
+:root[data-pulse-theme="light"] input,
+:root[data-pulse-theme="light"] textarea,
+:root[data-pulse-theme="light"] select{
+ background:#f8fcfd;border-color:#c9dce6;color:#263e4f
+}
+:root[data-pulse-theme="light"] input::placeholder,
+:root[data-pulse-theme="light"] textarea::placeholder{color:#647b88}
+:root[data-pulse-theme="light"] .icon-button{color:#476878}
+:root[data-pulse-theme="light"] .icon-button:hover{background:#e8f3f4}
+:root[data-pulse-theme="light"] .primary{background:#127e6a;color:white;border-color:#0f7565}
+:root[data-pulse-theme="light"] .primary:hover{background:#0b6758;color:white}
+:root[data-pulse-theme="light"] .briefing{
+ background:linear-gradient(125deg,#dff3ee,#edf8f6);
+ border-color:#a8d4c6;
+ color:#20453e
+}
+:root[data-pulse-theme="light"] .briefing h2,
+:root[data-pulse-theme="light"] .briefing h3{color:#1b3e39}
+:root[data-pulse-theme="light"] .pulse-ai-command,
+:root[data-pulse-theme="light"] .pulse-ai-queue,
+:root[data-pulse-theme="light"] .pulse-ai-draft-panel,
+:root[data-pulse-theme="light"] .pulse-research-drafts{
+ background:linear-gradient(148deg,#ffffff,#e6f4f3)!important;
+ border-color:#bad9d9!important;
+ color:#22434b;box-shadow:var(--pulse-premium-shadow)
+}
+:root[data-pulse-theme="light"] .pulse-ai-command h2,
+:root[data-pulse-theme="light"] .pulse-ai-draft-panel h4,
+:root[data-pulse-theme="light"] .pulse-ai-queue h4,
+:root[data-pulse-theme="light"] .pulse-research-drafts h4{
+ color:#143f42
+}
+:root[data-pulse-theme="light"] .pulse-ai-command-description,
+:root[data-pulse-theme="light"] .pulse-ai-queue-summary{color:#486875}
+:root[data-pulse-theme="light"] .pulse-ai-kpis>div,
+:root[data-pulse-theme="light"] .pulse-ai-queue-items article,
+:root[data-pulse-theme="light"] .pulse-ai-insight,
+:root[data-pulse-theme="light"] .pulse-ai-scenario-grid>div,
+:root[data-pulse-theme="light"] .pulse-ai-settings>section{
+ background:#f7fbfc;border-color:#cddfe7
+}
+:root[data-pulse-theme="light"] .pulse-ai-kpis strong,
+:root[data-pulse-theme="light"] .pulse-ai-scenario-grid strong,
+:root[data-pulse-theme="light"] .pulse-ai-queue-items article strong,
+:root[data-pulse-theme="light"] .pulse-ai-settings h3{
+ color:#163f49
+}
+:root[data-pulse-theme="light"] .pulse-ai-kpis span,
+:root[data-pulse-theme="light"] .pulse-ai-kpis small,
+:root[data-pulse-theme="light"] .pulse-ai-queue-items article p,
+:root[data-pulse-theme="light"] .pulse-ai-insight p,
+:root[data-pulse-theme="light"] .pulse-ai-settings p{color:#496779}
+:root[data-pulse-theme="light"] .pulse-ai-pill{
+ color:#176959;border-color:#b4ded1;background:#eaf8f2
+}
+:root[data-pulse-theme="light"] .pulse-ai-link{color:white;background:#176f62;border-color:#1b8873}
+:root[data-pulse-theme="light"] .pulse-ai-settings-status{color:#1b665c;background:#eaf8f2;border-color:#bbd9ce}
+:root[data-pulse-theme="light"] .pulse-appearance-switch button{
+ background:#f6fafb;color:#28505c;border-color:#c0d8de
+}
+:root[data-pulse-theme="light"] .pulse-appearance-switch button.selected{
+ background:#d7efe8;color:#145e4e;border-color:#13806b
+}
+:root[data-pulse-theme="light"] .pulse-ai-usage>div{background:#fff;border-color:#d2e3e6}
+:root[data-pulse-theme="light"] .pulse-ai-usage strong{color:#214e50}
+:root[data-pulse-theme="light"] .pulse-ai-review-warning{
+ background:#fff3d9;color:#795217;border-color:#e2c783
+}
