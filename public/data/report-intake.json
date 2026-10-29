@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-29T13:47:16.092500+00:00",
+  "generatedAt": "2026-10-29T19:16:59.332932+00:00",
   "parserVersion": "official-content-v1",
   "documents": [
     {
@@ -1300,8 +1300,8 @@
       "documentPeriod": null,
       "periodBasis": "unknown",
       "firstDetectedAt": "2026-10-20T12:44:57.787402+00:00",
-      "lastSuccessfulAt": "2026-10-29T13:47:16.092500+00:00",
-      "lastAttemptAt": "2026-10-29T13:47:16.092500+00:00",
+      "lastSuccessfulAt": "2026-10-29T19:16:59.332932+00:00",
+      "lastAttemptAt": "2026-10-29T19:16:59.332932+00:00",
       "revised": false,
       "revisions": [],
       "parserVersion": "official-content-v1",
@@ -14700,12 +14700,12 @@
     {
       "status": "extracted",
       "title": "dLocal Reports Second Quarter 2026 Financial Results",
-      "sha256": "381d3901a5f82ebb0a52ff79b6fcf10812761932ebc45808ac8057c0a6990c50",
-      "bytes": 166974,
+      "sha256": "9339ce559bef22e1c022007f6f9869426498999168cc00a65c64912d4cb5e850",
+      "bytes": 167694,
       "format": "html",
       "pages": null,
       "readScope": "full-body",
-      "charactersRead": 22849,
+      "charactersRead": 22941,
       "tables": [
         {
           "rows": [
@@ -15104,10 +15104,15 @@
       "documentPeriod": null,
       "periodBasis": "unknown",
       "firstDetectedAt": "2026-10-20T12:40:06.134310+00:00",
-      "lastSuccessfulAt": "2026-10-29T06:31:40.562694+00:00",
-      "lastAttemptAt": "2026-10-29T06:31:40.562694+00:00",
+      "lastSuccessfulAt": "2026-10-29T19:16:59.332932+00:00",
+      "lastAttemptAt": "2026-10-29T19:16:59.332932+00:00",
       "revised": true,
       "revisions": [
+        {
+          "sha256": "381d3901a5f82ebb0a52ff79b6fcf10812761932ebc45808ac8057c0a6990c50",
+          "firstDetectedAt": "2026-10-20T12:40:06.134310+00:00",
+          "lastSuccessfulAt": "2026-10-29T06:31:40.562694+00:00"
+        },
         {
           "sha256": "8d665114759438a36cb87564c0e32315acc75471dcf0c99cff3f0a9d53157f57",
           "firstDetectedAt": "2026-10-20T12:40:06.134310+00:00",
@@ -22030,7 +22035,7 @@
       "periodBasis": "unknown",
       "firstDetectedAt": "2026-10-20T12:40:06.134310+00:00",
       "lastSuccessfulAt": "2026-10-20T12:44:57.787402+00:00",
-      "lastAttemptAt": "2026-10-29T06:31:40.562694+00:00",
+      "lastAttemptAt": "2026-10-29T19:16:59.332932+00:00",
       "revised": false,
       "revisions": [],
       "parserVersion": "official-content-v1",
@@ -28433,8 +28438,8 @@
       "documentPeriod": null,
       "periodBasis": "unknown",
       "firstDetectedAt": "2026-10-29T00:27:58.606871+00:00",
-      "lastSuccessfulAt": "2026-10-29T13:47:16.092500+00:00",
-      "lastAttemptAt": "2026-10-29T13:47:16.092500+00:00",
+      "lastSuccessfulAt": "2026-10-29T19:16:59.332932+00:00",
+      "lastAttemptAt": "2026-10-29T19:16:59.332932+00:00",
       "revised": false,
       "revisions": [],
       "parserVersion": "official-content-v1",
@@ -28867,7 +28872,7 @@
       "periodBasis": "unknown",
       "firstDetectedAt": "2026-10-20T12:40:06.134310+00:00",
       "lastSuccessfulAt": "2026-10-20T12:44:57.787402+00:00",
-      "lastAttemptAt": "2026-10-29T13:47:16.092500+00:00",
+      "lastAttemptAt": "2026-10-29T19:16:59.332932+00:00",
       "revised": false,
       "revisions": [],
       "parserVersion": "official-content-v1",
@@ -30689,7 +30694,7 @@
       "periodBasis": "unknown",
       "firstDetectedAt": "2026-10-20T12:42:10.713780+00:00",
       "lastSuccessfulAt": "2026-10-20T12:44:57.787402+00:00",
-      "lastAttemptAt": "2026-10-29T06:31:40.562694+00:00",
+      "lastAttemptAt": "2026-10-29T19:16:59.332932+00:00",
       "revised": false,
       "revisions": [],
       "parserVersion": "official-content-v1",
@@ -30699,73 +30704,73 @@
   "sources": [
     {
       "companyId": "candidate-ftai",
-      "lastAttemptAt": "2026-10-29T13:47:16.092500+00:00",
+      "lastAttemptAt": "2026-10-29T19:16:59.332932+00:00",
       "status": "failed",
       "error": "HTTP Error 403: Forbidden"
     },
     {
-      "companyId": "us-lmnd-nyse-common",
-      "lastAttemptAt": "2026-10-29T13:47:16.092500+00:00",
+      "companyId": "candidate-sandisk",
+      "lastAttemptAt": "2026-10-29T19:16:59.332932+00:00",
+      "status": "failed",
+      "error": "HTTP Error 403: Forbidden"
+    },
+    {
+      "companyId": "us-dlo-nasdaq-a",
+      "lastAttemptAt": "2026-10-29T19:16:59.332932+00:00",
       "status": "ok",
       "error": null
     },
     {
-      "companyId": "us-meta-nasdaq-a",
-      "lastAttemptAt": "2026-10-29T13:47:16.092500+00:00",
-      "status": "ok",
-      "error": null
+      "companyId": "us-smci-nasdaq-common",
+      "lastAttemptAt": "2026-10-29T19:16:59.332932+00:00",
+      "status": "failed",
+      "error": "HTTP Error 403: Forbidden"
     },
     {
       "companyId": "candidate-brainsway",
-      "lastAttemptAt": "2026-10-29T13:47:16.092500+00:00",
+      "lastAttemptAt": "2026-10-29T19:16:59.332932+00:00",
       "status": "failed",
       "error": "HTTP Error 403: Forbidden"
     },
     {
       "companyId": "candidate-enlight",
-      "lastAttemptAt": "2026-10-29T13:47:16.092500+00:00",
+      "lastAttemptAt": "2026-10-29T19:16:59.332932+00:00",
       "status": "ok",
       "error": null
     },
     {
       "companyId": "candidate-gilat-telecom",
-      "lastAttemptAt": "2026-10-29T13:47:16.092500+00:00",
+      "lastAttemptAt": "2026-10-29T19:16:59.332932+00:00",
       "status": "failed",
       "error": "Not a financial results document"
     },
     {
       "companyId": "candidate-iren",
-      "lastAttemptAt": "2026-10-29T13:47:16.092500+00:00",
+      "lastAttemptAt": "2026-10-29T19:16:59.332932+00:00",
       "status": "failed",
       "error": "HTTP Error 403: Forbidden"
     },
     {
       "companyId": "candidate-nebius",
-      "lastAttemptAt": "2026-10-29T13:47:16.092500+00:00",
+      "lastAttemptAt": "2026-10-29T19:16:59.332932+00:00",
       "status": "ok",
       "error": null
     },
     {
       "companyId": "candidate-next-vision",
+      "lastAttemptAt": "2026-10-29T19:16:59.332932+00:00",
+      "status": "deferred",
+      "error": "Run budget reached; retained records unchanged"
+    },
+    {
+      "companyId": "us-lmnd-nyse-common",
       "lastAttemptAt": "2026-10-29T13:47:16.092500+00:00",
-      "status": "partial",
-      "error": "Issuer identity absent from report body"
-    },
-    {
-      "companyId": "candidate-sandisk",
-      "lastAttemptAt": "2026-10-29T06:31:40.562694+00:00",
       "status": "deferred",
       "error": "Run budget reached; retained records unchanged"
     },
     {
-      "companyId": "us-dlo-nasdaq-a",
-      "lastAttemptAt": "2026-10-29T06:31:40.562694+00:00",
-      "status": "deferred",
-      "error": "Run budget reached; retained records unchanged"
-    },
-    {
-      "companyId": "us-smci-nasdaq-common",
-      "lastAttemptAt": "2026-10-29T06:31:40.562694+00:00",
+      "companyId": "us-meta-nasdaq-a",
+      "lastAttemptAt": "2026-10-29T13:47:16.092500+00:00",
       "status": "deferred",
       "error": "Run budget reached; retained records unchanged"
     }
