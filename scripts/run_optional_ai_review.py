@@ -17,10 +17,11 @@ from urllib.error import HTTPError
 from ai_research_packets import build_all, TICKERS
 from pulse_ai_cost_guard import MODEL_RATES, MAX_OUTPUT_TOKENS as BUDGET_OUTPUT_TOKENS, reserve, record_call, validate_ledger
 from ai_analyst_review_contract import validate_ai_proposal
+from pulse_ai_full_research import validate_full_research
 
 ROOT = Path(__file__).resolve().parent.parent
 MAX_INPUT_BYTES = 50000
-MAX_OUTPUT_TOKENS = 2200
+MAX_OUTPUT_TOKENS = 6000
 ALLOWED_MODELS = set(MODEL_RATES)
 ENDPOINT = "https://api.openai.com/v1/responses"
 
@@ -44,7 +45,10 @@ def parse_and_validate(packet, response):
     if len(outputs) != 1 or not isinstance(outputs[0], str):
         raise ValueError("Unexpected AI response shape")
     candidate = json.loads(outputs[0])
-    validate_ai_proposal(packet, candidate, model_execution_attested=True)
+    if candidate.get("version")==2:
+        validate_full_research(packet,candidate,model_execution_attested=True)
+    else:
+        validate_ai_proposal(packet, candidate, model_execution_attested=True)
     if candidate["analysisMode"] != "model-generated-unverified":
         raise ValueError("AI execution incorrectly labeled as deterministic")
     return candidate
@@ -142,7 +146,7 @@ def run_paid_review(ticker, packet, content, model, key, target, ledger_path, *,
                                     input_ceiling=min(100000,len(content.encode("utf-8"))*2),
                                     output_ceiling=MAX_OUTPUT_TOKENS)
                 write_ledger(ledger_path,ledger)
-            schema=json.loads((ROOT/"schemas/ai-analyst-review-proposal-v1.schema.json").read_text(encoding="utf-8"))
+            schema=json.loads((ROOT/"schemas/pulse-full-research-draft-v2.schema.json").read_text(encoding="utf-8"))
             payload={
                 "model":model,"store":False,"max_output_tokens":MAX_OUTPUT_TOKENS,
                 "instructions":(
@@ -152,10 +156,19 @@ def run_paid_review(ticker, packet, content, model, key, target, ledger_path, *,
                     "review proposal matching the supplied schema. "
                     "Every interpretation and scenario suggestion must cite packet evidence IDs. "
                     "No investments, trades, portfolio updates or valuation changes. "
-                    "If evidence is inadequate, use empty claims and list analystQuestions."
+                    "Provide a detailed ten-section Hebrew financial review with evidence IDs. "
+                    "You may cite financial-observation, issuer-report-metric, archived-forecast, "
+                    "research-section or valuation-scenario identifiers present in the packet. "
+                    "Each section must cite a listed evidence ID or set interpretation to exactly "
+                    "'אין די מידע כדי להסיק מסקנה.' and explain the missing evidence in unknowns. "
+                    "Distinguish sourced facts from hypothetical impacts. Never invent EPS, cash flow, "
+                    "forecast beats or valuations. Return targetPriceProposal null. "
+                    "Only propose Bear/Base/Bull probabilities if all three are supported by "
+                    "an existing quantified model, cite evidence for each, and total 100%. "
+                    "Otherwise return an empty list. This is an unapproved analyst draft."
                 ),
                 "input":"Produce a cautious Hebrew review-only proposal for this exact packet:\\n"+content,
-                "text":{"format":{"type":"json_schema","name":"pulse_analyst_review","strict":False,"schema":schema}}
+                "text":{"format":{"type":"json_schema","name":"pulse_full_research_v2","strict":False,"schema":schema}}
             }
             request=Request(ENDPOINT,data=json.dumps(payload).encode("utf-8"),
                             headers={"Content-Type":"application/json","Authorization":"Bearer "+key},
@@ -180,7 +193,8 @@ def run_paid_review(ticker, packet, content, model, key, target, ledger_path, *,
             print(json.dumps({"ticker":ticker,"status":"private-review-created",
                               "packetSha256":packet["contentSha256"],"proposalSha256":fingerprint,
                               "citedEvidence":len(candidate["evidenceCitations"]),
-                              "interpretations":len(candidate["interpretations"]),
+                              "interpretations":len(candidate.get("interpretations",[])),
+                              "fullResearchSections":len(candidate.get("sections",{})),
                               "chargedUsd":bill["usd"],"model":model,
                               "outputSaved":True,"automaticModelChanges":False}))
     finally:
