@@ -20,7 +20,19 @@ class MockAIProvider:
     def analyze(self,packet):
         observations=packet.get("financialObservations",[])
         reviews=packet.get("research",{})
-        if observations:
+        official=packet.get("latestIssuerResearch") or {}
+        issuer_metrics=official.get("sourceBoundMetrics",[])
+        if issuer_metrics:
+            first=issuer_metrics[0]
+            evidence="issuer-metric:"+packet["companyId"]+":"+first["metricId"]
+            citations=[{"evidenceId":evidence,"kind":"issuer-report-metric",
+                        "claim":"בדיקת MOCK: בדוח הרשמי נמצא מדד "+first["metricId"]+".",
+                        "uncertainty":"נתון רשמי שנקלט, אך פירושו הפיננסי דורש בדיקת אנליסט."}]
+            interpretations=[{"observation":"נמצא מדד בדוח המנפיק החדש.",
+                "hypothesis":"יש לבדוק את ההשפעה של המדד על התחזית הקודמת.",
+                "evidenceIds":[evidence],
+                "unknowns":["לא בוצע ניתוח מודל AI","אין שינוי אוטומטי בשווי"]}]
+        elif observations:
             first=observations[0]
             evidence=first["observationId"]
             kind="financial-observation"
@@ -76,6 +88,9 @@ def simulate(queue,packets,ticker,now):
     if packet["companyId"]!=job["companyId"]:
         raise ValueError("Packet company mismatch")
     sources=[o["sourceSha256"] for o in packet["financialObservations"]]
+    issuer=(packet.get("latestIssuerResearch") or {}).get("report") or {}
+    if (packet.get("latestIssuerResearch") or {}).get("sourceBoundMetrics"):
+        sources.append(issuer.get("digest"))
     if job["sourceSha256"] not in sources:
         raise ValueError("Current source version has no financial observation in packet")
     model=MockAIProvider()
