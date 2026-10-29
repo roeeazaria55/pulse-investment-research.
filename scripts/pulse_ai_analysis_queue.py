@@ -152,7 +152,7 @@ def build_queue(candidates, previous, registry, now):
         else:history.append({"status":"blocked","at":now})
         saved[identifier]={
             "id":identifier,"candidateId":c["id"],"companyId":company_id,
-            "ticker":c.get("ticker") or company.get("ticker") or company_id,
+            "ticker":company.get("ticker") or company_id,
             "sourceUrl":c["sourceUrl"],"sourceSha256":c["sourceSha256"],
             "candidatePayloadSha256":payload,"reportPeriod":c.get("reportPeriod"),
             "createdAt":first,"updatedAt":now,"status":status,
