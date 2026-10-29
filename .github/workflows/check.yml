@@ -46,6 +46,8 @@ jobs:
         run: |
           python3 scripts/pulse_ai_pipeline.py --ticker META --output work/pulse-ai-mock-preview.json
           python3 -c 'import json; r=json.load(open("work/pulse-ai-mock-preview.json")); assert r["analysisMode"]=="mock-simulation-no-model" and not r["paidAiExecuted"] and r["validation"]["modelChanges"]==0'
+          python3 scripts/pulse_mock_research_pdf.py
+          test -s work/release-preview/meta-q3-2026-TEST-MOCK.pdf
       - name: Retain newly collected official issuer evidence before slow browser tests
         uses: actions/upload-artifact@v4
         if: always()
@@ -74,6 +76,7 @@ jobs:
           mkdir -p work
           npm run preview > work/preview.log 2>&1 &
           python3 scripts/mobile_check.py
+          python3 scripts/pulse_visual_review.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -92,6 +95,7 @@ jobs:
             public/data/ai-analysis-queue.json
             public/data/ai-research-packets/*.json
             work/pulse-ai-mock-preview.json
+            work/release-preview/*.pdf
           retention-days: 7
       - uses: actions/upload-artifact@v4
         if: always()
@@ -100,5 +104,7 @@ jobs:
           path: |
             work/mobile-*.png
             work/mobile-*.json
+            work/premium-review/*.png
+            work/premium-review/manifest.json
           retention-days: 7
 
