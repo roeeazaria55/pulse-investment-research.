@@ -260,3 +260,62 @@ closer to readiness, but owner-configured GitHub protection, a fully
 authenticated official publication/rollback path, physical Android validation
 and paid model availability/quality remain blockers. Passing unit tests alone
 does not remove them.
+
+
+## Two protected GitHub PRs and explicit rollback (final polish)
+
+The research publication protocol now has **two independent owner-reviewed
+PRs**. This is a deliberate audit/security boundary, not an anonymous public
+web approval button:
+
+1. **Review PDF proposal:** Owner enables protected release environment and
+   launches `research-release-proposal.yml` from protected `main` with
+   `ticker` and the exact immutable `ai-draft:` ID. The guarded workflow
+   verifies owner and branch protections through GitHub's authenticated API,
+   checks the source-bound packet and PDF hashes, and opens a **Draft PR**
+   with PDF under `public/research-release-proposals/`, *not* the approved
+   research directory. Human review and merge place only the proposal on main.
+2. **Final version publication:** The owner separately launches
+   `research-final-publication.yml` with the previously merged proposal
+   version digest. It checks source PDF SHA, parent version ancestry and
+   existing index, then opens a **second Draft PR**. This PR changes the
+   `approved-research-versions.json` pointer and adds an immutable PDF
+   under `public/approved-research/`. **Only a protected human GitHub
+   review/merge makes that new pointer active.** It never rewrites
+   `src/data/models/*.json` or original `public/research/*.pdf`.
+3. **Protected rollback:** `research-rollback.yml` prepares a third type
+   of review PR which moves the active pointer only to a proven ancestor
+   version, with an immutable audit event. All PDF bytes and historical
+   version records remain untouched.
+4. **Read-only app:** `ApprovedResearchHistory.tsx` exposes the new
+   version history and PDFs if the approved index exists, and safely
+   displays an empty state otherwise. The app cannot itself approve,
+   restore or publish research.
+
+These workflows are committed only on **Draft PR #64**; GitHub Actions
+`workflow_dispatch` will not offer them on protected `main` until
+the user explicitly approves a merge. They also cannot operate unless
+`RESEARCH_RELEASE_PROPOSALS_ENABLED=YES`, owner-reviewed
+`pulse-research-release` Environment and enforce-admins branch protection
+are actually configured. If GitHub API access or protection state is
+missing, the workflows fail closed.
+
+**Important distinction:** this releases a source-backed research PDF and
+its archive pointer. It intentionally does **not** automatically
+adopt any new valuation assumptions, scenario weights or price targets in
+the existing canonical company model. Those require separately reviewed
+model edits and regression tests. Do not conflate a published AI research
+document with an approved changed valuation.
+
+### End-to-end evidence and screenshots
+
+PR CI now creates a reproducible, explicitly labelled
+`META Q3 2026 TEST/MOCK` Hebrew PDF and generates actual Chromium
+screenshots for Home, Portfolio, News, Research, Watchlist, and Settings
+in light mode for 390px mobile and desktop. These are the PR preview
+(`pr-mobile-evidence` and `pr-report-intake-evidence` artifacts), not
+proof of production deployment or physical Android compatibility.
+
+The protected environment/ruleset and paid OpenAI model execution cannot
+be made real by a mock test. **Keep the API Key disconnected until
+owner-configured GitHub protection and this release review are complete.**
