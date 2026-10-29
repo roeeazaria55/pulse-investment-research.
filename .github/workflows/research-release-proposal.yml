@@ -99,10 +99,15 @@ jobs:
           item=json.loads((stage/"release-proposal.json").read_text(encoding="utf-8"))
           version=item["candidateVersion"]
           path=pathlib.Path(version["pdfPath"])
-          dest=pathlib.Path("public")/path.relative_to("public")
+          # Unapproved PDFs are stored only in the proposals namespace,
+          # never in active/approved research directories.
+          slug=path.parent.name
+          dest=pathlib.Path("public/research-release-proposals")/slug/path.name
           if dest.exists(): raise ValueError("Refuse to overwrite existing PDF")
           dest.parent.mkdir(parents=True,exist_ok=True)
           shutil.copyfile(stage/path,dest)
+          item["proposalPdfPath"]=str(dest)
+          item["publishAutomatically"]=False
           record=pathlib.Path("public/data/research-release-proposals")/(version["id"].split(":")[1]+".json")
           if record.exists():raise ValueError("Review proposal already exists")
           record.parent.mkdir(parents=True,exist_ok=True)
@@ -110,7 +115,7 @@ jobs:
           PY
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- public/approved-research/ public/data/research-release-proposals/
+          git add -- public/research-release-proposals/ public/data/research-release-proposals/
           git diff --cached --quiet && exit 1
           git commit -m "Propose immutable $INPUT_TICKER research PDF for owner review"
           git push origin "$BRANCH"
