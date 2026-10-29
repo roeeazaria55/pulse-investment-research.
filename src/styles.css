@@ -2277,3 +2277,31 @@ summary { cursor: pointer; min-height: 44px; padding-block: .55rem; line-height:
 :root[data-pulse-theme="light"] .pulse-ai-review-warning{
  background:#fff3d9;color:#795217;border-color:#e2c783
 }
+
+/* Full source-cited AI report — editorial reading experience on phone. */
+.pulse-ai-full-research{
+ margin:19px 0;padding:clamp(14px,2.4vw,23px);
+ border:1px solid #41606a;border-radius:17px;
+ background:linear-gradient(157deg,rgba(20,48,58,.72),rgba(14,24,37,.55))
+}
+.pulse-ai-full-research h3{color:#e8f9f7;font-size:clamp(1.15rem,2.3vw,1.65rem);margin:9px 0}
+.pulse-ai-executive{color:#d7e9e7!important;font-size:1.01rem;line-height:1.92;border-inline-start:3px solid #66d6bf;padding-inline-start:15px}
+.pulse-ai-full-sections{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin:19px 0}
+.pulse-ai-full-sections details{
+ background:rgba(12,26,39,.5);border:1px solid #35505d;
+ border-radius:11px;padding:12px 14px;min-width:0;margin:0
+}
+.pulse-ai-full-sections summary{
+ color:#d7f6ed;font-weight:750;cursor:pointer;min-height:35px;
+ display:list-item;list-style-position:inside
+}
+.pulse-ai-full-sections p{font-size:.86rem;color:#c4d6e0;line-height:1.85;margin:10px 0 0}
+.pulse-ai-full-limits{font-size:.82rem;color:#e3c891!important;padding:12px;border:1px solid #645838;border-radius:10px}
+:root[data-pulse-theme="light"] .pulse-ai-full-research,
+:root[data-pulse-theme="light"] .pulse-ai-full-sections details{background:#f5fafb;border-color:#bad5dd}
+:root[data-pulse-theme="light"] .pulse-ai-full-research h3,
+:root[data-pulse-theme="light"] .pulse-ai-full-sections summary{color:#244955}
+:root[data-pulse-theme="light"] .pulse-ai-executive,
+:root[data-pulse-theme="light"] .pulse-ai-full-sections p{color:#425f70!important}
+:root[data-pulse-theme="light"] .pulse-ai-full-limits{color:#865a12!important;background:#fff5db}
+@media(max-width:700px){.pulse-ai-full-sections{grid-template-columns:1fr}}
