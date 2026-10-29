@@ -6,7 +6,7 @@ on:
         description: 'Choose one issuer for read-only evidence preflight'
         required: true
         type: choice
-        options: [DLO, IREN, NBIS, SMCI]
+        options: [DLO, IREN, NBIS, SMCI, META, FTAI, LMND, SNDK, candidate-next-vision, candidate-enlight, candidate-brainsway, candidate-gilat-telecom]
         default: DLO
 permissions:
   contents: read
