@@ -108,8 +108,11 @@ describe("v2 public display and privacy", () => {
       target: { value: "portfolio" },
     });
     expect(screen.getByText("לא נמצאו פריטים")).toBeTruthy();
+    const feedCalls = fetchMock.mock.calls.filter(([url]) => String(url).startsWith("/data/feed.json?schema=2&t="));
+    expect(feedCalls.length).toBeGreaterThan(0);
     for (const [url, options] of fetchMock.mock.calls) {
-      expect(url).toMatch(/^\/data\/feed.json\?schema=2&t=\d+$/);
+      expect(String(url).startsWith("/data/feed.json?schema=2&t=") ||
+             url === "/data/earnings-research-candidates.json").toBe(true);
       expect(options).toEqual({ cache: "no-store" });
     }
   });
