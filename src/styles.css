@@ -2025,3 +2025,49 @@ summary { cursor: pointer; min-height: 44px; padding-block: .55rem; line-height:
 @media (prefers-reduced-motion: reduce) {
   .pulse-ai-link, .pulse-ai-command * { transition-duration: 0s !important; animation: none !important; }
 }
+
+/* PULSE AI review drafts — model inference is never equivalent to approved research. */
+.pulse-ai-draft-panel {
+  border-radius: 19px;
+  border: 1px solid #345565;
+  background: linear-gradient(155deg, #1a2937 0%, #111d2b 80%);
+  padding: 21px;
+  margin: 18px 0;
+  box-shadow: 0 16px 40px rgba(0,0,0,.11);
+}
+.pulse-ai-draft-panel .pulse-research-drafts-heading h4 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.pulse-ai-draft-panel .pulse-ai-meta { color: #adc6d3; font-size: .83rem; }
+.pulse-ai-review-warning {
+  color: #f5daab;
+  background: rgba(194,143,47,.12);
+  border: 1px solid rgba(221,178,89,.36);
+  border-radius: 11px;
+  padding: 11px 13px;
+  margin: 12px 0 16px;
+  line-height: 1.7;
+}
+.pulse-ai-insight {
+  border: 1px solid #304456;
+  border-radius: 12px;
+  background: rgba(14,24,38,.56);
+  padding: 12px 16px;
+  margin-block: 11px;
+}
+.pulse-ai-insight p { margin: 6px 0; line-height: 1.8; }
+.pulse-ai-insight small { color: #b4c7d2; overflow-wrap: anywhere; }
+.pulse-ai-scenario-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; margin-block: 15px; }
+.pulse-ai-scenario-grid > div { display:flex; flex-direction:column; gap:8px; background:rgba(16,33,47,.85); border:1px solid #365663; border-radius:13px; padding:14px; }
+.pulse-ai-scenario-grid span { text-transform:uppercase; color:#b2ddd5; font-size:.76rem; font-weight:700; }
+.pulse-ai-scenario-grid strong { color:#f7fffe; font-size:clamp(19px,2.6vw,26px); font-variant-numeric:tabular-nums; }
+.pulse-ai-scenario-grid small { color:#c3d3d8; line-height:1.6; }
+.pulse-ai-draft-panel details { margin-top:15px; border:1px solid #304456; border-radius:12px; padding:12px; }
+.pulse-ai-draft-panel details summary { cursor:pointer; font-weight:700; min-height:28px; }
+.pulse-ai-draft-panel li { overflow-wrap:anywhere; }
+@media(max-width:480px) {
+  .pulse-ai-draft-panel { padding:15px; }
+  .pulse-ai-scenario-grid { grid-template-columns: 1fr; }
+}
