@@ -81,7 +81,7 @@ class ReleasePreviewTests(unittest.TestCase):
    meta=json.loads((out/"release-proposal.json").read_text(encoding="utf-8"))
    self.assertEqual(meta["pdfSha256"],sha(data))
  def test_unknown_prior_history_cannot_be_silently_replaced(self):
-  with self.assertRaisesRegex(ValueError,"historical"):
+  with self.assertRaisesRegex(ValueError,"Historical release was edited"):
    validate_current_approved({"version":1,"versions":[{"id":"research-v:"+"1"*32}],"activeByCompany":{}})
 
 if __name__=="__main__":unittest.main()
