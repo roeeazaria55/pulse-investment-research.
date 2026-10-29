@@ -2,7 +2,7 @@ name: Publish PULSE
 on:
   push:
     branches: [main]
-    paths-ignore: ["public/data/feed.json", "public/data/ingestion-state.json", "public/data/official-sources.json", "public/data/report-intake.json", "public/data/report-review-queue.json", "public/data/auto-financial-observations.json", "public/data/forecast-archive.json", "public/data/forecast-actual-comparisons.json", "public/data/research-update-proposals.json", "public/data/latest-research-updates.json", "public/data/research-update-history.json", "public/data/issuer-coverage.json", "public/data/earnings-research-candidates.json"]
+    paths-ignore: ["public/data/feed.json", "public/data/ingestion-state.json", "public/data/official-sources.json", "public/data/report-intake.json", "public/data/report-review-queue.json", "public/data/auto-financial-observations.json", "public/data/forecast-archive.json", "public/data/forecast-actual-comparisons.json", "public/data/research-update-proposals.json", "public/data/latest-research-updates.json", "public/data/research-update-history.json", "public/data/issuer-coverage.json", "public/data/earnings-research-candidates.json", "public/data/ai-analysis-queue.json"]
   workflow_dispatch:
   schedule:
     # Existing ~30-minute collection polls. Two Jerusalem briefings are classified
@@ -48,7 +48,7 @@ jobs:
           set -euo pipefail
           git fetch --no-tags origin refs/heads/pulse-data:refs/remotes/origin/pulse-data
           echo "sha=$(git rev-parse refs/remotes/origin/pulse-data)" >> "$GITHUB_OUTPUT"
-          for file in public/data/feed.json public/data/ingestion-state.json public/data/official-sources.json public/data/report-intake.json public/data/report-review-queue.json public/data/auto-financial-observations.json public/data/forecast-archive.json public/data/forecast-actual-comparisons.json public/data/research-update-proposals.json public/data/latest-research-updates.json public/data/research-update-history.json public/data/issuer-coverage.json public/data/earnings-research-candidates.json public/data/ai-research-drafts.json; do
+          for file in public/data/feed.json public/data/ingestion-state.json public/data/official-sources.json public/data/report-intake.json public/data/report-review-queue.json public/data/auto-financial-observations.json public/data/forecast-archive.json public/data/forecast-actual-comparisons.json public/data/research-update-proposals.json public/data/latest-research-updates.json public/data/research-update-history.json public/data/issuer-coverage.json public/data/earnings-research-candidates.json public/data/ai-analysis-queue.json public/data/ai-research-drafts.json; do
             if git cat-file -e "refs/remotes/origin/pulse-data:$file"; then
               git show "refs/remotes/origin/pulse-data:$file" > "$file"
             fi
@@ -108,6 +108,9 @@ jobs:
       - name: Generate append-only, unapproved earnings research candidates
         if: steps.collect.outputs.skipped != 'true'
         run: python3 scripts/earnings_research_candidates.py
+      - name: Reconcile persistent source-bound AI job queue without model execution
+        if: steps.collect.outputs.skipped != 'true'
+        run: python3 scripts/pulse_ai_analysis_queue.py
       - name: Generate 12 source-bound review input packets, never AI judgments
         if: steps.collect.outputs.skipped != 'true'
         run: python3 scripts/ai_research_packets.py
@@ -134,6 +137,7 @@ jobs:
             public/data/research-update-history.json
             public/data/issuer-coverage.json
             public/data/earnings-research-candidates.json
+            public/data/ai-analysis-queue.json
           retention-days: 7
       - name: Install browser test runtime for code/manual releases only
         if: github.event_name != 'schedule'
@@ -196,9 +200,10 @@ jobs:
           cp work/ingestion-artifact/research-update-history.json public/data/research-update-history.json
           cp work/ingestion-artifact/issuer-coverage.json public/data/issuer-coverage.json
           cp work/ingestion-artifact/earnings-research-candidates.json public/data/earnings-research-candidates.json
+          cp work/ingestion-artifact/ai-analysis-queue.json public/data/ai-analysis-queue.json
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -- public/data/feed.json public/data/ingestion-state.json public/data/official-sources.json public/data/report-intake.json public/data/report-review-queue.json public/data/auto-financial-observations.json public/data/forecast-archive.json public/data/forecast-actual-comparisons.json public/data/research-update-proposals.json public/data/latest-research-updates.json public/data/research-update-history.json public/data/issuer-coverage.json public/data/earnings-research-candidates.json
+          git add -- public/data/feed.json public/data/ingestion-state.json public/data/official-sources.json public/data/report-intake.json public/data/report-review-queue.json public/data/auto-financial-observations.json public/data/forecast-archive.json public/data/forecast-actual-comparisons.json public/data/research-update-proposals.json public/data/latest-research-updates.json public/data/research-update-history.json public/data/issuer-coverage.json public/data/earnings-research-candidates.json public/data/ai-analysis-queue.json
           if ! git diff --cached --quiet; then
             git commit -m "Update public news and SEC collection state [skip ci]"
             git push origin HEAD:pulse-data
