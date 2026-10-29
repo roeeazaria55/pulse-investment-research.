@@ -48,7 +48,7 @@ jobs:
           set -euo pipefail
           git fetch --no-tags origin refs/heads/pulse-data:refs/remotes/origin/pulse-data
           echo "sha=$(git rev-parse refs/remotes/origin/pulse-data)" >> "$GITHUB_OUTPUT"
-          for file in public/data/feed.json public/data/ingestion-state.json public/data/official-sources.json public/data/report-intake.json public/data/report-review-queue.json public/data/auto-financial-observations.json public/data/forecast-archive.json public/data/forecast-actual-comparisons.json public/data/research-update-proposals.json public/data/latest-research-updates.json public/data/research-update-history.json public/data/issuer-coverage.json public/data/earnings-research-candidates.json; do
+          for file in public/data/feed.json public/data/ingestion-state.json public/data/official-sources.json public/data/report-intake.json public/data/report-review-queue.json public/data/auto-financial-observations.json public/data/forecast-archive.json public/data/forecast-actual-comparisons.json public/data/research-update-proposals.json public/data/latest-research-updates.json public/data/research-update-history.json public/data/issuer-coverage.json public/data/earnings-research-candidates.json public/data/ai-research-drafts.json; do
             if git cat-file -e "refs/remotes/origin/pulse-data:$file"; then
               git show "refs/remotes/origin/pulse-data:$file" > "$file"
             fi
