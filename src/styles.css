@@ -2081,7 +2081,7 @@ summary { cursor: pointer; min-height: 44px; padding-block: .55rem; line-height:
   margin: 18px 0;
   box-shadow: 0 17px 42px rgba(0,0,0,.10);
 }
-.pulse-ai-queue-head, .pulse-ai-queue-items article>div {
+.pulse-ai-queue-head, .pulse-ai-queue-items .pulse-ai-queue-item>div {
  display:flex; align-items:center; justify-content:space-between; gap:12px;
 }
 .pulse-ai-queue-head {flex-wrap:wrap; margin-bottom:10px;}
@@ -2094,15 +2094,15 @@ summary { cursor: pointer; min-height: 44px; padding-block: .55rem; line-height:
  display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,205px),1fr));
  gap:10px;
 }
-.pulse-ai-queue-items article {
+.pulse-ai-queue-items .pulse-ai-queue-item {
  border:1px solid rgba(165,199,214,.17);
  background:rgba(12,26,39,.68); border-radius:13px;
  padding:14px; min-width:0; display:flex; flex-direction:column; gap:10px;
 }
-.pulse-ai-queue-items article strong {font-size:1.03rem; color:#e8fffa;}
-.pulse-ai-queue-items article span {font-size:.78rem; color:#abc4cf;}
-.pulse-ai-queue-items article p {color:#d4e3e9; font-size:.84rem; line-height:1.65; margin:0; flex:1;}
-.pulse-ai-queue-items article a {
+.pulse-ai-queue-items .pulse-ai-queue-item strong {font-size:1.03rem; color:#e8fffa;}
+.pulse-ai-queue-items .pulse-ai-queue-item span {font-size:.78rem; color:#abc4cf;}
+.pulse-ai-queue-items .pulse-ai-queue-item p {color:#d4e3e9; font-size:.84rem; line-height:1.65; margin:0; flex:1;}
+.pulse-ai-queue-items .pulse-ai-queue-item a {
  font-size:.8rem; font-weight:650; color:#a9eadd;
  display:inline-flex; align-items:center; gap:6px; width:max-content;
  max-width:100%; min-height:34px;
@@ -2244,7 +2244,7 @@ summary { cursor: pointer; min-height: 44px; padding-block: .55rem; line-height:
 :root[data-pulse-theme="light"] .pulse-ai-command-description,
 :root[data-pulse-theme="light"] .pulse-ai-queue-summary{color:#486875}
 :root[data-pulse-theme="light"] .pulse-ai-kpis>div,
-:root[data-pulse-theme="light"] .pulse-ai-queue-items article,
+:root[data-pulse-theme="light"] .pulse-ai-queue-items .pulse-ai-queue-item,
 :root[data-pulse-theme="light"] .pulse-ai-insight,
 :root[data-pulse-theme="light"] .pulse-ai-scenario-grid>div,
 :root[data-pulse-theme="light"] .pulse-ai-settings>section{
@@ -2252,13 +2252,13 @@ summary { cursor: pointer; min-height: 44px; padding-block: .55rem; line-height:
 }
 :root[data-pulse-theme="light"] .pulse-ai-kpis strong,
 :root[data-pulse-theme="light"] .pulse-ai-scenario-grid strong,
-:root[data-pulse-theme="light"] .pulse-ai-queue-items article strong,
+:root[data-pulse-theme="light"] .pulse-ai-queue-items .pulse-ai-queue-item strong,
 :root[data-pulse-theme="light"] .pulse-ai-settings h3{
  color:#163f49
 }
 :root[data-pulse-theme="light"] .pulse-ai-kpis span,
 :root[data-pulse-theme="light"] .pulse-ai-kpis small,
-:root[data-pulse-theme="light"] .pulse-ai-queue-items article p,
+:root[data-pulse-theme="light"] .pulse-ai-queue-items .pulse-ai-queue-item p,
 :root[data-pulse-theme="light"] .pulse-ai-insight p,
 :root[data-pulse-theme="light"] .pulse-ai-settings p{color:#496779}
 :root[data-pulse-theme="light"] .pulse-ai-pill{
