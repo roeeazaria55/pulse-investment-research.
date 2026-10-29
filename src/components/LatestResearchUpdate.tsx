@@ -2,6 +2,7 @@ import {FinancialModelQuestions} from './FinancialModelQuestions';
 import {EarningsResearchCandidates} from './EarningsResearchCandidates';
 import {AIReviewDraftPanel} from './AIReviewDraftPanel';
 import {AIAnalysisQueuePanel} from './AIAnalysisQueuePanel';
+import {ApprovedResearchHistory} from './ApprovedResearchHistory';
 import {buildEvidenceInsights} from '../research/evidenceInsights';
 import {useEffect, useState} from 'react';
 import issuerRegistry from '../../public/data/official-registry.json';
@@ -243,6 +244,7 @@ export function LatestResearchUpdate({companyId,onPrepare}:{companyId:string;onP
   <EarningsResearchCandidates companyId={companyId} onPrepare={onPrepare}/>
   <AIAnalysisQueuePanel companyId={companyId}/>
   <AIReviewDraftPanel companyId={companyId}/>
+  <ApprovedResearchHistory companyId={companyId}/>
   <p>מבוסס על ראיות פיננסיות שמורות, לא על שערים חיים. עדכון מחקר דטרמיניסטי — <strong>לא ניתוח AI</strong>, ולא אישור חשבונאי.</p>
   {offline&&<p role="status"><strong>מצב לא מקוון:</strong> הנתונים עשויים להגיע מהמטמון ואינם עדכון חי.</p>}
   {!snapshot&&!error&&<p role="status">טוען תוצאות מחקר…</p>}
