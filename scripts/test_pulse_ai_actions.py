@@ -49,8 +49,9 @@ class RemoteSpendTransactions(unittest.TestCase):
    self.assertEqual(len(ledger["holds"]),1)
    with patch.object(actions,"load_context",return_value=(self.registry,after,{})), \
         patch.object(actions,"choose",return_value=(selected,self.packet,payload)):
-    with self.assertRaisesRegex(ValueError,"Budget|already"):
-     actions.reserve_once(state,private,"2026-10-29T11:00:00Z","gpt-6.1-sol")
+    duplicate=actions.reserve_once(state,private,"2026-10-29T11:00:00Z","gpt-6.1-sol")
+    self.assertFalse(duplicate["ready"])
+    self.assertEqual(duplicate["reason"],"already-processed-or-reserved")
  def test_settlement_records_cost_and_only_unapproved_research(self):
   with tempfile.TemporaryDirectory() as folder:
    root=Path(folder);state=root/"pulse-data";private=root/"private"
