@@ -2071,3 +2071,61 @@ summary { cursor: pointer; min-height: 44px; padding-block: .55rem; line-height:
   .pulse-ai-draft-panel { padding:15px; }
   .pulse-ai-scenario-grid { grid-template-columns: 1fr; }
 }
+
+/* Verified report-to-AI queue — uses the same premium PULSE research tokens. */
+.pulse-ai-queue {
+  background: linear-gradient(155deg, #172735, #101c2a 79%);
+  border: 1px solid #344d5c;
+  border-radius: 19px;
+  padding: clamp(15px,2.8vw,23px);
+  margin: 18px 0;
+  box-shadow: 0 17px 42px rgba(0,0,0,.10);
+}
+.pulse-ai-queue-head, .pulse-ai-queue-items article>div {
+ display:flex; align-items:center; justify-content:space-between; gap:12px;
+}
+.pulse-ai-queue-head {flex-wrap:wrap; margin-bottom:10px;}
+.pulse-ai-queue-head h4 {
+ display:flex; align-items:center; gap:8px; margin:5px 0;
+ font-size:1.12rem; color:#f1f9fd;
+}
+.pulse-ai-queue-summary {color:#b8cad5; font-size:.87rem; margin:12px 0 16px;}
+.pulse-ai-queue-items {
+ display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,205px),1fr));
+ gap:10px;
+}
+.pulse-ai-queue-items article {
+ border:1px solid rgba(165,199,214,.17);
+ background:rgba(12,26,39,.68); border-radius:13px;
+ padding:14px; min-width:0; display:flex; flex-direction:column; gap:10px;
+}
+.pulse-ai-queue-items article strong {font-size:1.03rem; color:#e8fffa;}
+.pulse-ai-queue-items article span {font-size:.78rem; color:#abc4cf;}
+.pulse-ai-queue-items article p {color:#d4e3e9; font-size:.84rem; line-height:1.65; margin:0; flex:1;}
+.pulse-ai-queue-items article a {
+ font-size:.8rem; font-weight:650; color:#a9eadd;
+ display:inline-flex; align-items:center; gap:6px; width:max-content;
+ max-width:100%; min-height:34px;
+}
+.pulse-ai-queue-warning {
+ display:flex; align-items:center; gap:8px; margin:13px 0 0;
+ padding:9px 12px; background:rgba(215,165,77,.08);
+ border-radius:8px; color:#eac993; font-size:.81rem;
+}
+@media(max-width:420px){
+ .pulse-ai-queue {border-radius:15px;}
+ .pulse-ai-queue-items {grid-template-columns:1fr;}
+ .pulse-ai-queue .pulse-ai-pill {white-space:normal;}
+}
+/* Reusable design tokens; existing screens can migrate incrementally without
+   reducing density, legibility, or changing personal/local research data. */
+:root {
+ --pulse-premium-bg:#0b1220;
+ --pulse-premium-surface:#111c2b;
+ --pulse-premium-edge:#2b3e50;
+ --pulse-premium-accent:#69ddc8;
+ --pulse-premium-secondary:#b7cbd5;
+ --pulse-premium-warning:#e6bf79;
+ --pulse-premium-radius:16px;
+ --pulse-premium-shadow:0 14px 38px rgba(0,0,0,.13);
+}
