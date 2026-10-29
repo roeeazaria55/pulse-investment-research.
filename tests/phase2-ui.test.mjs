@@ -114,7 +114,7 @@ describe("v2 public display and privacy", () => {
       // UI can fetch additional public, read-only research metadata,
       // but must never fetch a private profile/holdings endpoint.
       expect(String(url).startsWith("/data/feed.json?schema=2&t=") ||
-             /^\\/data\\/[a-z0-9-]+\\.json$/.test(String(url))).toBe(true);
+             new RegExp("^/data/[a-z0-9-]+[.]json$").test(String(url))).toBe(true);
       expect(options).toEqual({ cache: "no-store" });
     }
   });
