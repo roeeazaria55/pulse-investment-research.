@@ -159,3 +159,104 @@ official approval protections are configured.
 **GO for auto-publishing new approved investment research only when:**
 owner-approved GitHub rulesets, protected review/merge and immutable
 PDF/versioned archive pipeline are tested separately.
+
+
+## Final Release Readiness & Premium Polish Sprint — implementation notes
+
+These changes are **proposed only on PR #64** and have not changed
+the live site, company models or old approved PDFs.
+
+### Hardened, owner-reviewed PDF proposal stage
+
+- New `scripts/pulse_research_release.py` validates the archived draft's
+  immutable SHA, checks its source-packet SHA and every evidence citation
+  against a freshly constructed issuer packet, verifies previous approved
+  version metadata (if present), and creates a collision-resistant
+  `research-v:<digest>` ID.
+- Renders source-cited Hebrew PDF pages locally with ReportLab, DejaVu
+  Unicode fonts and bidi handling; fails closed without fonts or when a
+  version already exists. PDFs are created in a private staging directory
+  rather than overwriting `public/research/*.pdf`.
+- A clearly marked `TEST/MOCK` PDF is built for META from the offline
+  source-bound ten-section mock, explicitly **not an AI model result**.
+- `research-release-proposal.yml` can open a **Draft PR** containing the
+  immutable source-bound PDF and review proposal. It cannot approve, merge,
+  change an active research pointer, or mutate valuation weights.
+- `scripts/pulse_release_security.py` fails closed until a GitHub
+  authenticated API request verifies **main branch protection** (at least
+  one required PR approval, administrator enforcement) AND the
+  `pulse-research-release` Environment requires the repository owner as
+  reviewer and protected-branches-only deployment.
+- The release workflow has a separate owner-controlled
+  `RESEARCH_RELEASE_PROPOSALS_ENABLED=YES` gate. It does not depend on
+  or request the OpenAI API key. It cannot run from an untrusted PR.
+- **Important outstanding:** a draft release proposal PR being approved
+  or merged is **not itself** an update to the official active research
+  pointer. The separately secured final publication, archived active
+  version migration, rollback and PDF linkage are still required. No
+  accepted model changes should be inferred from a proposed PDF.
+
+### Responses API contract verification
+
+The official OpenAI documentation describes `text.format` for JSON Schema,
+`strict: true` requiring closed objects and all properties marked
+required; incomplete and refused responses must be handled separately.
+
+`scripts/pulse_responses_schema.py` now generates that strict provider
+schema without deleting the local business validator. The private
+executor rejects refusal, incomplete, invalid JSON, source-invalid and
+mock-labeled responses. The first real billable request is **still blocked**
+until the owner configures provider billing and secrets.
+
+Sources:
+- https://developers.openai.com/api/docs/guides/structured-outputs
+- https://developers.openai.com/api/reference/resources/responses/methods/create
+
+### Premium application and visual acceptance
+
+- The Research report now displays an explicit **Current vs Proposed**
+  table for each company with an existing quantitated model, including
+  scenario-specific probabilities. It does not alter or imply approval of
+  the stored model.
+- The PR CI now creates screenshots of all five mobile screens and
+  desktop routes, plus dark/light Settings, via
+  `scripts/pulse_visual_review.py`. These screenshots are ephemeral
+  `pr-mobile-evidence` artifacts, not production assets.
+- `scripts/pulse_mock_research_pdf.py` produces an offline PDF from
+  the actual retained META Q3 issuer packet and the mock analyst schema.
+  The PDF is explicitly TEST/MOCK and cannot update approved research.
+
+### Required manual GitHub configuration (owner action)
+
+**Before attempting any release proposal PR:**
+
+1. Open GitHub repository **Settings → Rules → Rulesets** (or Branches,
+   depending on the available UI). Configure a branch protection rule for
+   `main` with at least one required PR review, including administrator
+   enforcement. Confirm the policy appears in authenticated REST data.
+   Branch rules must not unintentionally prevent the separate audited
+   `pulse-data` collection workflow.
+2. Under **Settings → Environments**, create
+   `pulse-research-release`. Configure **Required reviewers** to the
+   repository owner account and restrict deployment to protected branches.
+   Ensure the required reviewer policy is genuinely available/enforced on
+   the account plan; if unsupported, **release stays blocked**.
+3. Under **Settings → Actions → General**, verify that workflows have
+   minimal default permissions, and allow explicit scoped pull-request
+   creation only if GitHub requires it for the new protected proposal job.
+4. Leave repository variable
+   `RESEARCH_RELEASE_PROPOSALS_ENABLED` **unset or NO** until those
+   protections are verified. Then allow one reviewed proposal dispatch
+   from `main` for a specific immutable draft ID. Inspect the created
+   Draft PR before any merge.
+5. Keep `PAID_AI_ENABLED` **NO** and do not add `OPENAI_API_KEY` until
+   the actual pre-API security review is complete.
+
+### Current release status
+
+**Not an API activation GO.** Verified source acquisition, mock research,
+PDF proposal code, authentication checks and UI regressions make the project
+closer to readiness, but owner-configured GitHub protection, a fully
+authenticated official publication/rollback path, physical Android validation
+and paid model availability/quality remain blockers. Passing unit tests alone
+does not remove them.
