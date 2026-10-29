@@ -106,3 +106,36 @@ Check `public/data/earnings-research-candidates.json` and `public/data/ai-resear
 
 `python3 -m unittest discover -s scripts -p 'test_*.py'`, `npm test`,
 `npm run typecheck`, `npm run validate:data`, `npm run build` and the existing Playwright checks must pass before release.
+
+## Final Pre-API Sprint — reproducible status (2026-10-29)
+
+**Read first:** [PULSE Pre-API Readiness Gate](PULSE_PRE_API_READINESS_2026-10-29.md).
+That matrix lists source-based checks, activation instructions, actual owner
+configuration blockers and exact Go/No-Go. PR #64 remains unmerged.
+
+Changes since the initial review-only prototype:
+- Source-derived `ai-analysis-queue.json` is part of `pulse-data`
+  ingestion and persistence; revisions produce new task IDs without
+  approving or overwriting previous research.
+- `MockAIProvider` runs a **ten-section source-cited v2 report** without
+  any OpenAI call or invented price. Retained META Q3 2026 issuer metrics
+  are now citable with `issuer-report-metric` IDs and period/source digest.
+- The `ai-automation.yml` workflow is gated by the protected branch,
+  explicit `PAID_AI_ENABLED=YES`, the owner-managed `pulse-ai-paid`
+  environment and `OPENAI_API_KEY`. Before any future billable call, a
+  cost reservation and job transition must be pushed to `pulse-data`.
+  A missing receipt or write conflict blocks automatic retry.
+- Ten-section `pulse-full-research-draft-v2.schema.json` and
+  `pulse_ai_full_research.py` validate report structure, citations,
+  uncertainty, and no automatic target or portfolio changes.
+- Research, News and Home expose evidence/queue status. A functional
+  Settings dialog stores dark/light preference locally and shows current
+  usage and reservation information only when the read-only ledger exists.
+- The `pulse-data` cost ledger is read-only in Pages; no frontend API
+  key, mutable owner approvals or invented telemetry.
+- Exact physical Android install, owner-configured branch protection,
+  versioned **approved** PDF publication, and real model quality/cost
+  verification remain uncompleted. No paid API use in this sprint.
+
+Current data and source code on this Draft PR are **not** live on the
+public site until an owner-approved main release.
