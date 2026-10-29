@@ -2,6 +2,7 @@ import {nextEarnings,dateLabel} from './research/earningsCalendar';
 import {MacroPanel,NextEarnings} from './components/MarketContext';
 import {compareNews} from './research/newsPresentation';
 import {ResearchAlertInbox} from './components/ResearchAlertInbox';
+import {AIResearchOverview} from './components/AIResearchOverview';
 import { useEffect, useRef, useState } from "react";
 import {
   Activity,
@@ -433,6 +434,7 @@ export default function App() {
             )}
           {tab === "home" && (
             <>
+              <AIResearchOverview onOpenResearch={() => navigate("research")}/>
               <div className="overview-grid">
                 <section className="briefing">
                   <div className="briefing-top">
