@@ -18,6 +18,7 @@ from ai_research_packets import build_all, TICKERS
 from pulse_ai_cost_guard import MODEL_RATES, MAX_OUTPUT_TOKENS as BUDGET_OUTPUT_TOKENS, reserve, record_call, validate_ledger
 from ai_analyst_review_contract import validate_ai_proposal
 from pulse_ai_full_research import validate_full_research
+from pulse_responses_schema import build_strict_format
 
 ROOT = Path(__file__).resolve().parent.parent
 MAX_INPUT_BYTES = 50000
@@ -37,11 +38,17 @@ def prepare(ticker):
 
 
 def parse_and_validate(packet, response):
-    if response.get("status") != "completed":
-        raise ValueError("AI response incomplete; nothing will be published")
-    outputs = [c.get("text") for output in response.get("output", [])
-               if output.get("type") == "message"
-               for c in output.get("content", []) if c.get("type") == "output_text"]
+    if not isinstance(response,dict):
+        raise ValueError("Malformed OpenAI response")
+    if response.get("status") != "completed" or response.get("incomplete_details"):
+        raise ValueError("AI response incomplete/refused; nothing will be published")
+    messages=[o for o in response.get("output",[]) if o.get("type")=="message"]
+    if any(m.get("status") not in (None,"completed") for m in messages):
+        raise ValueError("OpenAI message is incomplete")
+    if any(c.get("type")=="refusal" for m in messages for c in m.get("content",[])):
+        raise ValueError("OpenAI refused; no draft will be created")
+    outputs = [c.get("text") for m in messages
+               for c in m.get("content",[]) if c.get("type")=="output_text"]
     if len(outputs) != 1 or not isinstance(outputs[0], str):
         raise ValueError("Unexpected AI response shape")
     candidate = json.loads(outputs[0])
@@ -146,7 +153,7 @@ def run_paid_review(ticker, packet, content, model, key, target, ledger_path, *,
                                     input_ceiling=min(100000,len(content.encode("utf-8"))*2),
                                     output_ceiling=MAX_OUTPUT_TOKENS)
                 write_ledger(ledger_path,ledger)
-            schema=json.loads((ROOT/"schemas/pulse-full-research-draft-v2.schema.json").read_text(encoding="utf-8"))
+            strict_format=build_strict_format()
             payload={
                 "model":model,"store":False,"max_output_tokens":MAX_OUTPUT_TOKENS,
                 "instructions":(
@@ -168,7 +175,7 @@ def run_paid_review(ticker, packet, content, model, key, target, ledger_path, *,
                     "Otherwise return an empty list. This is an unapproved analyst draft."
                 ),
                 "input":"Produce a cautious Hebrew review-only proposal for this exact packet:\\n"+content,
-                "text":{"format":{"type":"json_schema","name":"pulse_full_research_v2","strict":False,"schema":schema}}
+                "text":{"format":strict_format}
             }
             request=Request(ENDPOINT,data=json.dumps(payload).encode("utf-8"),
                             headers={"Content-Type":"application/json","Authorization":"Bearer "+key},
