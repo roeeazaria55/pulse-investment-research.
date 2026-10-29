@@ -21,10 +21,17 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       contents: read
+      actions: read
+      checks: read
+      pull-requests: read
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+      - name: Read GitHub security evidence without authorizing spend
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 scripts/pulse_release_security.py --environment pulse-ai-paid --preflight
       - name: Inspect published queue only, no paid API
         run: |
           set -euo pipefail
@@ -38,7 +45,7 @@ jobs:
 
   analyze:
     if: >-
-      github.ref == 'refs/heads/main' &&
+      github.ref == 'refs/heads/main' && github.ref_protected &&
       vars.PAID_AI_ENABLED == 'YES' &&
       (github.event_name == 'schedule' ||
        (github.event_name == 'workflow_dispatch' && inputs.mode == 'run-one'))
@@ -46,12 +53,20 @@ jobs:
     timeout-minutes: 15
     permissions:
       contents: write
+      actions: read
+      checks: read
+      pull-requests: read
     environment:
       name: pulse-ai-paid
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: true
+      - name: Verify owner approval for this exact run before any reservation or paid request
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PAID_AI_ENABLED: ${{ vars.PAID_AI_ENABLED }}
+        run: python3 scripts/pulse_release_security.py --environment pulse-ai-paid
       - name: Prepare private runner and checked-out pulse-data worktree
         run: |
           set -euo pipefail

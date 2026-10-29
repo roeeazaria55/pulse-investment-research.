@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   stage-release-pr:
-    if: github.ref == 'refs/heads/main' && vars.RESEARCH_RELEASE_PROPOSALS_ENABLED == 'YES'
+    if: github.ref == 'refs/heads/main' && github.ref_protected && github.actor == github.repository_owner && vars.RESEARCH_RELEASE_PROPOSALS_ENABLED == 'YES'
     environment:
       name: pulse-research-release
     runs-on: ubuntu-24.04
@@ -26,11 +26,13 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+      actions: read
+      checks: read
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: true
-      - name: Verify owner and actual branch/environment protections before any write
+      - name: Verify protected main, owner-merged CI and current-run approval
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RESEARCH_RELEASE_PROPOSALS_ENABLED: ${{ vars.RESEARCH_RELEASE_PROPOSALS_ENABLED }}
@@ -126,4 +128,4 @@ jobs:
         if: always()
         run: |
           echo 'This workflow cannot approve research, alter current targets, merge PRs, or publish an active version.' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Proposals require an independent owner-reviewed, protected PR merge and follow-up publication gate.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Proposals require an explicit owner environment approval and protected manual PR merge and follow-up publication gate.' >> "$GITHUB_STEP_SUMMARY"

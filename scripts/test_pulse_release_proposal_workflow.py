@@ -45,6 +45,21 @@ class ResearchProposalWorkflowChecks(unittest.TestCase):
   rollback=(ROOT/".github/workflows/research-rollback.yml").read_text(encoding="utf-8")
   self.assertIn("scripts/pulse_research_rollback.py",rollback)
   self.assertIn("public/data/research-release-audit",rollback)
+ def test_github_token_uses_read_evidence_and_never_self_approves(self):
+  for filename in ("research-release-proposal.yml", "research-final-publication.yml", "research-rollback.yml", "ai-automation.yml"):
+   workflow=(ROOT/".github/workflows"/filename).read_text(encoding="utf-8")
+   self.assertIn("actions: read",workflow)
+   self.assertIn("checks: read",workflow)
+   self.assertNotIn("actions: write",workflow)
+   self.assertNotIn("gh pr review",workflow)
+   self.assertNotIn("gh pr merge",workflow)
+   self.assertNotRegex(workflow,r"--approve(?:\s|$)")
+   self.assertNotIn("PULSE_SECURITY_READ_TOKEN",workflow)
+  ai=(ROOT/".github/workflows/ai-automation.yml").read_text(encoding="utf-8")
+  self.assertLess(ai.index("run: python3 scripts/pulse_release_security.py --environment pulse-ai-paid\n"), ai.index("--phase reserve"))
+  check=(ROOT/".github/workflows/check.yml").read_text(encoding="utf-8")
+  self.assertIn("ready_for_review",check)
+  self.assertIn("--preflight",check)
  def test_pdf_generation_is_separate_from_actual_research_publication(self):
   release=(ROOT/"scripts/pulse_research_release.py").read_text(encoding="utf-8")
   self.assertIn("publishAutomatically",release)

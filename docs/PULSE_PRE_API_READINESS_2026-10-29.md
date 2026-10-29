@@ -1,5 +1,15 @@
 # PULSE — Pre-API Readiness Gate (2026-10-29)
 
+## Security configuration update — 2026-10-29
+
+The historical owner-setup checklist below is superseded by
+[PULSE_GITHUB_SECURITY_2026-10-29.md](PULSE_GITHUB_SECURITY_2026-10-29.md).
+Main and both environments are configured. One external PR review is NOT
+required: this repository has only one writer. Owner environment approval
+is explicit operational consent, not independent code review. The new
+evidence gate uses read-only GITHUB_TOKEN endpoints, not Administration access.
+Paid operation remains disabled; PR #64 remains unmerged and Draft.
+
 ## Release decision
 
 **No-Go for activating a real paid API key or merging into main until the remaining

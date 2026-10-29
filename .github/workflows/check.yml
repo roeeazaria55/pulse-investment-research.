@@ -3,8 +3,12 @@ on:
   push:
     branches: [pulse/phase1-financial-data-engine, pulse/phase1b-reusable-financial-engine]
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
 permissions:
   contents: read
+  actions: read
+  checks: read
+  pull-requests: read
 jobs:
   check:
     runs-on: ubuntu-24.04
@@ -23,6 +27,12 @@ jobs:
           python3 -m pip install --disable-pip-version-check -r scripts/requirements-pulse-release.txt
           test -s /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf
       - run: python3 -m unittest discover -s scripts -p 'test_*.py'
+      - name: Verify live GitHub security evidence with read-only GITHUB_TOKEN (no release or paid API)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 scripts/pulse_release_security.py --preflight
+          python3 scripts/pulse_release_security.py --environment pulse-ai-paid --preflight
       - name: Check live official source metadata read-only
         run: python3 scripts/official_sources.py
       - name: Read official report content without changing published research
