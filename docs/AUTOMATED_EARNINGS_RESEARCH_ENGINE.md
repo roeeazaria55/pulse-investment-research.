@@ -74,3 +74,35 @@ Workflows now persist the candidate artifact to `pulse-data`, seed it on future 
 ## Exact manual review procedure
 
 Check `public/data/earnings-research-candidates.json` and `public/data/ai-research-packets/`; compare to `public/data/latest-research-updates.json`, inspect each official source URL and SHA-256. A `needs-review` draft is just a question to answer, not an approved investment conclusion. Do not merge this PR until CI and owner review are complete.
+
+## Phase 5 — Premium UI and opt-in OpenAI API adapter (2026-10-29)
+
+**Implemented on PR #64 (not merged):**
+- Source-aware premium `AIResearchOverview` home panel. It shows real counts only if the collected public candidate JSON is available; it never claims an AI analysis ran. The monthly `$10` is a planned usage allowance, **not** a fixed fee or a current usage metric.
+- Premium `AIReviewDraftPanel` research view. It reads optional `public/data/ai-research-drafts.json`, clearly marks AI work as unverified and keeps approvals/prices unchanged. The file is intentionally absent until a draft has been explicitly produced and staged.
+- Existing `run_optional_ai_review.py` can preflight all 12 registry companies at zero API cost. Executing a real OpenAI Responses call now supports `gpt-6-luna` / `gpt-6.1-sol`, validated JSON Schema and the original source-bound citation contract. Output remains a private, non-overwriting local JSON file.
+- `pulse_ai_cost_guard.py`: conservative USD $10 monthly budget, a $9 start-block threshold, $1 max estimate per request, durable reservations to prevent repeated calls, actual usage receipts, and explicit model price allowlist. A reserved request that fails is held for manual reconciliation rather than silently retried. This **cannot** guarantee the OpenAI invoice equals the local estimate; a provider account/project budget must be configured independently.
+- `pulse_ai_research_drafts.py`: converts an externally reviewed private AI JSON output to a bounded public *draft* with cited evidence, hashed history and zero approval permissions. This is a staging tool, **not** proof that an AI run actually occurred.
+- New Python and frontend tests cover budget accounting, source citations, duplicate prevention, validation of suggestions and malicious approval attempts.
+
+### Activation sequence — user wants key only after code and review
+
+1. Inspect PR #64 and CI. Continue to keep it in Draft. No API call is part of the public Pages collector or PR build.
+2. Inspect current Standard prices in the OpenAI dashboard; adjust model prices and tests as needed. The hardcoded rates in `scripts/pulse_ai_cost_guard.py` are estimates for 2026-10-29.
+3. On the OpenAI API platform, set a provider-side monthly/project budget and spend alerts. The local $10 guard is a software safety layer and is **not** a hard billing cap.
+4. Only when the user approves paid execution, add `OPENAI_API_KEY` in the authorized private runner environment. Never paste it into ChatGPT, source, git diff, logs, the browser or public GitHub Actions artifacts.
+5. To run the guarded CLI manually (from a private machine with retained project files), create a private budget directory **outside the repository**. Set `PULSE_PAID_AI_APPROVED=YES` explicitly, then run `python3 scripts/run_optional_ai_review.py --ticker META --execute --private-output /private/path/meta-review.json --cost-ledger /private/path/ai-costs.json`. A successful call returns only status, source hashes, evidence counts, token-derived cost and a private JSON result.
+6. After external inspection of source evidence and no-private-content policy, use `pulse_ai_research_drafts.py` to stage a public review-only feed. This action cannot approve prices, weights, PDF research or portfolio positions.
+
+### Outstanding blockers for fully automatic premium research
+
+- **No paid API calls have been executed or authorized**. The user must configure the secret and authorize the first call.
+- A reliable scheduled runner with an enforced central $10 provider-side budget and persistent transactional billing ledger is **not yet connected**. The current guarded executor is opt-in/manual; simply adding the key does not start paid analysis.
+- AI drafts are not yet automatically pushed to `pulse-data` or promoted into a current-versus-proposed analyst-approved publication. A source-safe, authenticated publication workflow still needs branch rules and separate approval.
+- UI polish has been applied to the Home intelligence card and research review panels; this is **not** a complete replacement of all five application screens, light-mode support or physical Android/PWA acceptance.
+- No revised META price target or probability weights were generated. Existing approved research remains untouched.
+
+### Offline test gates
+
+`python3 -m unittest discover -s scripts -p 'test_*.py'`, `npm test`,
+`npm run typecheck`, `npm run validate:data`, `npm run build` and the existing Playwright checks must pass before release.
