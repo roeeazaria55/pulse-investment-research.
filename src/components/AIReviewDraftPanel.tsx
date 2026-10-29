@@ -4,12 +4,21 @@ import {BrainCircuit,ShieldAlert,ExternalLink} from 'lucide-react';
 type Citation={evidenceId:string;kind:string;claim:string;uncertainty:string};
 type Insight={observation:string;hypothesis:string;evidenceIds:string[];unknowns:string[]};
 type Scenario={id:string;suggestedProbability:number;reason:string;evidenceIds:string[];status:string};
+type FullSection={summary:string;interpretation:string;evidenceIds:string[];unknowns:string[]};
+type FullResearch={contractVersion:2;headline:string;executiveSummary:string;sections:Record<string,FullSection>;
+ limitations:string[];confidence:'low'|'medium'|'high';citedEvidenceCount:number;notice:string};
+const sectionLabels:Record<string,string>={
+ financialResults:'תוצאות פיננסיות',growthDrivers:'מנועי צמיחה',profitability:'רווחיות',
+ cashFlow:'תזרים מזומנים',balanceSheet:'מאזן וחוב',riskChanges:'שינויים בסיכונים',
+ catalysts:'זרזים ואירועים',thesisComparison:'השפעה על תזת ההשקעה',
+ forecastSensitivity:'רגישות תחזיות',valuationMethodology:'מתודולוגיית שווי'
+};
 export type AIReviewDraft={id:string;companyId:string;ticker:string;model:string;
  status:'requires-human-review';analysisMode:'model-generated-unverified';
  reviewStatus:'not-approved';publicationStatus:'not-approved';sourcePacketSha256:string;
  evidenceCitations:Citation[];interpretations:Insight[];analystQuestions:string[];
  suggestedScenarioReview:Scenario[];proposedValuationAction:'no-automatic-change';
- approvedTargetPrice:null;approvedScenarios:null;firstRecordedAt:string;immutableSha256:string};
+ approvedTargetPrice:null;approvedScenarios:null;firstRecordedAt:string;immutableSha256:string;fullResearch?:FullResearch};
 export function validateAIReviewFeed(raw:unknown,companyId:string):AIReviewDraft[]{
  if(!raw||typeof raw!=='object')throw Error('מבנה טיוטות AI אינו תקין');
  const data=raw as {version:number;drafts:AIReviewDraft[]};
@@ -32,6 +41,23 @@ export function validateAIReviewFeed(raw:unknown,companyId:string):AIReviewDraft
      draft.suggestedScenarioReview.some(x=>!x||!['bear','base','bull'].includes(x.id)||x.status!=='review-only'||
       !Number.isFinite(x.suggestedProbability)||x.suggestedProbability<0||x.suggestedProbability>100))
     throw Error('נתוני הצעה לא תקינים');
+  if(draft.fullResearch){
+    const f=draft.fullResearch;
+    const ids=new Set(draft.evidenceCitations.map(e=>e.evidenceId));
+    if(f.contractVersion!==2||typeof f.headline!=='string'||!f.headline.trim()||
+       typeof f.executiveSummary!=='string'||!f.executiveSummary.trim()||
+       !['low','medium','high'].includes(f.confidence)||
+       !f.sections||typeof f.sections!=='object'||
+       Object.keys(f.sections).length!==Object.keys(sectionLabels).length||
+       !Array.isArray(f.limitations))
+      throw Error('מבנה המחקר המלא אינו תקין');
+    for(const k of Object.keys(sectionLabels)){
+      const section=f.sections[k];
+      if(!section||typeof section.summary!=='string'||typeof section.interpretation!=='string'||
+         !Array.isArray(section.evidenceIds)||!Array.isArray(section.unknowns)||
+         section.evidenceIds.some(e=>!ids.has(e)))throw Error('למחקר המלא חסרות ראיות');
+    }
+  }
   if(draft.suggestedScenarioReview.length>0&&
     (draft.suggestedScenarioReview.length!==3||
      Math.abs(draft.suggestedScenarioReview.reduce((sum,s)=>sum+s.suggestedProbability,0)-100)>0.001))
@@ -62,12 +88,28 @@ export function AIReviewDraftPanel({companyId}:{companyId:string}){
   {draft&&<>
    <p className="pulse-ai-meta">מודל: <bdi>{draft.model}</bdi> · תאריך טיוטה: {new Date(draft.firstRecordedAt).toLocaleDateString('he-IL')} · מזהה חבילת מקור: <bdi>{draft.sourcePacketSha256.slice(0,12)}…</bdi></p>
    <div className="pulse-ai-review-warning" role="status">הפלט נוצר במודל אך טרם אומת ואושר. העובדות, הנחות המודל ומחיר היעד המאושרים לא שונו.</div>
-   <h5>ממצאים והשלכות לבדיקה</h5>
-   {draft.interpretations.length?draft.interpretations.map((x,i)=><article key={i} className="pulse-ai-insight">
+   {draft.fullResearch&&<div className="pulse-ai-full-research" data-testid="pulse-full-ai-research">
+    <span className="pulse-ai-kicker">RESEARCH REPORT / V2</span>
+    <h3>{draft.fullResearch.headline}</h3>
+    <p className="pulse-ai-executive">{draft.fullResearch.executiveSummary}</p>
+    <p><small>רמת ביטחון מוצהרת: {draft.fullResearch.confidence} · זו הערכת AI שטרם אומתה</small></p>
+    <div className="pulse-ai-full-sections">{Object.entries(sectionLabels).map(([k,label])=>{
+      const s=draft.fullResearch!.sections[k];
+      return <details key={k} open={k==='financialResults'||k==='thesisComparison'}>
+        <summary>{label}</summary><p>{s.summary}</p>
+        <p><strong>פרשנות לבדיקה:</strong> {s.interpretation}</p>
+        {!!s.unknowns.length&&<p><small>מגבלות: {s.unknowns.join(' · ')}</small></p>}
+        {!!s.evidenceIds.length&&<p><small>ראיות: {s.evidenceIds.join(' · ')}</small></p>}
+      </details>;
+    })}</div>
+    {!!draft.fullResearch.limitations.length&&<p className="pulse-ai-full-limits">מגבלות המחקר: {draft.fullResearch.limitations.join(' · ')}</p>}
+   </div>}
+   {!draft.fullResearch&&<h5>ממצאים והשלכות לבדיקה</h5>}
+   {!draft.fullResearch&&(draft.interpretations.length?draft.interpretations.map((x,i)=><article key={i} className="pulse-ai-insight">
     <p><strong>תצפית:</strong> {x.observation}</p><p><strong>השערה לבדיקה:</strong> {x.hypothesis}</p>
     {!!x.unknowns.length&&<p><small>חסר/אי־ודאות: {x.unknowns.join(' · ')}</small></p>}
     <small>מזהי ראיות: {x.evidenceIds.join(', ')}</small>
-   </article>):<p>עדיין אין מסקנות מגובות שניתן להציג.</p>}
+   </article>):<p>עדיין אין מסקנות מגובות שניתן להציג.</p>)}
    {!!draft.suggestedScenarioReview.length&&<div className="pulse-ai-scenario-grid">
     {draft.suggestedScenarioReview.map(s=><div key={s.id}>
      <span>{s.id.toUpperCase()} · טיוטה</span>
