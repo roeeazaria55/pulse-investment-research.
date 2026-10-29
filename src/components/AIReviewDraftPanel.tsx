@@ -1,5 +1,6 @@
 import {useEffect,useState} from 'react';
 import {BrainCircuit,ShieldAlert,ExternalLink} from 'lucide-react';
+import {companyModelFor} from '../data/companyModels';
 
 type Citation={evidenceId:string;kind:string;claim:string;uncertainty:string};
 type Insight={observation:string;hypothesis:string;evidenceIds:string[];unknowns:string[]};
@@ -77,6 +78,7 @@ export function AIReviewDraftPanel({companyId}:{companyId:string}){
   return ()=>{live=false;};
  },[companyId]);
  const draft=data?.[0];
+ const existingModel=companyModelFor(companyId);
  return <section className="pulse-ai-draft-panel" aria-label="ניתוח בינה מלאכותית לבדיקת אנליסט" dir="rtl">
   <div className="pulse-research-drafts-heading">
    <div><span className="pulse-ai-kicker">PULSE / AI RESEARCH REVIEW</span><h4><BrainCircuit size={19} aria-hidden="true"/> ניתוח AI</h4></div>
@@ -88,6 +90,27 @@ export function AIReviewDraftPanel({companyId}:{companyId:string}){
   {draft&&<>
    <p className="pulse-ai-meta">מודל: <bdi>{draft.model}</bdi> · תאריך טיוטה: {new Date(draft.firstRecordedAt).toLocaleDateString('he-IL')} · מזהה חבילת מקור: <bdi>{draft.sourcePacketSha256.slice(0,12)}…</bdi></p>
    <div className="pulse-ai-review-warning" role="status">הפלט נוצר במודל אך טרם אומת ואושר. העובדות, הנחות המודל ומחיר היעד המאושרים לא שונו.</div>
+   <div className="pulse-ai-model-compare" aria-label="השוואה בין המודל הקיים לבין טיוטת AI">
+    <div className="pulse-ai-model-compare-header">
+     <h5>Current / Proposed</h5>
+     <small>המודל הקיים מול הצעות AI שטרם אומתו או אושרו</small>
+    </div>
+    {existingModel?<div className="pulse-ai-model-compare-table">
+     <table>
+      <thead><tr><th scope="col">תרחיש</th><th scope="col">מודל קיים</th><th scope="col">הצעת AI לבדיקה</th></tr></thead>
+      <tbody>{existingModel.scenarios.map(current=>{
+       const suggested=draft.suggestedScenarioReview.find(s=>s.id===current.id);
+       return <tr key={current.id}>
+        <th scope="row"><bdi>{current.label}</bdi></th>
+        <td><bdi>{current.probability}%</bdi></td>
+        <td>{suggested?<><bdi>{suggested.suggestedProbability}%</bdi><small>{suggested.reason}</small></>:<span>לא הוצע שינוי</span>}</td>
+       </tr>;
+      })}</tbody>
+     </table>
+     <small>תאריך המודל הקיים: <bdi>{existingModel.analysisDate}</bdi>. אלה הנחות מחקר שמורות, לא שערי שוק חיים. לא בוצע עדכון אוטומטי למחיר יעד.</small>
+    </div>:<p>אין מודל כמותי קיים בר־השוואה. הטיוטה אינה יוצרת מודל שווי חדש ללא נתונים.</p>}
+    <p className="pulse-ai-model-review-note">אישור מחקר ופרסום מודל מחייבים סקירת מקור, PR מוגן ופעולה מאומתת של בעל הרשאה. ממשק ציבורי זה הוא לקריאה בלבד.</p>
+   </div>
    {draft.fullResearch&&<div className="pulse-ai-full-research" data-testid="pulse-full-ai-research">
     <span className="pulse-ai-kicker">RESEARCH REPORT / V2</span>
     <h3>{draft.fullResearch.headline}</h3>
