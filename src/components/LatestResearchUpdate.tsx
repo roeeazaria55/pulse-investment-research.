@@ -1,6 +1,7 @@
 import {FinancialModelQuestions} from './FinancialModelQuestions';
 import {EarningsResearchCandidates} from './EarningsResearchCandidates';
 import {AIReviewDraftPanel} from './AIReviewDraftPanel';
+import {AIAnalysisQueuePanel} from './AIAnalysisQueuePanel';
 import {buildEvidenceInsights} from '../research/evidenceInsights';
 import {useEffect, useState} from 'react';
 import issuerRegistry from '../../public/data/official-registry.json';
@@ -240,6 +241,7 @@ export function LatestResearchUpdate({companyId,onPrepare}:{companyId:string;onP
  return <section className="report-intake" dir="rtl" aria-label="עדכון המחקר האחרון" data-testid="latest-research-update">
   <h3>עדכון המחקר האחרון שנקלט</h3>
   <EarningsResearchCandidates companyId={companyId} onPrepare={onPrepare}/>
+  <AIAnalysisQueuePanel companyId={companyId}/>
   <AIReviewDraftPanel companyId={companyId}/>
   <p>מבוסס על ראיות פיננסיות שמורות, לא על שערים חיים. עדכון מחקר דטרמיניסטי — <strong>לא ניתוח AI</strong>, ולא אישור חשבונאי.</p>
   {offline&&<p role="status"><strong>מצב לא מקוון:</strong> הנתונים עשויים להגיע מהמטמון ואינם עדכון חי.</p>}
