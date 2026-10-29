@@ -59,8 +59,11 @@ export function EarningsResearchCandidates({companyId,onPrepare}:{companyId:stri
  },[companyId]);
  const current=items?.[0];
  const baseline=publishedFor(companyId);
- return <section className="thesis-metric" dir="rtl" aria-label="טיוטות עדכון מחקר מדוחות" data-testid="earnings-research-candidates">
-  <h4>טיוטות מחקר אוטומטיות · לא מאושרות</h4>
+ return <section className="thesis-metric pulse-research-drafts" dir="rtl" aria-label="טיוטות עדכון מחקר מדוחות" data-testid="earnings-research-candidates">
+  <div className="pulse-research-drafts-heading">
+    <div><span className="pulse-ai-kicker">RESEARCH / SOURCE-BOUND</span><h4>טיוטות מחקר אוטומטיות</h4></div>
+    <span className="pulse-ai-pill">דורשות אישור אנליסט</span>
+  </div>
   <p><small>טיוטות נתוני מקור בלבד. אין החלפה אוטומטית של המחקר הקיים, מחירי יעד או משקולות Bear/Base/Bull.</small></p>
   {items===null&&!error&&<p role="status">טוען טיוטות…</p>}
   {error&&<p role="status">טיוטות מחקר עדיין אינן זמינות. המחקר המאושר נשמר ללא שינוי.</p>}
