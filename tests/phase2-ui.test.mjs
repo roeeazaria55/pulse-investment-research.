@@ -112,7 +112,8 @@ describe("v2 public display and privacy", () => {
     expect(feedCalls.length).toBeGreaterThan(0);
     for (const [url, options] of fetchMock.mock.calls) {
       expect(String(url).startsWith("/data/feed.json?schema=2&t=") ||
-             url === "/data/earnings-research-candidates.json").toBe(true);
+             url === "/data/earnings-research-candidates.json" ||
+             url === "/data/ai-analysis-queue.json").toBe(true);
       expect(options).toEqual({ cache: "no-store" });
     }
   });
