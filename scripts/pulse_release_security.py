@@ -118,7 +118,7 @@ def verify_ci(checks, ci_run, head_sha):
             "CI check and workflow run are not bound")
 
 
-def verify_run_approval(run, approvals, *, run_id, sha, environment, env_id):
+def verify_run_approval(run, approvals, *, run_id, sha, environment, env_id, connection_check=False):
     require(isinstance(run, dict) and run.get("id") == run_id
             and (run.get("repository") or {}).get("full_name") == REPO
             and run.get("head_branch") == "main" and run.get("head_sha") == sha
@@ -128,6 +128,10 @@ def verify_run_approval(run, approvals, *, run_id, sha, environment, env_id):
     require(run.get("run_attempt") == 1, "Start a fresh run; approval cannot be replayed on reruns")
     paths = RELEASE_PATHS if environment == RELEASE_ENV else {".github/workflows/ai-automation.yml"}
     events = {"workflow_dispatch"} if environment == RELEASE_ENV else {"workflow_dispatch", "schedule"}
+    if connection_check:
+        require(environment == AI_ENV, "Connection check requires AI environment")
+        paths = {".github/workflows/openai-connection-check.yml"}
+        events = {"workflow_dispatch"}
     require(run.get("path") in paths and run.get("event") in events,
             "Untrusted workflow path or trigger")
     require(is_owner(run.get("actor")) and is_owner(run.get("triggering_actor")),
@@ -210,13 +214,19 @@ def collect_evidence(api, environment):
 def main(argv=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("--environment", choices=[RELEASE_ENV, AI_ENV], default=RELEASE_ENV)
-    parser.add_argument("--preflight", action="store_true", help="Read-only evidence; NEVER authorizes writes or spend")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--connection-check", action="store_true")
+    mode.add_argument("--preflight", action="store_true", help="Read-only evidence; NEVER authorizes writes or spend")
     args = parser.parse_args(argv)
     require(os.getenv("GITHUB_REPOSITORY") == REPO
             and os.getenv("GITHUB_REPOSITORY_OWNER") == OWNER, "Repository owner mismatch")
     if not args.preflight:
         switch = "RESEARCH_RELEASE_PROPOSALS_ENABLED" if args.environment == RELEASE_ENV else "PAID_AI_ENABLED"
-        require(os.getenv(switch) == "YES", "Owner has not enabled this operation")
+        if args.connection_check:
+            require(args.environment == AI_ENV and os.getenv("PAID_AI_ENABLED") == "NO",
+                    "Connection check requires AI environment and explicit paid disable")
+        else:
+            require(os.getenv(switch) == "YES", "Owner has not enabled this operation")
         require(os.getenv("GITHUB_REF") == "refs/heads/main"
                 and os.getenv("GITHUB_REF_PROTECTED") == "true", "Protected main context required")
         require(os.getenv("GITHUB_RUN_ATTEMPT") == "1", "Fresh run required")
@@ -245,9 +255,14 @@ def main(argv=None):
     run = api.get("/actions/runs/" + run_id)
     approvals = api.get("/actions/runs/" + run_id + "/approvals")
     verify_run_approval(run, approvals, run_id=int(run_id), sha=sha,
-                        environment=args.environment, env_id=evidence["environmentId"])
+                        environment=args.environment, env_id=evidence["environmentId"],
+                        connection_check=args.connection_check)
     # Detect a concurrent main update while evidence was collected.
     require(verify_branch(api.get("/branches/main")) == sha, "main moved during verification")
+    if args.connection_check:
+        print(json.dumps({**evidence, "status": "connection-check-only-approved",
+                          "paidAiAuthorized": False, "publicationAuthorized": False}))
+        return
     print(json.dumps({**evidence, "status": "owner-environment-approved",
                       "humanPrMergeStillRequired": True, "independentCodeReview": False}))
 

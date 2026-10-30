@@ -47,7 +47,7 @@ jobs:
     if: >-
       github.ref == 'refs/heads/main' && github.ref_protected &&
       vars.PAID_AI_ENABLED == 'YES' &&
-      (github.event_name == 'schedule' ||
+      ((github.event_name == 'schedule' && vars.PAID_AI_SCHEDULE_ENABLED == 'YES') ||
        (github.event_name == 'workflow_dispatch' && inputs.mode == 'run-one'))
     runs-on: ubuntu-24.04
     timeout-minutes: 15

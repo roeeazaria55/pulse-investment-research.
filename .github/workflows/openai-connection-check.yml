@@ -1,0 +1,34 @@
+name: PULSE OpenAI — connection check only (no generation)
+on:
+  workflow_dispatch:
+permissions: {}
+concurrency:
+  group: pulse-ai-spending-serialized
+  cancel-in-progress: false
+jobs:
+  connection:
+    if: >-
+      github.ref == 'refs/heads/main' && github.ref_protected &&
+      github.actor == github.repository_owner && vars.PAID_AI_ENABLED == 'NO'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    environment: pulse-ai-paid
+    permissions:
+      contents: read
+      actions: read
+      checks: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify current main and owner approval with paid operations disabled
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PAID_AI_ENABLED: ${{ vars.PAID_AI_ENABLED }}
+        run: python3 scripts/pulse_release_security.py --environment pulse-ai-paid --connection-check
+      - name: Read model metadata only; never generate content
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          PAID_AI_ENABLED: ${{ vars.PAID_AI_ENABLED }}
+        run: python3 scripts/pulse_openai_connection_check.py

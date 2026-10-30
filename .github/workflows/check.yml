@@ -30,7 +30,10 @@ jobs:
       - name: Verify live GitHub security evidence with read-only GITHUB_TOKEN (no release or paid API)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PAID_AI_ENABLED: ${{ vars.PAID_AI_ENABLED }}
+          PAID_AI_SCHEDULE_ENABLED: ${{ vars.PAID_AI_SCHEDULE_ENABLED }}
         run: |
+          python3 -c 'import json,os; print(json.dumps({"readinessSwitches": {k: os.getenv(k, "") for k in ("PAID_AI_ENABLED", "PAID_AI_SCHEDULE_ENABLED")}}))'
           python3 scripts/pulse_release_security.py --preflight
           python3 scripts/pulse_release_security.py --environment pulse-ai-paid --preflight
       - name: Check live official source metadata read-only
