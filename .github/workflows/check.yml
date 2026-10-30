@@ -3,8 +3,12 @@ on:
   push:
     branches: [pulse/phase1-financial-data-engine, pulse/phase1b-reusable-financial-engine]
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
 permissions:
   contents: read
+  actions: read
+  checks: read
+  pull-requests: read
 jobs:
   check:
     runs-on: ubuntu-24.04
@@ -18,7 +22,20 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Install offline Hebrew release-PDF dependencies
+        run: |
+          python3 -m pip install --disable-pip-version-check -r scripts/requirements-pulse-release.txt
+          test -s /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf
       - run: python3 -m unittest discover -s scripts -p 'test_*.py'
+      - name: Verify live GitHub security evidence with read-only GITHUB_TOKEN (no release or paid API)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PAID_AI_ENABLED: ${{ vars.PAID_AI_ENABLED }}
+          PAID_AI_SCHEDULE_ENABLED: ${{ vars.PAID_AI_SCHEDULE_ENABLED }}
+        run: |
+          python3 -c 'import json,os; print(json.dumps({"readinessSwitches": {k: os.getenv(k, "") for k in ("PAID_AI_ENABLED", "PAID_AI_SCHEDULE_ENABLED")}}))'
+          python3 scripts/pulse_release_security.py --preflight
+          python3 scripts/pulse_release_security.py --environment pulse-ai-paid --preflight
       - name: Check live official source metadata read-only
         run: python3 scripts/official_sources.py
       - name: Read official report content without changing published research
@@ -34,8 +51,16 @@ jobs:
           python3 scripts/latest_research_updates.py
           python3 scripts/financial_integrity_audit.py
           python3 scripts/research_update_history.py
+          python3 scripts/earnings_research_candidates.py
+          python3 scripts/pulse_ai_analysis_queue.py
           python3 scripts/ai_research_packets.py
           python3 scripts/run_optional_ai_review.py --ticker DLO
+      - name: Rehearse META earnings to AI review without any model key or charge
+        run: |
+          python3 scripts/pulse_ai_pipeline.py --ticker META --output work/pulse-ai-mock-preview.json
+          python3 -c 'import json; r=json.load(open("work/pulse-ai-mock-preview.json")); assert r["analysisMode"]=="mock-simulation-no-model" and not r["paidAiExecuted"] and r["validation"]["modelChanges"]==0'
+          python3 scripts/pulse_mock_research_pdf.py
+          test -s work/release-preview/meta-q3-2026-TEST-MOCK.pdf
       - name: Retain newly collected official issuer evidence before slow browser tests
         uses: actions/upload-artifact@v4
         if: always()
@@ -64,6 +89,7 @@ jobs:
           mkdir -p work
           npm run preview > work/preview.log 2>&1 &
           python3 scripts/mobile_check.py
+          python3 scripts/pulse_visual_review.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -78,7 +104,11 @@ jobs:
             public/data/latest-research-updates.json
             public/data/research-update-history.json
             public/data/issuer-coverage.json
+            public/data/earnings-research-candidates.json
+            public/data/ai-analysis-queue.json
             public/data/ai-research-packets/*.json
+            work/pulse-ai-mock-preview.json
+            work/release-preview/*.pdf
           retention-days: 7
       - uses: actions/upload-artifact@v4
         if: always()
@@ -87,5 +117,7 @@ jobs:
           path: |
             work/mobile-*.png
             work/mobile-*.json
+            work/premium-review/*.png
+            work/premium-review/manifest.json
           retention-days: 7
 

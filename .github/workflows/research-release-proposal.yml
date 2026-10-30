@@ -1,0 +1,131 @@
+name: PULSE — owner-verified versioned research proposal
+on:
+  workflow_dispatch:
+    inputs:
+      ticker:
+        description: 'Ticker as used in PULSE research packets (e.g. META)'
+        required: true
+        type: string
+      draft_id:
+        description: 'Exact ai-draft:<32 hex> from retained AI draft history'
+        required: true
+        type: string
+
+permissions: {}
+concurrency:
+  group: pulse-research-release-proposal
+  cancel-in-progress: false
+
+jobs:
+  stage-release-pr:
+    if: github.ref == 'refs/heads/main' && github.ref_protected && github.actor == github.repository_owner && vars.RESEARCH_RELEASE_PROPOSALS_ENABLED == 'YES'
+    environment:
+      name: pulse-research-release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: read
+      checks: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Verify protected main, owner-merged CI and current-run approval
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RESEARCH_RELEASE_PROPOSALS_ENABLED: ${{ vars.RESEARCH_RELEASE_PROPOSALS_ENABLED }}
+        run: |
+          set -euo pipefail
+          python3 scripts/pulse_release_security.py
+      - name: Install verified offline Hebrew PDF renderer
+        run: |
+          python3 -m pip install --disable-pip-version-check -r scripts/requirements-pulse-release.txt
+          test -s /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf
+      - name: Read public source/draft snapshots without granting API credentials
+        env:
+          INPUT_TICKER: ${{ inputs.ticker }}
+          INPUT_DRAFT_ID: ${{ inputs.draft_id }}
+        run: |
+          set -euo pipefail
+          [[ "$INPUT_TICKER" =~ ^[A-Za-z0-9_-]{1,72}$ ]] || exit 1
+          [[ "$INPUT_DRAFT_ID" =~ ^ai-draft:[0-9a-f]{32}$ ]] || exit 1
+          git fetch --no-tags origin refs/heads/pulse-data:refs/remotes/origin/pulse-data
+          mkdir -p "$RUNNER_TEMP/release-input"
+          for file in \
+            public/data/ai-research-drafts.json \
+            public/data/auto-financial-observations.json \
+            public/data/latest-research-updates.json \
+            public/data/research-update-history.json \
+            public/data/forecast-archive.json \
+            public/data/forecast-actual-comparisons.json \
+            public/data/issuer-coverage.json; do
+            if git cat-file -e "refs/remotes/origin/pulse-data:$file"; then
+              git show "refs/remotes/origin/pulse-data:$file" > "$file"
+            fi
+          done
+          test -s public/data/ai-research-drafts.json
+          if test -s public/data/approved-research-versions.json; then
+            cp public/data/approved-research-versions.json "$RUNNER_TEMP/release-input/approved.json"
+          else
+            echo '{"version":1,"versions":[],"activeByCompany":{}}' > "$RUNNER_TEMP/release-input/approved.json"
+          fi
+      - name: Build immutable review-only proposal and multi-page Hebrew PDF
+        env:
+          INPUT_TICKER: ${{ inputs.ticker }}
+          INPUT_DRAFT_ID: ${{ inputs.draft_id }}
+        run: |
+          set -euo pipefail
+          python3 scripts/pulse_research_release.py \
+            --ticker "$INPUT_TICKER" \
+            --draft-id "$INPUT_DRAFT_ID" \
+            --draft-store public/data/ai-research-drafts.json \
+            --approved-store "$RUNNER_TEMP/release-input/approved.json" \
+            --output "$RUNNER_TEMP/pulse-release-proposal"
+      - name: Open a DRAFT GitHub PR, never merge or update approved research
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_TICKER: ${{ inputs.ticker }}
+        run: |
+          set -euo pipefail
+          export STAGED="$RUNNER_TEMP/pulse-release-proposal"
+          VERSION=$(python3 -c 'import json,os; d=json.load(open(os.environ["STAGED"]+"/release-proposal.json")); print(d["candidateVersion"]["id"].split(":")[1])')
+          [[ "$VERSION" =~ ^[0-9a-f]{32}$ ]] || exit 1
+          BRANCH="pulse/research-owner-review-$VERSION"
+          git checkout -b "$BRANCH"
+          # Source-only candidate PDF and manifest; no active pointer changes.
+          python3 - <<'PY'
+          import json,os,shutil,pathlib
+          stage=pathlib.Path(os.environ["STAGED"])
+          item=json.loads((stage/"release-proposal.json").read_text(encoding="utf-8"))
+          version=item["candidateVersion"]
+          path=pathlib.Path(version["pdfPath"])
+          # Unapproved PDFs are stored only in the proposals namespace,
+          # never in active/approved research directories.
+          slug=path.parent.name
+          dest=pathlib.Path("public/research-release-proposals")/slug/path.name
+          if dest.exists(): raise ValueError("Refuse to overwrite existing PDF")
+          dest.parent.mkdir(parents=True,exist_ok=True)
+          shutil.copyfile(stage/path,dest)
+          item["proposalPdfPath"]=str(dest)
+          item["publishAutomatically"]=False
+          record=pathlib.Path("public/data/research-release-proposals")/(version["id"].split(":")[1]+".json")
+          if record.exists():raise ValueError("Review proposal already exists")
+          record.parent.mkdir(parents=True,exist_ok=True)
+          record.write_text(json.dumps(item,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- public/research-release-proposals/ public/data/research-release-proposals/
+          git diff --cached --quiet && exit 1
+          git commit -m "Propose immutable $INPUT_TICKER research PDF for owner review"
+          git push origin "$BRANCH"
+          gh pr create --draft --base main --head "$BRANCH" \
+            --title "PULSE research owner review: $INPUT_TICKER / $VERSION" \
+            --body "Draft PDF for authenticated human review only. No active research pointer, valuation or approved target is changed. Review source SHA and PDF in this PR; do not merge until protections and evidence are verified."
+      - name: Record explicitly unapproved result
+        if: always()
+        run: |
+          echo 'This workflow cannot approve research, alter current targets, merge PRs, or publish an active version.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Proposals require an explicit owner environment approval and protected manual PR merge and follow-up publication gate.' >> "$GITHUB_STEP_SUMMARY"

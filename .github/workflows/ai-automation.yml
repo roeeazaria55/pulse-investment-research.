@@ -1,0 +1,151 @@
+name: PULSE AI — protected autonomous research
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Free preflight or run one paid analysis after owner activation'
+        required: true
+        type: choice
+        default: preflight
+        options: [preflight, run-one]
+  schedule:
+    - cron: '9,39 * * * *'
+permissions: {}
+concurrency:
+  group: pulse-ai-spending-serialized
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.mode == 'preflight'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      actions: read
+      checks: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Read GitHub security evidence without authorizing spend
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 scripts/pulse_release_security.py --environment pulse-ai-paid --preflight
+      - name: Inspect published queue only, no paid API
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin refs/heads/pulse-data:refs/remotes/origin/pulse-data
+          if git cat-file -e refs/remotes/origin/pulse-data:public/data/ai-analysis-queue.json; then
+            git show refs/remotes/origin/pulse-data:public/data/ai-analysis-queue.json > "$RUNNER_TEMP/queue.json"
+            python3 -c 'import json,os; q=json.load(open(os.environ["RUNNER_TEMP"]+"/queue.json")); print(json.dumps({"status":"no-charge-preflight","queued":sum(j.get("status")=="queued" for j in q["jobs"]),"paidAiExecuted":False}))'
+          else
+            echo 'Queue not yet published to pulse-data; no AI action taken.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  analyze:
+    if: >-
+      github.ref == 'refs/heads/main' && github.ref_protected &&
+      vars.PAID_AI_ENABLED == 'YES' &&
+      ((github.event_name == 'schedule' && vars.PAID_AI_SCHEDULE_ENABLED == 'YES') ||
+       (github.event_name == 'workflow_dispatch' && inputs.mode == 'run-one'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      actions: read
+      checks: read
+      pull-requests: read
+    environment:
+      name: pulse-ai-paid
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Verify owner approval for this exact run before any reservation or paid request
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PAID_AI_ENABLED: ${{ vars.PAID_AI_ENABLED }}
+        run: python3 scripts/pulse_release_security.py --environment pulse-ai-paid
+      - name: Prepare private runner and checked-out pulse-data worktree
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin refs/heads/pulse-data:refs/remotes/origin/pulse-data
+          git worktree add --detach "$RUNNER_TEMP/pulse-ai-data" refs/remotes/origin/pulse-data
+          mkdir -m 700 "$RUNNER_TEMP/pulse-ai-private"
+          for file in \
+            public/data/auto-financial-observations.json \
+            public/data/forecast-archive.json \
+            public/data/forecast-actual-comparisons.json \
+            public/data/latest-research-updates.json \
+            public/data/earnings-research-candidates.json; do
+            if test -f "$RUNNER_TEMP/pulse-ai-data/$file"; then
+              cp "$RUNNER_TEMP/pulse-ai-data/$file" "$file"
+            fi
+          done
+      - name: Prepare bounded reservation (STILL NO paid request)
+        id: reserve
+        env:
+          PAID_AI_ENABLED: "${{ vars.PAID_AI_ENABLED }}"
+          PULSE_PAID_AI_APPROVED: 'YES'
+        run: |
+          set -euo pipefail
+          python3 scripts/pulse_ai_actions.py --phase reserve \
+            --state-dir "$RUNNER_TEMP/pulse-ai-data" \
+            --private-dir "$RUNNER_TEMP/pulse-ai-private" \
+            --model gpt-6.1-sol > "$RUNNER_TEMP/pulse-ai-private/reservation-status.json"
+          python3 -c 'import json,os; r=json.load(open(os.environ["RUNNER_TEMP"]+"/pulse-ai-private/reservation-status.json")); f=open(os.environ["GITHUB_OUTPUT"],"a"); print("ready="+str(bool(r.get("ready"))).lower(),file=f); print("changed="+str(bool(r.get("changed"))).lower(),file=f); print("ticker="+str(r.get("ticker","")),file=f); f.close()'
+      - name: COMMIT AND PUSH reservation before allowing ANY API request
+        if: steps.reserve.outputs.changed == 'true'
+        working-directory: "${{ runner.temp }}/pulse-ai-data"
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- public/data/ai-analysis-queue.json
+          if test -f public/data/ai-cost-ledger.json; then git add -- public/data/ai-cost-ledger.json; fi
+          git diff --cached --quiet && { echo 'Expected a new reservation'; exit 1; }
+          git commit -m 'Reserve PULSE AI analysis cost [skip ci]'
+          git push origin HEAD:pulse-data
+      - name: Materialize precommitted ledger in private runtime
+        if: steps.reserve.outputs.ready == 'true'
+        run: |
+          cp "$RUNNER_TEMP/pulse-ai-data/public/data/ai-cost-ledger.json" \
+            "$RUNNER_TEMP/pulse-ai-private/ledger.json"
+          chmod 600 "$RUNNER_TEMP/pulse-ai-private/ledger.json"
+      - name: Execute bounded, source-bound OpenAI review (OFF until owner enables)
+        if: steps.reserve.outputs.ready == 'true'
+        env:
+          OPENAI_API_KEY: "${{ secrets.OPENAI_API_KEY }}"
+          PULSE_PAID_AI_APPROVED: 'YES'
+          PULSE_REMOTE_RESERVATION_PERSISTED: 'YES'
+          PULSE_AI_MODEL: gpt-6.1-sol
+        run: |
+          set -euo pipefail
+          python3 scripts/run_optional_ai_review.py \
+            --ticker "${{ steps.reserve.outputs.ticker }}" \
+            --execute --reservation-precommitted \
+            --private-output "$RUNNER_TEMP/pulse-ai-private/review.json" \
+            --cost-ledger "$RUNNER_TEMP/pulse-ai-private/ledger.json"
+      - name: Commit receipt and UNAPPROVED AI draft; failed calls retain hold
+        if: always() && steps.reserve.outputs.ready == 'true'
+        env:
+          PAID_AI_ENABLED: "${{ vars.PAID_AI_ENABLED }}"
+          PULSE_PAID_AI_APPROVED: 'YES'
+        run: |
+          set -euo pipefail
+          python3 scripts/pulse_ai_actions.py --phase settle \
+            --state-dir "$RUNNER_TEMP/pulse-ai-data" \
+            --private-dir "$RUNNER_TEMP/pulse-ai-private" \
+            > "$RUNNER_TEMP/pulse-ai-private/settlement.json"
+          cd "$RUNNER_TEMP/pulse-ai-data"
+          git add -- public/data/ai-analysis-queue.json public/data/ai-cost-ledger.json
+          if test -f public/data/ai-research-drafts.json; then git add -- public/data/ai-research-drafts.json; fi
+          git commit -m 'Record PULSE AI billing and pending analyst draft [skip ci]'
+          git push origin HEAD:pulse-data
+      - name: Explain state without publishing approved research
+        if: always()
+        run: |
+          echo 'The OpenAI secret was not printed or uploaded as an artifact.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'An unsettled reservation blocks repeat analysis pending billing reconciliation.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'No draft can approve a model, overwrite a PDF or alter a price target.' >> "$GITHUB_STEP_SUMMARY"

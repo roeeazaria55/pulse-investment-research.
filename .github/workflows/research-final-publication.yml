@@ -1,0 +1,87 @@
+name: PULSE — protected final research publication PR
+on:
+  workflow_dispatch:
+    inputs:
+      version_digest:
+        description: 'Merged review proposal version (32 lowercase hex)'
+        type: string
+        required: true
+
+permissions: {}
+concurrency:
+  group: pulse-protected-research-release
+  cancel-in-progress: false
+
+jobs:
+  prepare-final-publication:
+    if: github.ref == 'refs/heads/main' && github.ref_protected && github.actor == github.repository_owner && vars.RESEARCH_RELEASE_PROPOSALS_ENABLED == 'YES'
+    environment:
+      name: pulse-research-release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: read
+      checks: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Verify protected main, owner-merged CI and current-run approval
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RESEARCH_RELEASE_PROPOSALS_ENABLED: ${{ vars.RESEARCH_RELEASE_PROPOSALS_ENABLED }}
+        run: python3 scripts/pulse_release_security.py
+      - name: Stage immutable approved-index change, never write directly to main
+        env:
+          VERSION_DIGEST: ${{ inputs.version_digest }}
+        run: |
+          set -euo pipefail
+          [[ "$VERSION_DIGEST" =~ ^[0-9a-f]{32}$ ]] || exit 1
+          SOURCE="public/data/research-release-proposals/$VERSION_DIGEST.json"
+          test -s "$SOURCE" || { echo 'Review proposal must be merged into protected main first'; exit 1; }
+          export SOURCE
+          PROPOSAL_PDF=$(python3 - <<'PY'
+          import json,os
+          p=json.load(open(os.environ["SOURCE"],encoding="utf-8"))
+          if p.get("simulation") is not False or p.get("proposalOnly") is not True:
+              raise ValueError("Unreviewed or mock proposal")
+          path=p.get("proposalPdfPath")
+          if not isinstance(path,str) or not path.startswith("public/research-release-proposals/") or ".." in path:
+              raise ValueError("Proposal PDF path not allowed")
+          print(path)
+          PY
+          )
+          test -s "$PROPOSAL_PDF"
+          python3 scripts/pulse_research_publish_proposal.py \
+            --proposal "$SOURCE" --proposal-pdf "$PROPOSAL_PDF" \
+            --approved-index public/data/approved-research-versions.json \
+            --output "$RUNNER_TEMP/release-final-review" \
+            > "$RUNNER_TEMP/release-publication-result.json"
+      - name: Create a SECOND Draft PR requiring owner environment approval and manual merge
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION_DIGEST: ${{ inputs.version_digest }}
+        run: |
+          set -euo pipefail
+          BRANCH="pulse/approved-research-review-$VERSION_DIGEST"
+          test ! -e "public/approved-research/$VERSION_DIGEST.pdf"
+          git checkout -b "$BRANCH"
+          cp -r "$RUNNER_TEMP/release-final-review/public/approved-research/." public/approved-research/
+          cp "$RUNNER_TEMP/release-final-review/public/data/approved-research-versions.json" \
+             public/data/approved-research-versions.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- public/approved-research/ public/data/approved-research-versions.json
+          git diff --cached --quiet && exit 1
+          git commit -m "Propose protected approved version $VERSION_DIGEST for owner merge"
+          git push origin "$BRANCH"
+          gh pr create --draft --base main --head "$BRANCH" \
+            --title "PULSE APPROVAL: active research version $VERSION_DIGEST" \
+            --body "Final owner-review PR. Merging this protected PR (after required CI and owner environment approval) updates only the versioned approved-research index and creates an immutable PDF. It never changes static valuation-model inputs or older PDFs. Verify source/parent/PDF hash and review controls."
+      - name: Explicit authorization boundary
+        if: always()
+        run: |
+          echo 'NO automatic merge, no API key, no paid model call, no portfolio trade.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'The owner must inspect and manually merge the generated PR; this is not independent code review.' >> "$GITHUB_STEP_SUMMARY"

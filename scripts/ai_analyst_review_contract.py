@@ -9,7 +9,7 @@ import math
 import re
 from pathlib import Path
 
-KINDS={"financial-observation", "archived-forecast", "research-section", "valuation-scenario"}
+KINDS={"financial-observation", "issuer-report-metric", "archived-forecast", "research-section", "valuation-scenario"}
 SCENARIOS={"bear","base","bull"}
 
 def _str(v,maxlen=4000):
@@ -54,6 +54,18 @@ def _validate_input_packet(packet):
             or not isinstance(ob.get("sourceSha256"), str)
             or not re.fullmatch(r"[0-9a-f]{64}", ob["sourceSha256"])):
             raise ValueError("Unreviewed accounting evidence cannot be promoted")
+    issuer=packet.get("latestIssuerResearch") or {}
+    report=issuer.get("report") or {}
+    rows=issuer.get("sourceBoundMetrics",[])
+    if not isinstance(rows,list) or len(rows)>16:
+        raise ValueError("Unbounded issuer report metrics")
+    for row in rows:
+        if (not isinstance(row,dict) or row.get("modelEligible") is not False
+            or row.get("reviewStatus") not in ("pending-review","needs-reconciliation")
+            or row.get("sourceDigest")!=report.get("digest")
+            or row.get("sourceUrl")!=report.get("sourceUrl")
+            or not isinstance(row.get("metricId"),str)):
+            raise ValueError("Unreviewed issuer metrics cannot be promoted")
     return digest
 
 
@@ -82,6 +94,11 @@ def validate_ai_proposal(packet, proposed, *, model_execution_attested=False):
     if proposed["proposedValuationAction"]!="no-automatic-change":
         raise ValueError("Direct financial model edits are forbidden")
     candidates={o["observationId"]:"financial-observation" for o in packet.get("financialObservations",[])}
+    for row in (packet.get("latestIssuerResearch") or {}).get("sourceBoundMetrics",[]):
+        evidence_id="issuer-metric:"+packet["companyId"]+":"+row["metricId"]
+        if evidence_id in candidates:
+            raise ValueError("Duplicate issuer evidence ID")
+        candidates[evidence_id]="issuer-report-metric"
     candidates.update({f["id"]:"archived-forecast" for f in packet.get("archivedForecasts",[])})
     for name in (packet.get("research") or {}).get("sections",{}):
         candidates["research-section:"+name]="research-section"

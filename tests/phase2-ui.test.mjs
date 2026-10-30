@@ -108,8 +108,13 @@ describe("v2 public display and privacy", () => {
       target: { value: "portfolio" },
     });
     expect(screen.getByText("לא נמצאו פריטים")).toBeTruthy();
+    const feedCalls = fetchMock.mock.calls.filter(([url]) => String(url).startsWith("/data/feed.json?schema=2&t="));
+    expect(feedCalls.length).toBeGreaterThan(0);
     for (const [url, options] of fetchMock.mock.calls) {
-      expect(url).toMatch(/^\/data\/feed.json\?schema=2&t=\d+$/);
+      // UI can fetch additional public, read-only research metadata,
+      // but must never fetch a private profile/holdings endpoint.
+      expect(String(url).startsWith("/data/feed.json?schema=2&t=") ||
+             new RegExp("^/data/[a-z0-9-]+[.]json$").test(String(url))).toBe(true);
       expect(options).toEqual({ cache: "no-store" });
     }
   });

@@ -415,6 +415,18 @@ with sync_playwright() as pw:
         assert dialog.bounding_box()['height']<=340
         dialog.get_by_role('button',name='סגירה',exact=True).click()
         if width==390:
+            # Appearance is an actual user control, not a decorative switch.
+            page.get_by_role('button',name='הגדרות PULSE',exact=True).click()
+            settings=page.get_by_role('dialog',name='הגדרות PULSE · מחקר ותצוגה')
+            settings.get_by_role('button',name='בהיר',exact=True).click()
+            assert page.locator('html').get_attribute('data-pulse-theme')=='light'
+            assert page.evaluate('document.documentElement.scrollWidth')<=width+1,'Light theme 390px overflow'
+            page.screenshot(path='work/mobile-390-light-settings.png',full_page=False)
+            settings.get_by_role('button',name='כהה',exact=True).click()
+            assert page.locator('html').get_attribute('data-pulse-theme')=='dark'
+            settings.get_by_role('button',name='סגירה',exact=True).click()
+            page.reload()
+            assert page.locator('html').get_attribute('data-pulse-theme')=='dark'
             # Browser-level offline smoke: ensure the *deployed PWA shell* and
             # last validated research snapshot remain readable with no network.
             page.wait_for_function("navigator.serviceWorker && !!navigator.serviceWorker.controller",timeout=20000)

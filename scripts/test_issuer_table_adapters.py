@@ -101,6 +101,15 @@ class IssuerDocumentAdapterTests(unittest.TestCase):
         self.assertEqual(meta_q3(bad),[])
         bad=copy.deepcopy(doc)
         bad["tables"][0]["rows"][6][1]="$ 74,601"
+        revised=meta_q3(bad)
+        self.assertEqual(len(revised),1)  # Identical reviewed quarter heading, new issuer-stated figure.
+        self.assertEqual(revised[0]["value"],74601)
+        self.assertEqual(revised[0]["previousValue"],51242)
+        bad=copy.deepcopy(doc)
+        bad["tables"][0]["rows"][4][1]="Nine Months Ended September 30,"
+        self.assertEqual(meta_q3(bad),[])
+        bad=copy.deepcopy(doc)
+        bad["tables"].append(copy.deepcopy(bad["tables"][0]))
         self.assertEqual(meta_q3(bad),[])
 
     def test_nextvision_wrong_currency_or_years_never_used(self):

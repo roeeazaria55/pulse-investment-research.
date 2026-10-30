@@ -1,0 +1,77 @@
+name: PULSE — protected research rollback proposal PR
+on:
+  workflow_dispatch:
+    inputs:
+      company_id:
+        description: 'Registered immutable issuer company ID'
+        type: string
+        required: true
+      target_version:
+        description: 'Previously approved research-v:<32 hex> to restore'
+        type: string
+        required: true
+permissions: {}
+concurrency:
+  group: pulse-protected-research-release
+  cancel-in-progress: false
+
+jobs:
+  stage-rollback-pr:
+    if: github.ref == 'refs/heads/main' && github.ref_protected && github.actor == github.repository_owner && vars.RESEARCH_RELEASE_PROPOSALS_ENABLED == 'YES'
+    environment:
+      name: pulse-research-release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: read
+      checks: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Verify protected main, owner-merged CI and current-run approval
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RESEARCH_RELEASE_PROPOSALS_ENABLED: ${{ vars.RESEARCH_RELEASE_PROPOSALS_ENABLED }}
+        run: python3 scripts/pulse_release_security.py
+      - name: Derive immutable-history rollback preview without changing existing files
+        env:
+          CID: ${{ inputs.company_id }}
+          TARGET: ${{ inputs.target_version }}
+        run: |
+          set -euo pipefail
+          [[ "$CID" =~ ^[a-z0-9-]{2,90}$ ]] || exit 1
+          [[ "$TARGET" =~ ^research-v:[0-9a-f]{32}$ ]] || exit 1
+          test -s public/data/approved-research-versions.json
+          python3 scripts/pulse_research_rollback.py \
+            --approved-index public/data/approved-research-versions.json \
+            --company-id "$CID" --target-version "$TARGET" \
+            --output "$RUNNER_TEMP/pulse-rollback-review"
+      - name: Open separate human-reviewed PR, never directly revert main
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TARGET: ${{ inputs.target_version }}
+        run: |
+          set -euo pipefail
+          BRANCH="pulse/review-rollback-${TARGET#research-v:}"
+          git checkout -b "$BRANCH"
+          cp "$RUNNER_TEMP/pulse-rollback-review/public/data/approved-research-versions.json" \
+            public/data/approved-research-versions.json
+          mkdir -p public/data/research-release-audit
+          cp "$RUNNER_TEMP/pulse-rollback-review/public/data/research-release-audit/"*.json \
+            public/data/research-release-audit/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- public/data/approved-research-versions.json public/data/research-release-audit/
+          git diff --cached --quiet && exit 1
+          git commit -m "Propose owner-reviewed research rollback to $TARGET"
+          git push origin "$BRANCH"
+          gh pr create --draft --base main --head "$BRANCH" \
+            --title "PULSE ROLLBACK review: $TARGET" \
+            --body "This PR only restores a previously approved immutable version pointer. Older PDFs are not deleted or overwritten. Main protection and required owner review must be enforced before merge. No browser input can approve it."
+      - name: No automatic approval
+        if: always()
+        run: |
+          echo 'Rollback is a pending owner-reviewed PR only. No automatic merge or API call.' >> "$GITHUB_STEP_SUMMARY"
