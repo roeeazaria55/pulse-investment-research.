@@ -340,6 +340,9 @@ def iren_update(source):
         "publishedDate": source.get("publishedDate"), "sourceUrl": source["sourceUrl"],
         "sourceVersion": sha256(json.dumps(source,sort_keys=True,ensure_ascii=False,separators=(",",":")).encode("utf-8")).hexdigest(),
         "sourceDigestKind": "curated-extract-json-sha256-not-original-pdf", "metrics": metrics,
+        # This digest identifies the checked-in curated JSON, not fetched report bytes.
+        # Do not attach the independently selected intake document as its evidence.
+        "reportEvidence": None,
         "findings": ["קיימת השוואה שנתית FY2026/FY2025 לשלוש קבוצות מדדים מתוך טבלאות המנפיק.",
                      "הדוח פורסם לפני מחקר PULSE באוקטובר; השינוי השנתי אינו הפתעה ואינו מחייב שינוי מודל."],
         "questions": ["מהו תזרים המזומנים המתוקנן ללא מקדמות לקוחות?",
@@ -460,6 +463,8 @@ def build(observations, iren_source, source_inventory=None, coverage=None):
         else:
             report = other_issuer_update(row)
         report.setdefault("reportEvidence", row.get("report"))
+        if report.get("sourceDigestKind") == "curated-extract-json-sha256-not-original-pdf":
+            report["intakeReportEvidence"] = row.get("report")
         report.setdefault("intakeStatus", row["intakeStatus"])
         report["intakeAttemptAt"] = row.get("intakeAttemptAt")
         report["intakeSuccessAt"] = row.get("intakeSuccessAt")
@@ -473,7 +478,7 @@ def build(observations, iren_source, source_inventory=None, coverage=None):
         "reports": reports, "aiStatus": "not-enabled",
         "coverage": {"companyCount": len(reports),
                      "financialMetricCompanies": [r["ticker"] for r in reports if r["metrics"]],
-                     "retainedDocumentCompanies": [r["ticker"] for r in reports if r.get("reportEvidence")]},
+                     "retainedDocumentCompanies": [r["ticker"] for r in reports if r.get("reportEvidence") or r.get("intakeReportEvidence")]},
         "notice": "Deterministic review-only research. Curated IREN FY2026 baseline is not fresh collection. No AI run, auto-approval, price-target change or historical forecast surprise.",
     }
 

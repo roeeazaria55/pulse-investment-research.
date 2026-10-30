@@ -11,6 +11,33 @@ class LatestResearchUpdateTests(unittest.TestCase):
         cls.iren = json.loads((ROOT / "public/data/iren-fy26-source.json").read_text(encoding="utf-8"))
         cls.dlo = json.loads((ROOT / "public/data/auto-financial-observations.json").read_text(encoding="utf-8"))
 
+    def test_iren_curated_json_is_not_bound_to_independent_intake_document(self):
+        import copy
+        from issuer_coverage import build as build_coverage
+        from earnings_research_candidates import build as candidates
+        registry = json.loads((ROOT / "public/data/official-registry.json").read_text())
+        intake = json.loads((ROOT / "public/data/report-intake.json").read_text())
+        coverage = build_coverage(registry, intake)
+        row = next(r for r in coverage['coverage'] if r['companyId'] == 'candidate-iren')
+        row['typedMetrics'] = []  # The production fallback when no original table maps.
+        row['report'] = {'url': 'https://rss.globenewswire.com/independent-report',
+                         'sha256': 'a' * 64, 'id': 'report:independent'}
+        output = build(self.dlo, self.iren, coverage=coverage)
+        iren = next(r for r in output['reports'] if r['companyId'] == 'candidate-iren')
+        self.assertIsNone(iren['reportEvidence'])
+        self.assertEqual(iren['intakeReportEvidence'], row['report'])
+        self.assertEqual(iren['sourceVersion'], iren_update(self.iren)['sourceVersion'])
+        self.assertIn('IREN', output['coverage']['retainedDocumentCompanies'])
+        result = candidates(output, {}, registry, [], '2026-10-30T00:00:00+00:00')
+        candidate = next(r for r in result['candidates'] if r['companyId'] == 'candidate-iren')
+        self.assertEqual(candidate['sourceSha256'], iren['sourceVersion'])
+        self.assertEqual(candidate['publicationStatus'], 'not-approved')
+        # Original-report evidence is still checked strictly; never suppress mismatches.
+        forged = copy.deepcopy(output)
+        next(r for r in forged['reports'] if r['companyId'] == 'candidate-iren')['reportEvidence'] = row['report']
+        with self.assertRaises(ValueError):
+            candidates(forged, {}, registry, [], '2026-10-30T00:00:00+00:00')
+
     def test_real_iren_source_and_prior_year_changes(self):
         r = iren_update(self.iren)
         self.assertEqual(r["status"], "historical-baseline-pending-review")
