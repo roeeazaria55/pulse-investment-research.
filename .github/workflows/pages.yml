@@ -34,6 +34,10 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Install Hebrew PDF test dependencies
+        run: |
+          python3 -m pip install --disable-pip-version-check -r scripts/requirements-pulse-release.txt
+          test -s /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf
       # Unit/regression tests use repository-retained issuer fixtures. Loading
       # mutable pulse-data first changes their evidence and makes them brittle.
       # The production snapshot is loaded after these tests and is independently
