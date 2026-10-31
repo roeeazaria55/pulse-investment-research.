@@ -12,6 +12,7 @@ class AutomaticDraftSecurityTests(unittest.TestCase):
   env={'name':ENVIRONMENT,'deployment_branch_policy':{'protected_branches':False,'custom_branch_policies':True},'protection_rules':[]}
   branches={'total_count':1,'branch_policies':[{'name':'main','type':'branch'}]}
   verify_worker_environment(env,branches)
+  verify_worker_environment({**env,'protection_rules':[{'type':'branch_policy'}]},branches)
   for e,b in [({**env,'name':'pulse-research-release'},branches),(env,{'total_count':1,'branch_policies':[{'name':'*','type':'branch'}]}),(env,{'total_count':2,'branch_policies':branches['branch_policies']*2}),({**env,'protection_rules':[{'type':'required_reviewers'}]},branches)]:
    with self.assertRaises(ReleaseProtectionError):verify_worker_environment(e,b)
  def test_only_fresh_owner_scheduled_draft_workflow_allowed(self):

@@ -20,7 +20,8 @@ def verify_worker_environment(env,branches):
  require(isinstance(branches,dict) and branches.get('total_count')==1,'Draft environment must permit exactly one branch')
  policies=branches.get('branch_policies',[])
  require(len(policies)==1 and policies[0].get('name')=='main' and policies[0].get('type')=='branch','Only main may access draft credentials')
- require(env.get('protection_rules')==[],'Unexpected draft-environment approval or external rule')
+ rules=env.get('protection_rules')
+ require(isinstance(rules,list) and all(isinstance(r,dict) and r.get('type')=='branch_policy' for r in rules),'Unexpected draft-environment approval or external rule')
 
 def verify_policy(policy,now):
  require(policy.get('scheduledAuthorization')=='automatic-drafts','Standing draft permission is disabled')
