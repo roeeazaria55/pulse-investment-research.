@@ -26,6 +26,28 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  schedule-admission:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    outputs:
+      eligible: ${{ steps.admit.outputs.eligible }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Read current queue and ledger without requesting secrets
+        run: |
+          git fetch --no-tags origin refs/heads/pulse-data:refs/remotes/origin/pulse-data
+          mkdir -p "$RUNNER_TEMP/pulse-admission/public/data"
+          git show refs/remotes/origin/pulse-data:public/data/ai-analysis-queue.json > "$RUNNER_TEMP/pulse-admission/public/data/ai-analysis-queue.json"
+          if git cat-file -e refs/remotes/origin/pulse-data:public/data/ai-cost-ledger.json; then
+            git show refs/remotes/origin/pulse-data:public/data/ai-cost-ledger.json > "$RUNNER_TEMP/pulse-admission/public/data/ai-cost-ledger.json"
+          fi
+      - name: Check active month, queued work and budget
+        id: admit
+        run: python3 scripts/pulse_ai_schedule.py --state-dir "$RUNNER_TEMP/pulse-admission"
   preflight:
     if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.mode == 'preflight'
     runs-on: ubuntu-24.04
@@ -54,10 +76,12 @@ jobs:
           fi
 
   analyze:
+    needs: schedule-admission
     if: >-
+      !cancelled() &&
       github.ref == 'refs/heads/main' && github.ref_protected &&
       vars.PAID_AI_ENABLED == 'YES' &&
-      ((github.event_name == 'schedule' && vars.PAID_AI_SCHEDULE_ENABLED == 'YES') ||
+      ((github.event_name == 'schedule' && vars.PAID_AI_SCHEDULE_ENABLED == 'YES' && needs.schedule-admission.outputs.eligible == 'true') ||
        (github.event_name == 'workflow_dispatch' && inputs.mode == 'run-one'))
     runs-on: ubuntu-24.04
     timeout-minutes: 15
@@ -109,6 +133,10 @@ jobs:
           RETRY_RECEIPT: ${{ inputs.retry_receipt }}
         run: |
           set -euo pipefail
+          if test "$GITHUB_EVENT_NAME" = schedule; then
+            python3 scripts/pulse_ai_schedule.py --state-dir "$RUNNER_TEMP/pulse-ai-data" > "$RUNNER_TEMP/pulse-ai-private/admission.json"
+            python3 -c 'import json,os; r=json.load(open(os.environ["RUNNER_TEMP"]+"/pulse-ai-private/admission.json")); assert r["eligible"], r["reason"]'
+          fi
           python3 scripts/pulse_ai_actions.py --phase reserve --retry-of "$RETRY_RECEIPT" \
             --state-dir "$RUNNER_TEMP/pulse-ai-data" \
             --private-dir "$RUNNER_TEMP/pulse-ai-private" \

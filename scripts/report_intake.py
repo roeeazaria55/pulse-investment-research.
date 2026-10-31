@@ -14,7 +14,7 @@ from official_sources import document_url, canonical
 from ftai_sec_companyfacts import read_ftai_companyfacts, SEC_URL
 
 VERSION=1
-PARSER='official-content-v1'
+PARSER='official-content-v2'
 MAX_BYTES=8*1024*1024
 PILOTS={c["id"] for c in json.loads((Path(__file__).resolve().parent.parent/"public/data/official-registry.json").read_text(encoding="utf-8"))["companies"]}
 LABELS=re.compile(r'revenue|net (?:income|loss)|gross profit|operating (?:income|loss)|income from operations|cash flow|cash (?:and|provided|used|equivalents)|net cash|purchases of|payments for|capital expenditure|total debt|long.term debt|adjusted EBITDA|premium|loss ratio|inventor|accounts receivable|total assets|earnings per|TPV|remaining performance|הכנסות|רווח|מלאי|תזרים',re.I)
@@ -22,6 +22,9 @@ FISCAL_YEAR=re.compile(r'\bFY\s*((?:20)?\d{2})\b',re.I)
 FINANCIAL_TITLE=re.compile(r'financial|fiscal|quarter|\bQ[1-4]\b|\bFY\s*(?:20)?\d{2}\b|annual report|10-K|10-Q|20-F|shareholder|תוצאות כספיות|דוח כספי|דוחות כספיים|דוח רבעון',re.I)
 SCHEDULE=re.compile(r'to (?:report|release|announce)|date (?:of|for)|timing of|schedule|earnings call registration',re.I)
 KNOWN_FACTS={'us-gaap:revenues','us-gaap:revenuefromcontractwithcustomerexcludingassessedtax','us-gaap:netincomeloss','us-gaap:grossprofit','us-gaap:operatingincomeloss','us-gaap:netcashprovidedbyusedinoperatingactivities','us-gaap:inventorynet','us-gaap:accountsreceivablenetcurrent','us-gaap:cashandcashequivalentsatcarryingvalue','us-gaap:weightedaveragenumberofdilutedsharesoutstanding','us-gaap:earningspersharediluted'}
+KNOWN_FACTS.update({'us-gaap:paymentstoacquirepropertyplantandequipment',
+ 'us-gaap:netincomelossavailabletocommonstockholdersbasic','us-gaap:debtinstrumentcarryingamount'})
+
 def clean(value):return ' '.join(value.split())
 def valid_day(value):
  try:return dt.date.fromisoformat(value).isoformat()==value
@@ -147,7 +150,18 @@ def inline_facts(page,company):
   if not unit or len(unit)>160:continue
   row=dict(concept=f['name'],value=value,unit=unit,start=start,end=end,context=f['context'],status='structured-source',definition='XBRL tag; not automatically equivalent to an analyst metric')
   if row not in out:out.append(row)
- return out[:150]
+ # Bound retention without allowing repeated revenue contexts to crowd out
+ # debt/CAPEX. Keep ambiguous contexts separate for downstream rejection.
+ groups={}
+ for row in out:groups.setdefault(row['concept'],[]).append(row)
+ for rows in groups.values():rows.sort(key=lambda r:(r['end'],r.get('start') or ''),reverse=True)
+ retained=[]
+ while groups and len(retained)<150:
+  for concept in list(groups):
+   if len(retained)>=150:break
+   retained.append(groups[concept].pop(0))
+   if not groups[concept]:del groups[concept]
+ return retained
 
 def extract(body,content_type,url,company):
  if len(body)>MAX_BYTES:raise ValueError('Report exceeds 8MB')
@@ -205,7 +219,8 @@ def extract(body,content_type,url,company):
  if not tables and not facts and not page_evidence:status='read-no-supported-data'
  else:status='extracted'
  # Do not guess fiscal periods or units from filenames, publication dates or collection dates.
- return dict(status=status,title=title or company['name'],sha256=hashlib.sha256(body).hexdigest(),bytes=len(body),format='pdf' if pdf else 'html',pages=page_count,readScope='partial-pages' if truncated else 'full-body',charactersRead=len(text),tables=tables[:12],tableCount=len(tables),tablesTruncated=len(tables)>12,facts=facts,sourcePdfPages=source_pdf_pages,reviewStatus='pending-review',links=links,notice='Content was read automatically. Table rows require period/unit review. No thesis or price target was updated.')
+ from report_context import extract_context
+ return dict(sourceExcerpts=extract_context(text),status=status,title=title or company['name'],sha256=hashlib.sha256(body).hexdigest(),bytes=len(body),format='pdf' if pdf else 'html',pages=page_count,readScope='partial-pages' if truncated else 'full-body',charactersRead=len(text),tables=tables[:12],tableCount=len(tables),tablesTruncated=len(tables)>12,facts=facts,sourcePdfPages=source_pdf_pages,reviewStatus='pending-review',links=links,notice='Content was read automatically. Table rows require period/unit review. No thesis or price target was updated.')
 
 def report_period_rank(item):
  """Discovery ranking only. Never an authoritative fiscal accounting period."""

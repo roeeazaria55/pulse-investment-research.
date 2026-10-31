@@ -70,6 +70,9 @@ export function AISettingsPanel({theme,onThemeChange}:{theme:'dark'|'light';onTh
     <div><span>שימוש שנרשם</span><strong><bdi>${usage.spent.toFixed(2)}</bdi></strong></div>
     <div><span>תקציב משוריין</span><strong><bdi>${usage.reserved.toFixed(2)}</bdi></strong></div>
     <div><span>נותר להפעלות חדשות עד $9</span><strong><bdi>${usage.remaining.toFixed(2)}</bdi></strong></div>
+    {usage.spent+usage.reserved>=5&&<p role="alert"><AlertTriangle size={15}/>
+      {usage.spent+usage.reserved>=9?'הגעת לסף $9: הפעלות חדשות נחסמות עד לחודש הבא.':usage.spent+usage.reserved>=8?'התראת תקציב: שימוש ותקציב משוריין הגיעו ל־$8.':'התראת תקציב: שימוש ותקציב משוריין הגיעו ל־$5.'}
+    </p>}
     <small>תקופה: <bdi>{usage.month}</bdi> UTC · הנתונים הם אומדן מקומי, לא חשבונית מאומתת</small>
    </div>}
   </section>

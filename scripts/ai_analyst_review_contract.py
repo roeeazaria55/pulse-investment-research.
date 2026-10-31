@@ -9,7 +9,7 @@ import math
 import re
 from pathlib import Path
 
-KINDS={"financial-observation", "issuer-report-metric", "archived-forecast", "research-section", "valuation-scenario"}
+KINDS={"report-excerpt", "financial-observation", "issuer-report-metric", "archived-forecast", "research-section", "valuation-scenario"}
 SCENARIOS={"bear","base","bull"}
 
 def _str(v,maxlen=4000):
@@ -78,6 +78,13 @@ def evidence_catalog(packet):
         if evidence_id in candidates:
             raise ValueError("Duplicate issuer evidence ID")
         candidates[evidence_id]="issuer-report-metric"
+    from report_context import validate_context
+    issuer = packet.get("latestIssuerResearch") or {}
+    excerpts = validate_context(issuer.get("sourceExcerpts", []))
+    if excerpts and not (issuer.get("report") or {}).get("digest"):
+        raise ValueError("Report excerpts lack document provenance")
+    for excerpt in excerpts:
+        candidates["report-excerpt:"+packet["companyId"]+":"+excerpt["topic"]]="report-excerpt"
     candidates.update({f["id"]:"archived-forecast" for f in packet.get("archivedForecasts",[])})
     for name in (packet.get("research") or {}).get("sections",{}):
         candidates["research-section:"+name]="research-section"
