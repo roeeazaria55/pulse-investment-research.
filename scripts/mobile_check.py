@@ -126,6 +126,8 @@ with sync_playwright() as pw:
         page.get_by_text('התראות לאנדרואיד • הגדרה חד־פעמית',exact=True).wait_for()
         assert page.locator('html').get_attribute('dir')=='rtl'
         assert page.evaluate('document.documentElement.scrollWidth')<=width+1,f'Horizontal overflow at {width}'
+        page.locator('details.home-disclosure > summary').filter(has_text='תמונת המאקרו').click()
+        page.locator('details.home-disclosure > summary').filter(has_text='דוחות קרובים ולוח אירועים').click()
         page.get_by_role('heading',name='תמונת המאקרו',exact=True).wait_for()
         page.get_by_role('button',name='השבוע הבא',exact=True).click()
         page.get_by_role('button',name='השבוע הנוכחי',exact=True).click()
@@ -172,6 +174,15 @@ with sync_playwright() as pw:
             exchange.get_by_role('heading',name=f'מחקר בסיס ל־{label}',exact=True).wait_for()
             latest=exchange.get_by_role('region',name='עדכון המחקר האחרון',exact=True)
             latest.get_by_role('heading',name='עדכון המחקר האחרון שנקלט',exact=True).wait_for()
+            # Evidence and full reports are collapsed in the initial reading view.
+            full_summary=exchange.get_by_text('קריאת המחקר המלא',exact=True)
+            assert not full_summary.evaluate('(el)=>el.parentElement.open')
+            for title in ('אופק השווי והנחות המודל','מעקב התזה ומדדי המודל','נתונים פיננסיים ומצב המקורות'):
+                summary=exchange.locator('details.research-disclosure > summary').filter(has_text=title)
+                if summary.count():
+                    assert not summary.evaluate('(el)=>el.parentElement.open')
+                    summary.click()
+            latest.locator('details.research-disclosure > summary').filter(has_text='נתוני הדוח שנקלט והבדיקות שבוצעו').click()
             if label=='DLO':
                 expect(latest).to_contain_text('נדרש בירור גרסת מקור')
                 expect(latest).to_contain_text('399.7 USD million')

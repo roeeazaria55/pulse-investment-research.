@@ -241,10 +241,9 @@ export function LatestResearchUpdate({companyId,onPrepare}:{companyId:string;onP
  };
  return <section className="report-intake" dir="rtl" aria-label="עדכון המחקר האחרון" data-testid="latest-research-update">
   <h3>עדכון המחקר האחרון שנקלט</h3>
-  <EarningsResearchCandidates companyId={companyId} onPrepare={onPrepare}/>
-  <AIAnalysisQueuePanel companyId={companyId}/>
   <AIReviewDraftPanel companyId={companyId}/>
-  <ApprovedResearchHistory companyId={companyId}/>
+  <details className="research-disclosure"><summary>טיוטות מקור, תור עבודה והיסטוריית פרסום</summary><EarningsResearchCandidates companyId={companyId} onPrepare={onPrepare}/><AIAnalysisQueuePanel companyId={companyId}/><ApprovedResearchHistory companyId={companyId}/></details>
+  <details className="research-disclosure"><summary>נתוני הדוח שנקלט והבדיקות שבוצעו</summary>
   <p>מבוסס על ראיות פיננסיות שמורות, לא על שערים חיים. עדכון מחקר דטרמיניסטי — <strong>לא ניתוח AI</strong>, ולא אישור חשבונאי.</p>
   {offline&&<p role="status"><strong>מצב לא מקוון:</strong> הנתונים עשויים להגיע מהמטמון ואינם עדכון חי.</p>}
   {!snapshot&&!error&&<p role="status">טוען תוצאות מחקר…</p>}
@@ -346,5 +345,6 @@ export function LatestResearchUpdate({companyId,onPrepare}:{companyId:string;onP
     <small>גרסת מחקר: <bdi>{report.contentId||'ללא נתונים'}</bdi> · מקור: <bdi>{report.sourceDigestKind||'לא קיים'}</bdi> · SHA של תמצית IREN אינו SHA של ה־PDF המקורי. אין עדכון אוטומטי למחירי יעד, לתיק או לתרחישים.</small>
    </article>
   </>}
+ </details>
  </section>;
 }

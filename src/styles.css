@@ -2391,3 +2391,23 @@ summary { cursor: pointer; min-height: 44px; padding-block: .55rem; line-height:
 :root[data-pulse-theme="light"] .pulse-approved-history-list li{background:#fff;border-color:#c9dde3}
 :root[data-pulse-theme="light"] .pulse-approved-history-list a{background:#d9f2ec;color:#176a61}
 @media(max-width:410px){.pulse-approved-history-list li{flex-wrap:wrap}.pulse-approved-history-list a{margin-inline-start:auto}}
+/* Reading hierarchy: short overview first, evidence on demand. */
+.model-review-inbox { border-inline-start: 3px solid var(--accent, #57cdb2); }
+.review-inbox-head { display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.review-inbox-head h3 { margin:0; font-size:1.1rem; }
+.review-inbox-head>span { font-size:.8rem; color:var(--muted, #9bb1c5); }
+.model-review-inbox>p { max-width:65ch; line-height:1.85; }
+.model-review-inbox ul { list-style:none; padding:0; margin:0; }
+.model-review-inbox li { padding-block:14px; border-block-start:1px solid #40526855; }
+.model-review-inbox li p { margin-block:6px; max-width:65ch; }
+.review-inbox-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-block-start:10px; }
+.review-inbox-actions button,.review-inbox-actions a { min-height:44px; }
+.research-disclosure { border:1px solid #40526855; border-radius:12px; padding:6px 14px; margin-block:12px; }
+.research-disclosure>summary,.home-disclosure>summary { font-weight:600; font-size:1rem; min-height:48px; }
+.research-disclosure[open]>summary { margin-block-end:12px; border-block-end:1px solid #40526855; }
+.research-disclosure p,.research-thesis p,.ai-draft-preview { max-width:68ch; line-height:1.9; }
+.ai-draft-preview { font-size:1.05rem; font-weight:600; }
+.home-disclosure { margin-block:12px; }
+@media(max-width:600px){.research-disclosure{padding:4px 10px;}.review-inbox-actions{gap:8px;}.review-inbox-actions button{font-size:.9rem;}}
+:root[data-pulse-theme="light"] .review-inbox-head>span { color:#496570; }
+:root[data-pulse-theme="light"] .model-review-inbox { background:#fff; color:#233f48; }

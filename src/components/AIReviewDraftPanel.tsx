@@ -88,6 +88,8 @@ export function AIReviewDraftPanel({companyId}:{companyId:string}){
   {error&&<p role="status">ניתוח AI עדיין לא הופעל או טרם פורסמה טיוטה. הנתונים הקיימים והמחקר המאושר לא השתנו.</p>}
   {data?.length===0&&<p>אין עדיין ניתוח AI שמור לחברה זו. קליטת הדוחות יכולה להמשיך גם ללא חיבור API.</p>}
   {draft&&<>
+   {draft.fullResearch&&<p className="ai-draft-preview">{draft.fullResearch.headline}</p>}
+   <details className="research-disclosure"><summary>קריאת ניתוח AI והמקורות שלו</summary>
    <p className="pulse-ai-meta">מודל: <bdi>{draft.model}</bdi> · תאריך טיוטה: {new Date(draft.firstRecordedAt).toLocaleDateString('he-IL')} · מזהה חבילת מקור: <bdi>{draft.sourcePacketSha256.slice(0,12)}…</bdi></p>
    <div className="pulse-ai-review-warning" role="status">הפלט נוצר במודל אך טרם אומת ואושר. העובדות, הנחות המודל ומחיר היעד המאושרים לא שונו.</div>
    <div className="pulse-ai-model-compare" aria-label="השוואה בין המודל הקיים לבין טיוטת AI">
@@ -145,6 +147,6 @@ export function AIReviewDraftPanel({companyId}:{companyId:string}){
     {!!draft.analystQuestions.length&&<p>שאלות פתוחות: {draft.analystQuestions.join(' · ')}</p>}
    </details>
    <p><small><ExternalLink size={13} aria-hidden="true"/> פרסום מחיר יעד או מחקר רשמי דורש אישור נפרד דרך GitHub.</small></p>
-  </>}
+  </details></>}
  </section>;
 }

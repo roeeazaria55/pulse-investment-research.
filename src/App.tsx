@@ -2,6 +2,7 @@ import {nextEarnings,dateLabel} from './research/earningsCalendar';
 import {MacroPanel,NextEarnings} from './components/MarketContext';
 import {compareNews} from './research/newsPresentation';
 import {ResearchAlertInbox} from './components/ResearchAlertInbox';
+import {ModelReviewInbox} from './components/ModelReviewInbox';
 import {AIResearchOverview} from './components/AIResearchOverview';
 import {AIAnalysisQueuePanel} from './components/AIAnalysisQueuePanel';
 import {AISettingsPanel} from './components/AISettingsPanel';
@@ -442,15 +443,15 @@ export default function App() {
               <button onClick={exportData}>ייצוא המידע המקורי</button>
             </div>
           )}
-          {tab==='home'&&<MacroPanel intel={feed?.version===2?feed.intelligence:undefined}/>}
-          {feed?.version===2&&feed.intelligence&&tab==='home'&&<><DailyPanel intel={feed.intelligence} news={feed.news} date={new URLSearchParams(deepLink.slice(1)).get('briefing')||undefined}/><CalendarPanel intel={feed.intelligence} focus={new URLSearchParams(deepLink.slice(1)).get('results')||undefined}/><NotificationsPanel open={deepLink.includes('notifications=')}/></>}
+          {tab==='home'&&<><ModelReviewInbox onOpen={companyId=>{const target=allSecurities.find(s=>officialCompany(s.ticker,s.name)?.id===companyId);if(target){setResearchView('valuation');openResearch(target.ticker||target.name);}}}/><details className="panel home-disclosure"><summary>תמונת המאקרו</summary><MacroPanel intel={feed?.version===2?feed.intelligence:undefined}/></details></>}
+          {feed?.version===2&&feed.intelligence&&tab==='home'&&<><details className="panel home-disclosure" open={deepLink.includes('briefing=')||undefined}><summary>תדריך הבוקר והערב</summary><DailyPanel intel={feed.intelligence} news={feed.news} date={new URLSearchParams(deepLink.slice(1)).get('briefing')||undefined}/></details><details className="panel home-disclosure" open={deepLink.includes('results=')||deepLink.includes('earnings=')||undefined}><summary>דוחות קרובים ולוח אירועים</summary><CalendarPanel intel={feed.intelligence} focus={new URLSearchParams(deepLink.slice(1)).get('results')||undefined}/></details><NotificationsPanel open={deepLink.includes('notifications=')}/></>}
           {feed?.version === 2 &&
             ["home", "watchlist"].includes(tab) && (
               <>{feed.intelligence?<details className="panel"><summary>מצב איסוף חדשות ומקורות</summary><DiscoveryPanel feed={feed}/><CoveragePanel feed={feed}/></details>:<><DiscoveryPanel feed={feed}/><CoveragePanel feed={feed}/></>}</>
             )}
           {tab === "home" && (
             <>
-              <AIResearchOverview onOpenResearch={() => navigate("research")}/>
+              <details className="panel home-disclosure"><summary>מצב מנוע המחקר והטיוטות</summary><AIResearchOverview onOpenResearch={() => navigate("research")}/></details>
               <div className="overview-grid">
                 <section className="briefing">
                   <div className="briefing-top">
@@ -552,7 +553,7 @@ export default function App() {
               </div>
               {feed?.version === 2 && feed.news.some(n => n.sourceId?.startsWith('sec-')) && (
                 <div className="live-briefing">
-                  <BriefingPanel feed={feed} />
+                  <details className="panel home-disclosure"><summary>תדריך דיווחי SEC</summary><BriefingPanel feed={feed} /></details>
                 </div>
               )}
               <div className="section-title">

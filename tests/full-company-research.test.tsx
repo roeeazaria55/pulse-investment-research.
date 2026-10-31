@@ -36,11 +36,13 @@ it('uses unrounded Nebius scenario arithmetic and keeps Sandisk FY2028 distinct 
  expect(screen.getByTestId('supplied-weighted-target').textContent).toBe('$1,759.50');
  expect(screen.getAllByText(/לא יעד קשיח ל־12 חודשים/).length).toBeGreaterThan(0);
 });
-it('opens uploaded analysis by default and keeps old models out of the active valuation',()=>{
+it('keeps full analysis collapsed until opened and preserves the active valuation',()=>{
  vi.stubGlobal('fetch',vi.fn().mockResolvedValue({ok:false}));
  for(const report of suppliedResearch){
   const change=vi.fn();const company={id:report.companyId,name:report.ticker,label:report.ticker};
   const current=blankResearch();const {rerender}=render(<ResearchExchange company={company} current={current} onChange={change} onPrepare={()=>{}}/>);
+  expect(screen.getByText('קריאת המחקר המלא').closest('details')!.open).toBe(false);
+  fireEvent.click(screen.getByText('קריאת המחקר המלא'));
   expect(screen.getByText('קריאת המחקר המלא').closest('details')!.open).toBe(true);
   expect(screen.getByRole('heading',{name:`1. ${report.sections[0].title}`})).toBeTruthy();
   rerender(<ResearchExchange company={company} view="valuation" current={current} onChange={change} onPrepare={()=>{}}/>);

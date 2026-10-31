@@ -115,7 +115,9 @@ describe("v2 public display and privacy", () => {
       // but must never fetch a private profile/holdings endpoint.
       expect(String(url).startsWith("/data/feed.json?schema=2&t=") ||
              new RegExp("^/data/[a-z0-9-]+[.]json$").test(String(url))).toBe(true);
-      expect(options).toEqual({ cache: "no-store" });
+      if(String(url).endsWith('/data/report-intake.json')) {
+        expect(options).toEqual({cache:'no-store',signal:expect.any(AbortSignal)});
+      } else expect(options).toEqual({ cache: "no-store" });
     }
   });
   it("validates v2 and rejects malformed registry/identity/false success", async () => {
