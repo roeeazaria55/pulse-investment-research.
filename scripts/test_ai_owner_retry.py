@@ -41,7 +41,7 @@ class OwnerRetryTests(unittest.TestCase):
    ledger.write_text(json.dumps(reserved))
    response={'status':'incomplete','incomplete_details':{'reason':'max_output_tokens'},
              'usage':{'input_tokens':10000,'output_tokens':32000}}
-   with patch.object(runner,'urlopen') as network,contextlib.redirect_stdout(io.StringIO()):
+   with patch.object(runner,'build_strict_format',return_value={}),patch.object(runner,'urlopen') as network,contextlib.redirect_stdout(io.StringIO()):
     network.return_value.__enter__.return_value.read.return_value=json.dumps(response).encode()
     with self.assertRaisesRegex(ValueError,'max_output_tokens'):
      runner.run_paid_review('NBIS',{'contentSha256':SHA},'{}',MODEL,'fake-key',target,ledger,

@@ -20,7 +20,7 @@ class IncompleteBillingTests(unittest.TestCase):
             ledger = Path(folder) / "ledger.json"
             target = Path(folder) / "review.json"
             output = io.StringIO()
-            with patch.object(runner, "urlopen") as network, contextlib.redirect_stdout(output):
+            with patch.object(runner, "build_strict_format", return_value={}), patch.object(runner, "urlopen") as network, contextlib.redirect_stdout(output):
                 network.return_value.__enter__.return_value.read.return_value = json.dumps(response).encode()
                 with self.assertRaisesRegex(ValueError, "max_output_tokens"):
                     runner.run_paid_review("NBIS", packet, "{}", "gpt-6.1-sol", "fake-key", target, ledger)
