@@ -22,7 +22,7 @@ from pulse_responses_schema import build_strict_format
 
 ROOT = Path(__file__).resolve().parent.parent
 MAX_INPUT_BYTES = 50000
-MAX_OUTPUT_TOKENS = 16000
+MAX_OUTPUT_TOKENS = 50000
 ALLOWED_MODELS = set(MODEL_RATES)
 ENDPOINT = "https://api.openai.com/v1/responses"
 
@@ -141,7 +141,7 @@ def write_ledger(path, ledger):
         if dest.exists():dest.unlink()
 
 
-def run_paid_review(ticker, packet, content, model, key, target, ledger_path, *, reservation_precommitted=False):
+def run_paid_review(ticker, packet, content, model, key, target, ledger_path, *, reservation_precommitted=False, retry_of=None):
     """One reservation, one API attempt. Uncertain/failed requests retain a hold
     until a person reconciles the provider bill; no automatic retry."""
     now=dt.datetime.now(dt.timezone.utc).isoformat()
@@ -152,8 +152,8 @@ def run_paid_review(ticker, packet, content, model, key, target, ledger_path, *,
             fcntl.flock(lock.fileno(),fcntl.LOCK_EX)
             ledger=read_ledger(ledger_path)
             if reservation_precommitted:
-                from pulse_ai_cost_guard import packet_key
-                key_id=packet_key(ticker,packet["contentSha256"],model)
+                from pulse_ai_cost_guard import attempt_key
+                key_id=attempt_key(ticker,packet["contentSha256"],model,retry_of)
                 holds=[h for h in ledger.get("holds",[]) if h["id"]==key_id]
                 if len(holds)!=1:
                     raise ValueError("Remote-persisted reservation missing: refuse paid request")
@@ -163,7 +163,7 @@ def run_paid_review(ticker, packet, content, model, key, target, ledger_path, *,
                 # Actions. That workflow commits the reservation FIRST.
                 ledger,hold=reserve(ledger,ticker,packet["contentSha256"],model,now,
                                     input_ceiling=min(100000,len(content.encode("utf-8"))*2),
-                                    output_ceiling=MAX_OUTPUT_TOKENS)
+                                    output_ceiling=MAX_OUTPUT_TOKENS,retry_of=retry_of)
                 write_ledger(ledger_path,ledger)
             strict_format=build_strict_format()
             payload={
@@ -195,7 +195,7 @@ def run_paid_review(ticker, packet, content, model, key, target, ledger_path, *,
                             headers={"Content-Type":"application/json","Authorization":"Bearer "+key},
                             method="POST")
             try:
-                with urlopen(request,timeout=240) as response:
+                with urlopen(request,timeout=600) as response:
                     raw=response.read(350000)
             except HTTPError as e:
                 raise ValueError("OpenAI returned HTTP "+str(e.code)+"; reserved budget remains blocked pending reconciliation") from None
@@ -205,7 +205,7 @@ def run_paid_review(ticker, packet, content, model, key, target, ledger_path, *,
                 raise ValueError("Usage missing: reserved budget held until manual billing reconciliation")
             # Billing is recorded BEFORE any analytical validity checks, so invalid
             # outputs still count against the user's month budget.
-            updated,bill=record_call(ledger,ticker,packet["contentSha256"],model,now,usage)
+            updated,bill=record_call(ledger,ticker,packet["contentSha256"],model,now,usage,retry_of=retry_of)
             write_ledger(ledger_path,updated)
             print(json.dumps({"event":"ai-response-received", **response_diagnostics(api_response),
                               "chargedUsd":bill["usd"]}), flush=True)
@@ -232,6 +232,7 @@ def main():
     p.add_argument("--cost-ledger", help="Durable private JSON ledger outside repository; required for all paid calls")
     p.add_argument("--reservation-precommitted", action="store_true",
                    help="Only after remote ledger reservation is committed; required in trusted Actions")
+    p.add_argument("--retry-of", default=None, help="Exact settled receipt; permits one owner-approved retry")
     a = p.parse_args()
     packet, content = prepare(a.ticker)
     if not a.execute:
@@ -251,7 +252,7 @@ def main():
     if a.reservation_precommitted and os.getenv("PULSE_REMOTE_RESERVATION_PERSISTED")!="YES":
         raise ValueError("Remote-reservation attestation missing")
     run_paid_review(a.ticker,packet,content,model,key,target,ledger_path,
-                    reservation_precommitted=a.reservation_precommitted)
+                    reservation_precommitted=a.reservation_precommitted, retry_of=a.retry_of or None)
 
 
 if __name__ == "__main__":

@@ -54,10 +54,17 @@ def load_context(state):
     by_id={c["id"]:c for c in candidates["candidates"]}
     return registry,queue,by_id
 
-def choose(state,model):
+def choose(state,model,retry_of=None):
     if model not in MODEL_RATES:raise ValueError("Unsupported model")
     _,queue,candidates=load_context(state)
-    jobs=sorted((j for j in queue["jobs"] if j["status"]=="queued"
+    receipt = None
+    if retry_of:
+        ledger = validate_ledger(read_json(state/STATE_LEDGER))
+        receipt = next((r for r in ledger["calls"] if r["id"]==retry_of and "retryOf" not in r), None)
+        if receipt is None: raise ValueError("Retry receipt missing or already a retry")
+    jobs=sorted((j for j in queue["jobs"] if ((j["status"]=="queued" and not retry_of) or
+       (retry_of and j["status"]=="failed" and j.get("statusReason")=="model-output-rejected-after-billing"
+        and j["ticker"]==receipt["ticker"]))
        and queue["latestByCompany"].get(j["companyId"])==j["id"]),
        key=lambda j:(j["createdAt"],j["id"]))
     packets=build_all()
@@ -78,25 +85,27 @@ def choose(state,model):
         if j["sourceSha256"] not in supported:
             # Do not pay for an unsupported or missing report.
             continue
+        if retry_of and (packet["contentSha256"]!=receipt["packetSha256"] or model!=receipt["model"]):
+            raise ValueError("Retry source packet/model changed")
         _,payload=prepare(j["ticker"])
         if len(payload.encode("utf-8"))>MAX_INPUT_BYTES:
             continue
         return j,packet,payload
     return None,None,None
 
-def reserve_once(state,private,now,model):
+def reserve_once(state,private,now,model,retry_of=None):
     """Prepare worktree files; workflow MUST git push them before a model call."""
     now=utc_at(now)
     _,queue,_=load_context(state)
-    selected,packet,payload=choose(state,model)
+    selected,packet,payload=choose(state,model,retry_of)
     if selected is None:return {"ready":False,"changed":False,"reason":"no-source-supported-queued-job"}
     ledger=read_json(state/STATE_LEDGER,optional=True) or {"version":1,"calls":[],"holds":[]}
     ledger=validate_ledger(ledger)
     decision=preflight(ledger,selected["ticker"],packet["contentSha256"],model,now,
        input_token_ceiling=min(100000,len(payload.encode("utf-8"))*2),
-       output_token_ceiling=MAX_OUTPUT_TOKENS)
+       output_token_ceiling=MAX_OUTPUT_TOKENS,retry_of=retry_of)
     if not decision["allowed"]:
-        if decision["reason"] in ("monthly-reserve","per-call-limit"):
+        if not retry_of and decision["reason"] in ("monthly-reserve","per-call-limit"):
             advance(queue,selected["id"],"pending-budget",now,actor="trusted-runner")
             selected["statusReason"]=decision["reason"]
             atomic_write(state/STATE_QUEUE,queue)
@@ -104,7 +113,9 @@ def reserve_once(state,private,now,model):
         return {"ready":False,"changed":False,"reason":decision["reason"]}
     ledger,hold=reserve(ledger,selected["ticker"],packet["contentSha256"],model,now,
        input_ceiling=min(100000,len(payload.encode("utf-8"))*2),
-       output_ceiling=MAX_OUTPUT_TOKENS)
+       output_ceiling=MAX_OUTPUT_TOKENS,retry_of=retry_of)
+    selected = next(j for j in queue["jobs"] if j["id"]==selected["id"])
+    if retry_of: advance(queue,selected["id"],"queued",now,actor="trusted-runner")
     advance(queue,selected["id"],"processing",now,actor="trusted-runner")
     selected["attempts"]+=1
     selected["statusReason"]="precharged-reservation-awaits-api"
@@ -114,7 +125,7 @@ def reserve_once(state,private,now,model):
     private_write(private/"reservation.json",{
         "jobId":selected["id"],"ticker":selected["ticker"],"model":model,
         "packetSha256":packet["contentSha256"],"heldAt":hold["heldAt"],
-        "holdId":hold["id"]})
+        "holdId":hold["id"],"retryOf":retry_of})
     return {"ready":True,"changed":True,"ticker":selected["ticker"],"model":model,
             "jobId":selected["id"],"estimatedMaxUsd":hold["maxUsd"]}
 
@@ -179,6 +190,7 @@ def main():
     p.add_argument("--state-dir",required=True,help="Checked-out pulse-data Git worktree")
     p.add_argument("--private-dir",required=True,help="Private runner directory outside repository")
     p.add_argument("--model",default="gpt-6.1-sol")
+    p.add_argument("--retry-of", default=None)
     args=p.parse_args()
     state=Path(args.state_dir).resolve()
     private=Path(args.private_dir).resolve()
@@ -194,7 +206,7 @@ def main():
     else:
         if os.getenv("PULSE_PAID_AI_APPROVED")!="YES" or os.getenv("PAID_AI_ENABLED")!="YES":
             raise ValueError("Both explicit owner-activation gates are required for spending workflow")
-        if args.phase=="reserve":result=reserve_once(state,private,now,args.model)
+        if args.phase=="reserve":result=reserve_once(state,private,now,args.model,args.retry_of or None)
         else:result=settle(state,private,now)
     print(json.dumps(result))
 
