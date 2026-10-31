@@ -480,11 +480,11 @@
       "candidatePayloadSha256": "2c114866423e11cb18b3c919ace302d4d1a1937e38a7cebe3230f7e2bf750c14",
       "reportPeriod": "2026-06-30/2026-06-30",
       "createdAt": "2026-10-30T19:01:20.347342+00:00",
-      "updatedAt": "2026-10-31T15:35:28.919840+00:00",
-      "status": "processing",
-      "statusReason": "precharged-reservation-awaits-api",
+      "updatedAt": "2026-10-31T15:36:27.516581+00:00",
+      "status": "pending-review",
+      "statusReason": "unverified-ai-draft-awaits-owner-review",
       "attempts": 1,
-      "analysisExecuted": false,
+      "analysisExecuted": true,
       "publicationStatus": "not-approved",
       "approvedModelChange": false,
       "history": [
@@ -503,6 +503,14 @@
         {
           "status": "processing",
           "at": "2026-10-31T15:35:28.919840+00:00"
+        },
+        {
+          "status": "draft-ready",
+          "at": "2026-10-31T15:36:27.516581+00:00"
+        },
+        {
+          "status": "pending-review",
+          "at": "2026-10-31T15:36:27.516581+00:00"
         }
       ]
     }
