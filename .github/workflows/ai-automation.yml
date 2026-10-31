@@ -19,7 +19,9 @@ on:
         type: string
         default: ''
   schedule:
-    - cron: '9,39 * * * *'
+    # Allow collection to finish before inspecting its queue. GitHub may delay runs.
+    - cron: '30 8,19 * * *'
+      timezone: 'Asia/Jerusalem'
 permissions: {}
 concurrency:
   group: pulse-ai-spending-serialized

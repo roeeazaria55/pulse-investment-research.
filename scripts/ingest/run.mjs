@@ -38,8 +38,8 @@ const now = new Date().toISOString();
 const trigger = process.env.GITHUB_EVENT_NAME || "local";
 const slot = briefingSlot(now);
 const slotId = `${slot.date}:${slot.period}`;
-// Phase 3 polls throughout the day. Daily publication deduplication is handled
-// independently by the fixed Jerusalem 13:00 window in build_intelligence.py.
+// Two daily scheduled collections; manual/code-update runs remain possible.
+// Briefing windows are classified independently at 08:00/19:00 Jerusalem.
 const result = await collect({
   registry,
   previous,
