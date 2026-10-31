@@ -176,6 +176,7 @@ jobs:
       contents: write
     outputs:
       sha: ${{ steps.persist.outputs.sha }}
+      superseded: ${{ steps.persist.outputs.superseded }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -190,7 +191,11 @@ jobs:
           EXPECTED_BASE: ${{ needs.collect.outputs.data_base_sha }}
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = "$EXPECTED_BASE"
+          if ! test "$(git rev-parse HEAD)" = "$EXPECTED_BASE"; then
+            echo 'superseded=true' >> "$GITHUB_OUTPUT"
+            echo '::notice::Newer pulse-data exists; discard stale collection and wait for the next scheduled poll.'
+            exit 0
+          fi
           cp work/ingestion-artifact/feed.json public/data/feed.json
           cp work/ingestion-artifact/ingestion-state.json public/data/ingestion-state.json
           cp work/ingestion-artifact/official-sources.json public/data/official-sources.json
@@ -215,7 +220,7 @@ jobs:
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
   deploy:
     needs: [collect, persist]
-    if: needs.collect.outputs.skipped != 'true'
+    if: needs.collect.outputs.skipped != 'true' && needs.persist.outputs.superseded != 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 8
     environment:
