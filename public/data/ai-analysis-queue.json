@@ -480,10 +480,10 @@
       "candidatePayloadSha256": "2c114866423e11cb18b3c919ace302d4d1a1937e38a7cebe3230f7e2bf750c14",
       "reportPeriod": "2026-06-30/2026-06-30",
       "createdAt": "2026-10-30T19:01:20.347342+00:00",
-      "updatedAt": "2026-10-30T19:01:20.385162+00:00",
-      "status": "queued",
-      "statusReason": "verified-source-candidate-awaits-ai",
-      "attempts": 0,
+      "updatedAt": "2026-10-31T15:35:28.919840+00:00",
+      "status": "processing",
+      "statusReason": "precharged-reservation-awaits-api",
+      "attempts": 1,
       "analysisExecuted": false,
       "publicationStatus": "not-approved",
       "approvedModelChange": false,
@@ -499,6 +499,10 @@
         {
           "status": "queued",
           "at": "2026-10-30T19:01:20.385162+00:00"
+        },
+        {
+          "status": "processing",
+          "at": "2026-10-31T15:35:28.919840+00:00"
         }
       ]
     }
