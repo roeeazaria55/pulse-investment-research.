@@ -323,7 +323,7 @@ def build(registry, intake):
         candidate = None
         if latest:
             candidate = {
-                "sourceExcerpts": validate_context(latest.get("sourceExcerpts", [])),
+                **({"sourceExcerpts": validate_context(latest["sourceExcerpts"])} if latest.get("sourceExcerpts") else {}),
                 "id": latest["id"], "url": latest["url"], "sha256": latest["sha256"],
                 "title": latest.get("title", "")[:240], "format": latest["format"],
                 "publishedDate": latest.get("publishedDate") if iso_date(latest.get("publishedDate")) else None,

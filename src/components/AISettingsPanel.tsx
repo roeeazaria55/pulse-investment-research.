@@ -58,7 +58,7 @@ export function AISettingsPanel({theme,onThemeChange}:{theme:'dark'|'light';onTh
   </section>
   <section>
    <h3><BrainCircuit size={18}/> מנוע המחקר</h3>
-   <p>הפעלת AI בתשלום דורשת מפתח חסוי והרשאה מפורשת מצד בעל המאגר, דרך GitHub Actions. אי אפשר להפעיל חיוב מהדפדפן.</p>
+   <p>טיוטות AI יכולות להיווצר אוטומטית לפי מדיניות חודשים ותקציב שאושרה ב־GitHub. פרסום ושינוי מחקר מאושר דורשים אישור נפרד. אי אפשר להפעיל חיוב מהאתר.</p>
    <div className="pulse-ai-settings-status"><ShieldCheck size={16}/> סטטוס: אין אימות הפעלה דרך האתר הציבורי</div>
   </section>
   <section>
