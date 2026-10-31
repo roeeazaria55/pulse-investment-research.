@@ -6,8 +6,9 @@ function load(key:string){try{return localStorage.getItem(key)||'';}catch{return
 export function ReadingMode({id,title,chapters,children}:{id:string;title:string;chapters:readonly Chapter[];children:ReactNode}){
  const key='pulse.reader.position.v1:'+id,root=useRef<HTMLDivElement>(null),trigger=useRef<HTMLButtonElement>(null);
  const [open,setOpen]=useState(false),[font,setFont]=useState(()=>{const n=Number(load(FONT));return [16,18,20,22].includes(n)?n:18;});
- const [resume]=useState(()=>load(key));
+ const [resume,setResume]=useState(()=>load(key));
  const [position,setPosition]=useState('');
+ useEffect(()=>{setResume(load(key));setPosition('');},[key]);
  const remember=(anchor:string)=>{setPosition(anchor);try{localStorage.setItem(key,anchor);}catch{/* Reading remains available. */}};
  const go=(anchor:string)=>{const target=root.current?.querySelector<HTMLElement>('[id="'+anchor.replace(/["\\]/g,'')+'"]');if(!target)return;const detail=target.closest('details');if(detail)detail.open=true;target.focus({preventScroll:true});target.scrollIntoView({block:'start'});remember(anchor);};
  useEffect(()=>{if(typeof IntersectionObserver==='undefined'||!root.current)return;

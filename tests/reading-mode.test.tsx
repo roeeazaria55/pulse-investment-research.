@@ -15,3 +15,10 @@ it('keeps one article, restores a saved chapter and font without changing financ
  fireEvent.click(screen.getByRole('button',{name:'סגירה'}));expect(screen.queryByRole('dialog')).toBeNull();
  expect(screen.getByText('מחיר יעד שמור: 100')).toBeTruthy();
 });
+
+it('loads the correct saved chapter when switching reports in the same view',()=>{
+ localStorage.setItem('pulse.reader.position.v1:a','a-1');localStorage.setItem('pulse.reader.position.v1:b','b-1');
+ const {rerender}=render(<ReadingMode id="a" title="A" chapters={[{id:'a-1',label:'A'}]}><p>A</p></ReadingMode>);
+ rerender(<ReadingMode id="b" title="B" chapters={[{id:'b-1',label:'B'}]}><p>B</p></ReadingMode>);
+ expect(screen.getByRole('button',{name:'המשך מהמקום ששמרתי'})).toBeTruthy();
+});
