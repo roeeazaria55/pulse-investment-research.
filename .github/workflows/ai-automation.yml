@@ -13,6 +13,11 @@ on:
         required: false
         type: string
         default: ''
+      retry_source_commit:
+        description: 'Optional full pulse-data commit SHA containing the original retry sources'
+        required: false
+        type: string
+        default: ''
   schedule:
     - cron: '9,39 * * * *'
 permissions: {}
@@ -73,20 +78,28 @@ jobs:
           PAID_AI_ENABLED: ${{ vars.PAID_AI_ENABLED }}
         run: python3 scripts/pulse_release_security.py --environment pulse-ai-paid
       - name: Prepare private runner and checked-out pulse-data worktree
+        env:
+          RETRY_SOURCE_COMMIT: ${{ inputs.retry_source_commit }}
+          RETRY_RECEIPT: ${{ inputs.retry_receipt }}
         run: |
           set -euo pipefail
           git fetch --no-tags origin refs/heads/pulse-data:refs/remotes/origin/pulse-data
           git worktree add --detach "$RUNNER_TEMP/pulse-ai-data" refs/remotes/origin/pulse-data
           mkdir -m 700 "$RUNNER_TEMP/pulse-ai-private"
+          source_ref=refs/remotes/origin/pulse-data
+          if test -n "$RETRY_SOURCE_COMMIT"; then
+            test -n "$RETRY_RECEIPT"
+            [[ "$RETRY_SOURCE_COMMIT" =~ ^[0-9a-f]{40}$ ]]
+            git merge-base --is-ancestor "$RETRY_SOURCE_COMMIT" refs/remotes/origin/pulse-data
+            source_ref="$RETRY_SOURCE_COMMIT"
+          fi
           for file in \
             public/data/auto-financial-observations.json \
             public/data/forecast-archive.json \
             public/data/forecast-actual-comparisons.json \
             public/data/latest-research-updates.json \
             public/data/earnings-research-candidates.json; do
-            if test -f "$RUNNER_TEMP/pulse-ai-data/$file"; then
-              cp "$RUNNER_TEMP/pulse-ai-data/$file" "$file"
-            fi
+            git show "$source_ref:$file" > "$file"
           done
       - name: Prepare bounded reservation (STILL NO paid request)
         id: reserve
