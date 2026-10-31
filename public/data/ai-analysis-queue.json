@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-10-31T06:23:53.000737+00:00",
+  "updatedAt": "2026-10-31T13:08:00.616453+00:00",
   "jobs": [
     {
       "id": "ai-job:62f53bd83c6cf0ae796f56d884adf521",
@@ -331,6 +331,38 @@
       ]
     },
     {
+      "id": "ai-job:c5ecdda381bde8d8f329e95db8ba71b9",
+      "candidateId": "earnings-candidate:9bfc513b06a89e53dc43896e7c4fa79e",
+      "companyId": "us-dlo-nasdaq-a",
+      "ticker": "DLO",
+      "sourceUrl": "https://rss.globenewswire.com/news-release/2026/08/13/3344936/0/en/dlocal-reports-second-quarter-2026-financial-results.html",
+      "sourceSha256": "d78ae52f761bab378026756104d0d50b0d3ab0b134a92d29a18738eded75c116",
+      "candidatePayloadSha256": "cd4b83868eb2e452453d9ca051f1d5da2cf71ea0e4228614c9a7190a0c3e15de",
+      "reportPeriod": "2026-Q2",
+      "createdAt": "2026-10-31T13:08:00.576228+00:00",
+      "updatedAt": "2026-10-31T13:08:00.616453+00:00",
+      "status": "blocked",
+      "statusReason": "source-requires-human-reconciliation",
+      "attempts": 0,
+      "analysisExecuted": false,
+      "publicationStatus": "not-approved",
+      "approvedModelChange": false,
+      "history": [
+        {
+          "status": "detected",
+          "at": "2026-10-31T13:08:00.576228+00:00"
+        },
+        {
+          "status": "validated",
+          "at": "2026-10-31T13:08:00.616453+00:00"
+        },
+        {
+          "status": "blocked",
+          "at": "2026-10-31T13:08:00.616453+00:00"
+        }
+      ]
+    },
+    {
       "id": "ai-job:ea372eeb86a21f17979946d01b85abfa",
       "candidateId": "earnings-candidate:85fd227c95e8062191760e2abb0c0947",
       "companyId": "us-lmnd-nyse-common",
@@ -462,7 +494,7 @@
   "latestByCompany": {
     "candidate-nebius": "ai-job:0f75a98aef41fd6590cc49f686e4c124",
     "us-meta-nasdaq-a": "ai-job:a9081f665f8b282e28af2a8c87916069",
-    "us-dlo-nasdaq-a": "ai-job:2bd0cb6f778d2ed38ea675a760faf3f7",
+    "us-dlo-nasdaq-a": "ai-job:c5ecdda381bde8d8f329e95db8ba71b9",
     "us-lmnd-nyse-common": "ai-job:ea372eeb86a21f17979946d01b85abfa",
     "candidate-sandisk": "ai-job:598af031ac6b97568035ac36118e4ebd",
     "candidate-iren": "ai-job:c11606f5abe8a7f4c187b6a6644f5a5d",
