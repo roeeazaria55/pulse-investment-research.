@@ -140,9 +140,9 @@
       "candidatePayloadSha256": "6f7743f132b347957f3087e1ffa7361cd0e2bf5b2f66e70c547e0d455c2a21fe",
       "reportPeriod": "2026-04-01/2026-06-30",
       "createdAt": "2026-10-30T19:01:20.347342+00:00",
-      "updatedAt": "2026-10-31T01:47:10.961352+00:00",
-      "status": "processing",
-      "statusReason": "verified-source-candidate-awaits-ai",
+      "updatedAt": "2026-10-31T01:48:28.759353+00:00",
+      "status": "failed",
+      "statusReason": "model-output-rejected-after-billing",
       "attempts": 0,
       "analysisExecuted": false,
       "publicationStatus": "not-approved",
@@ -163,6 +163,10 @@
         {
           "status": "processing",
           "at": "2026-10-31T01:47:10.961352+00:00"
+        },
+        {
+          "status": "failed",
+          "at": "2026-10-31T01:48:28.759353+00:00"
         }
       ]
     },

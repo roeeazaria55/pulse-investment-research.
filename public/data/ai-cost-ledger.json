@@ -1,14 +1,17 @@
 {
   "version": 1,
-  "calls": [],
-  "holds": [
+  "calls": [
     {
       "id": "217bcfe8af5fe0510399b130692f0b28ee79e33463c54b8320c3908483d9a769",
       "ticker": "NBIS",
       "model": "gpt-6.1-sol",
       "packetSha256": "d944eb25ac9b1dc99676e36df9939d9e17c348426eb61be859eeb6c9e314eae0",
-      "heldAt": "2026-10-31T01:47:10.961352+00:00",
-      "maxUsd": "0.16"
+      "calledAt": "2026-10-31T01:47:12.452562+00:00",
+      "inputTokens": 7983,
+      "outputTokens": 6000,
+      "cachedTokens": 0,
+      "usd": "0.08"
     }
-  ]
+  ],
+  "holds": []
 }
