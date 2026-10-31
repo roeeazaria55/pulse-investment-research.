@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-31T19:10:17.088096+00:00",
+  "generatedAt": "2026-10-31T20:08:53.685135+00:00",
   "parserVersion": "official-content-v2",
   "documents": [
     {
@@ -1330,8 +1330,8 @@
       "documentPeriod": null,
       "periodBasis": "unknown",
       "firstDetectedAt": "2026-10-20T12:44:57.787402+00:00",
-      "lastSuccessfulAt": "2026-10-31T19:10:17.088096+00:00",
-      "lastAttemptAt": "2026-10-31T19:10:17.088096+00:00",
+      "lastSuccessfulAt": "2026-10-31T20:08:53.685135+00:00",
+      "lastAttemptAt": "2026-10-31T20:08:53.685135+00:00",
       "revised": false,
       "revisions": [],
       "parserVersion": "official-content-v2",
@@ -14769,14 +14769,37 @@
       "error": null
     },
     {
+      "sourceExcerpts": [
+        {
+          "topic": "liquidity",
+          "text": ", 2026 we entered into a credit agreement with certain of our subsidiaries as initial guarantors and the lenders party thereto, providing for a U.S.$150.0 million senior unsecured credit facility. The facility matures on August 14, 2029, and is repayable in 11 equal, quarterly installments of US$13.6 million each, plus interest, commencing six months following the borrowing date, as specified in the Credit Agreement. Interest accrues at Term SOFR (Secured Overnight Financing Rate) plus 2.00% per annum. The proceeds of the facility are intended to be used for general corporate purposes. The following table summarizes our key performance metrics: Three months ended on June 30 Six months ",
+          "textSha256": "649a665b6b5955eef1a9019251eecb595ab347ca88c8918d79978d6aa61a0af3",
+          "scope": "keyword-window-not-complete-disclosure",
+          "reviewStatus": "pending-review"
+        },
+        {
+          "topic": "cashFlow",
+          "text": "uarter-over-quarter); operating leverage to improve in the second half of 2026. Net income at US$55 million (+28% year-over-year), diluted EPS $0.18 (vs. $0.14 in 1Q26). Adj. Free Cash Flow US$69 million (+41% year-over-year), Adj. FCF/Net income conversion of 125%. Guidance update: TPV guidance raised to 60–70% year-over-year and Gross profit to 25–30% year-over-year; Operating profit guidance maintained at 27.5–32.5% year-over-year. MONTEVIDEO, Uruguay, Aug. 13, 2026 (GLOBE NEWSWIRE) -- DLocal Limited (“dLocal”, “we”, “us”, and “our”) (NASDAQ:DLO), the leading cross-border financial infrastructure platform connecting global merchants to emerging markets, today announced its fina",
+          "textSha256": "01e083de85cfdd9971ab53770e279199b143b69d5565a56a63fe75738a34a8ce",
+          "scope": "keyword-window-not-complete-disclosure",
+          "reviewStatus": "pending-review"
+        },
+        {
+          "topic": "outlook",
+          "text": "ome at US$55 million (+28% year-over-year), diluted EPS $0.18 (vs. $0.14 in 1Q26). Adj. Free Cash Flow US$69 million (+41% year-over-year), Adj. FCF/Net income conversion of 125%. Guidance update: TPV guidance raised to 60–70% year-over-year and Gross profit to 25–30% year-over-year; Operating profit guidance maintained at 27.5–32.5% year-over-year. MONTEVIDEO, Uruguay, Aug. 13, 2026 (GLOBE NEWSWIRE) -- DLocal Limited (“dLocal”, “we”, “us”, and “our”) (NASDAQ:DLO), the leading cross-border financial infrastructure platform connecting global merchants to emerging markets, today announced its financial results for the second quarter ended June 30, 2026. dLocal’s management team wil",
+          "textSha256": "16d02c8140829f52db2cbe402e24de2cfb816aca38c2cdf927e914fdc6ad1d68",
+          "scope": "keyword-window-not-complete-disclosure",
+          "reviewStatus": "pending-review"
+        }
+      ],
       "status": "extracted",
       "title": "dLocal Reports Second Quarter 2026 Financial Results",
-      "sha256": "d78ae52f761bab378026756104d0d50b0d3ab0b134a92d29a18738eded75c116",
-      "bytes": 167854,
+      "sha256": "4efc62ddf466d78aad5809539bc47b175b569b7e481973bc5256f99efc5ced60",
+      "bytes": 167822,
       "format": "html",
       "pages": null,
       "readScope": "full-body",
-      "charactersRead": 23019,
+      "charactersRead": 22989,
       "tables": [
         {
           "rows": [
@@ -15175,10 +15198,15 @@
       "documentPeriod": null,
       "periodBasis": "unknown",
       "firstDetectedAt": "2026-10-20T12:40:06.134310+00:00",
-      "lastSuccessfulAt": "2026-10-31T13:07:36.657759+00:00",
-      "lastAttemptAt": "2026-10-31T13:07:36.657759+00:00",
+      "lastSuccessfulAt": "2026-10-31T20:08:53.685135+00:00",
+      "lastAttemptAt": "2026-10-31T20:08:53.685135+00:00",
       "revised": true,
       "revisions": [
+        {
+          "sha256": "d78ae52f761bab378026756104d0d50b0d3ab0b134a92d29a18738eded75c116",
+          "firstDetectedAt": "2026-10-20T12:40:06.134310+00:00",
+          "lastSuccessfulAt": "2026-10-31T13:07:36.657759+00:00"
+        },
         {
           "sha256": "3cdfd56e415a0bfdf791a1b22a2e03eb9137c5213d44d70b3d71ccefc796e3a5",
           "firstDetectedAt": "2026-10-20T12:40:06.134310+00:00",
@@ -15188,14 +15216,9 @@
           "sha256": "34d443a1357a2841f23ae1b523bae4a526e5fcaf2f0dfb6d0357a23fb77429fb",
           "firstDetectedAt": "2026-10-20T12:40:06.134310+00:00",
           "lastSuccessfulAt": "2026-10-31T00:56:11.641967+00:00"
-        },
-        {
-          "sha256": "c9e60bea5fec4aad8d93b9afa2f22835b2aba7f992d57143c36624d98754f0ef",
-          "firstDetectedAt": "2026-10-20T12:40:06.134310+00:00",
-          "lastSuccessfulAt": "2026-10-30T19:00:56.132523+00:00"
         }
       ],
-      "parserVersion": "official-content-v1",
+      "parserVersion": "official-content-v2",
       "error": null
     },
     {
@@ -22150,7 +22173,7 @@
       "periodBasis": "unknown",
       "firstDetectedAt": "2026-10-20T12:40:06.134310+00:00",
       "lastSuccessfulAt": "2026-10-20T12:44:57.787402+00:00",
-      "lastAttemptAt": "2026-10-31T13:07:36.657759+00:00",
+      "lastAttemptAt": "2026-10-31T20:08:53.685135+00:00",
       "revised": false,
       "revisions": [],
       "parserVersion": "official-content-v1",
@@ -28627,8 +28650,8 @@
       "documentPeriod": null,
       "periodBasis": "unknown",
       "firstDetectedAt": "2026-10-29T00:27:58.606871+00:00",
-      "lastSuccessfulAt": "2026-10-31T19:10:17.088096+00:00",
-      "lastAttemptAt": "2026-10-31T19:10:17.088096+00:00",
+      "lastSuccessfulAt": "2026-10-31T20:08:53.685135+00:00",
+      "lastAttemptAt": "2026-10-31T20:08:53.685135+00:00",
       "revised": false,
       "revisions": [],
       "parserVersion": "official-content-v2",
@@ -29061,7 +29084,7 @@
       "periodBasis": "unknown",
       "firstDetectedAt": "2026-10-20T12:40:06.134310+00:00",
       "lastSuccessfulAt": "2026-10-20T12:44:57.787402+00:00",
-      "lastAttemptAt": "2026-10-31T19:10:17.088096+00:00",
+      "lastAttemptAt": "2026-10-31T20:08:53.685135+00:00",
       "revised": false,
       "revisions": [],
       "parserVersion": "official-content-v1",
@@ -30883,7 +30906,7 @@
       "periodBasis": "unknown",
       "firstDetectedAt": "2026-10-20T12:42:10.713780+00:00",
       "lastSuccessfulAt": "2026-10-20T12:44:57.787402+00:00",
-      "lastAttemptAt": "2026-10-31T13:07:36.657759+00:00",
+      "lastAttemptAt": "2026-10-31T20:08:53.685135+00:00",
       "revised": false,
       "revisions": [],
       "parserVersion": "official-content-v1",
@@ -30893,73 +30916,73 @@
   "sources": [
     {
       "companyId": "candidate-ftai",
-      "lastAttemptAt": "2026-10-31T19:10:17.088096+00:00",
+      "lastAttemptAt": "2026-10-31T20:08:53.685135+00:00",
       "status": "failed",
       "error": "HTTP Error 403: Forbidden"
     },
     {
-      "companyId": "us-lmnd-nyse-common",
-      "lastAttemptAt": "2026-10-31T19:10:17.088096+00:00",
+      "companyId": "candidate-sandisk",
+      "lastAttemptAt": "2026-10-31T20:08:53.685135+00:00",
+      "status": "failed",
+      "error": "HTTP Error 403: Forbidden"
+    },
+    {
+      "companyId": "us-dlo-nasdaq-a",
+      "lastAttemptAt": "2026-10-31T20:08:53.685135+00:00",
       "status": "ok",
       "error": null
     },
     {
-      "companyId": "us-meta-nasdaq-a",
-      "lastAttemptAt": "2026-10-31T19:10:17.088096+00:00",
-      "status": "ok",
-      "error": null
+      "companyId": "us-smci-nasdaq-common",
+      "lastAttemptAt": "2026-10-31T20:08:53.685135+00:00",
+      "status": "failed",
+      "error": "HTTP Error 403: Forbidden"
     },
     {
       "companyId": "candidate-brainsway",
-      "lastAttemptAt": "2026-10-31T19:10:17.088096+00:00",
+      "lastAttemptAt": "2026-10-31T20:08:53.685135+00:00",
       "status": "failed",
       "error": "HTTP Error 403: Forbidden"
     },
     {
       "companyId": "candidate-enlight",
-      "lastAttemptAt": "2026-10-31T19:10:17.088096+00:00",
+      "lastAttemptAt": "2026-10-31T20:08:53.685135+00:00",
       "status": "ok",
       "error": null
     },
     {
       "companyId": "candidate-gilat-telecom",
-      "lastAttemptAt": "2026-10-31T19:10:17.088096+00:00",
+      "lastAttemptAt": "2026-10-31T20:08:53.685135+00:00",
       "status": "failed",
       "error": "Not a financial results document"
     },
     {
       "companyId": "candidate-iren",
-      "lastAttemptAt": "2026-10-31T19:10:17.088096+00:00",
+      "lastAttemptAt": "2026-10-31T20:08:53.685135+00:00",
       "status": "failed",
       "error": "HTTP Error 403: Forbidden"
     },
     {
       "companyId": "candidate-nebius",
-      "lastAttemptAt": "2026-10-31T19:10:17.088096+00:00",
+      "lastAttemptAt": "2026-10-31T20:08:53.685135+00:00",
       "status": "ok",
       "error": null
     },
     {
       "companyId": "candidate-next-vision",
+      "lastAttemptAt": "2026-10-31T20:08:53.685135+00:00",
+      "status": "deferred",
+      "error": "Run budget reached; retained records unchanged"
+    },
+    {
+      "companyId": "us-lmnd-nyse-common",
       "lastAttemptAt": "2026-10-31T19:10:17.088096+00:00",
-      "status": "partial",
-      "error": "Issuer identity absent from report body"
-    },
-    {
-      "companyId": "candidate-sandisk",
-      "lastAttemptAt": "2026-10-31T13:07:36.657759+00:00",
       "status": "deferred",
       "error": "Run budget reached; retained records unchanged"
     },
     {
-      "companyId": "us-dlo-nasdaq-a",
-      "lastAttemptAt": "2026-10-31T13:07:36.657759+00:00",
-      "status": "deferred",
-      "error": "Run budget reached; retained records unchanged"
-    },
-    {
-      "companyId": "us-smci-nasdaq-common",
-      "lastAttemptAt": "2026-10-31T13:07:36.657759+00:00",
+      "companyId": "us-meta-nasdaq-a",
+      "lastAttemptAt": "2026-10-31T19:10:17.088096+00:00",
       "status": "deferred",
       "error": "Run budget reached; retained records unchanged"
     }

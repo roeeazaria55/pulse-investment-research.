@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-10-31T13:08:00.576228+00:00",
+  "updatedAt": "2026-10-31T20:09:22.296392+00:00",
   "candidates": [
     {
       "id": "earnings-candidate:b698ea3c3a3e9084f69dd2eac6f77a19",
@@ -1448,6 +1448,156 @@
       "payloadSha256": "cd4b83868eb2e452453d9ca051f1d5da2cf71ea0e4228614c9a7190a0c3e15de"
     },
     {
+      "id": "earnings-candidate:90c3e091cca79886ad6ba8fb661586e8",
+      "companyId": "us-dlo-nasdaq-a",
+      "ticker": "DLO",
+      "sourceUrl": "https://rss.globenewswire.com/news-release/2026/08/13/3344936/0/en/dlocal-reports-second-quarter-2026-financial-results.html",
+      "sourceSha256": "4efc62ddf466d78aad5809539bc47b175b569b7e481973bc5256f99efc5ced60",
+      "reportPeriod": "2026-Q2",
+      "publishedDate": "2026-08-13",
+      "firstCandidateAt": "2026-10-31T20:09:22.296392+00:00",
+      "status": "blocked",
+      "publicationStatus": "not-approved",
+      "provenanceStatus": "retained-source-provisional",
+      "metrics": [
+        {
+          "id": "capex",
+          "label": "השקעות הוניות",
+          "value": 9.91,
+          "unit": "USD million",
+          "periodStart": "2026-04-01",
+          "periodEnd": "2026-06-30",
+          "previousValue": null,
+          "previousPeriodStart": null,
+          "previousPeriodEnd": null,
+          "absoluteChange": null,
+          "percentChange": null,
+          "comparisonStatus": "blocked-incomparable-or-unreconciled",
+          "sourceUrl": "https://rss.globenewswire.com/news-release/2026/08/13/3344936/0/en/dlocal-reports-second-quarter-2026-financial-results.html",
+          "sourceSha256": "4efc62ddf466d78aad5809539bc47b175b569b7e481973bc5256f99efc5ced60",
+          "accountingBasis": "Issuer-defined cash capital expenditures (PPE plus intangibles)",
+          "reviewStatus": "needs-reconciliation"
+        },
+        {
+          "id": "grossProfit",
+          "label": "רווח גולמי",
+          "value": 127.2,
+          "unit": "USD million",
+          "periodStart": "2026-04-01",
+          "periodEnd": "2026-06-30",
+          "previousValue": null,
+          "previousPeriodStart": null,
+          "previousPeriodEnd": null,
+          "absoluteChange": null,
+          "percentChange": null,
+          "comparisonStatus": "blocked-incomparable-or-unreconciled",
+          "sourceUrl": "https://rss.globenewswire.com/news-release/2026/08/13/3344936/0/en/dlocal-reports-second-quarter-2026-financial-results.html",
+          "sourceSha256": "4efc62ddf466d78aad5809539bc47b175b569b7e481973bc5256f99efc5ced60",
+          "accountingBasis": "IFRS (rounded issuer KPI)",
+          "reviewStatus": "needs-reconciliation"
+        },
+        {
+          "id": "operatingCash",
+          "label": "תזרים תפעולי",
+          "value": 140.522,
+          "unit": "USD million",
+          "periodStart": "2026-04-01",
+          "periodEnd": "2026-06-30",
+          "previousValue": null,
+          "previousPeriodStart": null,
+          "previousPeriodEnd": null,
+          "absoluteChange": null,
+          "percentChange": null,
+          "comparisonStatus": "blocked-incomparable-or-unreconciled",
+          "sourceUrl": "https://rss.globenewswire.com/news-release/2026/08/13/3344936/0/en/dlocal-reports-second-quarter-2026-financial-results.html",
+          "sourceSha256": "4efc62ddf466d78aad5809539bc47b175b569b7e481973bc5256f99efc5ced60",
+          "accountingBasis": "IFRS cash from operations as cited in reconciliation",
+          "reviewStatus": "needs-reconciliation"
+        },
+        {
+          "id": "revenue",
+          "label": "הכנסות",
+          "value": 399.7,
+          "unit": "USD million",
+          "periodStart": "2026-04-01",
+          "periodEnd": "2026-06-30",
+          "previousValue": null,
+          "previousPeriodStart": null,
+          "previousPeriodEnd": null,
+          "absoluteChange": null,
+          "percentChange": null,
+          "comparisonStatus": "blocked-incomparable-or-unreconciled",
+          "sourceUrl": "https://rss.globenewswire.com/news-release/2026/08/13/3344936/0/en/dlocal-reports-second-quarter-2026-financial-results.html",
+          "sourceSha256": "4efc62ddf466d78aad5809539bc47b175b569b7e481973bc5256f99efc5ced60",
+          "accountingBasis": "IFRS (rounded issuer KPI)",
+          "reviewStatus": "needs-reconciliation"
+        },
+        {
+          "id": "tpv",
+          "label": "היקף תשלומים TPV",
+          "value": 17694.0,
+          "unit": "USD million",
+          "periodStart": "2026-04-01",
+          "periodEnd": "2026-06-30",
+          "previousValue": null,
+          "previousPeriodStart": null,
+          "previousPeriodEnd": null,
+          "absoluteChange": null,
+          "percentChange": null,
+          "comparisonStatus": "blocked-incomparable-or-unreconciled",
+          "sourceUrl": "https://rss.globenewswire.com/news-release/2026/08/13/3344936/0/en/dlocal-reports-second-quarter-2026-financial-results.html",
+          "sourceSha256": "4efc62ddf466d78aad5809539bc47b175b569b7e481973bc5256f99efc5ced60",
+          "accountingBasis": "Issuer TPV operational KPI; not IFRS revenue",
+          "reviewStatus": "needs-reconciliation"
+        },
+        {
+          "id": "netIncome",
+          "label": "רווח נקי",
+          "value": 54.8,
+          "unit": "USD million",
+          "periodStart": "2026-04-01",
+          "periodEnd": "2026-06-30",
+          "previousValue": null,
+          "previousPeriodStart": null,
+          "previousPeriodEnd": null,
+          "absoluteChange": null,
+          "percentChange": null,
+          "comparisonStatus": "blocked-incomparable-or-unreconciled",
+          "sourceUrl": "https://rss.globenewswire.com/news-release/2026/08/13/3344936/0/en/dlocal-reports-second-quarter-2026-financial-results.html",
+          "sourceSha256": "4efc62ddf466d78aad5809539bc47b175b569b7e481973bc5256f99efc5ced60",
+          "accountingBasis": "Issuer performance summary net income, rounded USD million",
+          "reviewStatus": "needs-reconciliation"
+        }
+      ],
+      "analystReviewQuestions": [
+        {
+          "metricId": "tpv",
+          "nextCheck": "TPV מול רווח גולמי ותפעולי באותו רבעון.",
+          "thesisRisk": "צמיחת נפח בלי צמיחה מספקת ברווח.",
+          "baseline": "TPV Q2 2026: $17.69B"
+        }
+      ],
+      "summary": "טיוטת ראיות מספריות לבדיקת אנליסט; אינה מחקר השקעה מאושר או ניתוח AI.",
+      "thesisImpact": "לא נקבע. יש לבחון את ההנחות וסיכוני החברה מול הראיות החדשות.",
+      "scenarioReview": {
+        "status": "not-calculated",
+        "bear": null,
+        "base": null,
+        "bull": null,
+        "reason": "לא חושבו משקולות או מחירי יעד ללא נתוני מודל מאושרים ותהליך ביקורת."
+      },
+      "forecastComparisonStatus": "not-approved-or-proven-comparable",
+      "modelChange": "none",
+      "aiAnalysisExecuted": false,
+      "sourceResearchContentId": "6a070aed1b35bf3367617340",
+      "limitations": [
+        "גרסת המקור דורשת בירור (needs-reconciliation); הנתונים אינם מאושרים.",
+        "המדדים שנמצאו, ממתינים לבדיקת אנליסט; אין השוואה לתחזית שנוצרה לאחר תאריך פרסום הדוח.",
+        "השוואות אלה הן בדיקת התאמה בין מקורות והנחות — לא תחזית חדשה ולא אישור לנתוני המקור."
+      ],
+      "payloadSha256": "058483a866068c78c4449c76bcbe62b84f430743a8b718c5481616b49a680972"
+    },
+    {
       "id": "earnings-candidate:85fd227c95e8062191760e2abb0c0947",
       "companyId": "us-lmnd-nyse-common",
       "ticker": "LMND",
@@ -2045,7 +2195,7 @@
   "latestByCompany": {
     "candidate-nebius": "earnings-candidate:628374a80456011c37590fa36aebdf22",
     "us-meta-nasdaq-a": "earnings-candidate:94865f70d061ccca61107d064ab95977",
-    "us-dlo-nasdaq-a": "earnings-candidate:9bfc513b06a89e53dc43896e7c4fa79e",
+    "us-dlo-nasdaq-a": "earnings-candidate:90c3e091cca79886ad6ba8fb661586e8",
     "us-lmnd-nyse-common": "earnings-candidate:85fd227c95e8062191760e2abb0c0947",
     "candidate-sandisk": "earnings-candidate:bfdfcf5c6173b15917e85ebbada4a9f1",
     "candidate-iren": "earnings-candidate:58a5895420d094951c47110cf3295c71",
@@ -2055,6 +2205,6 @@
     "candidate-gilat-telecom": "earnings-candidate:a4abdac5c260d839ed07c09945828f57",
     "us-smci-nasdaq-common": "earnings-candidate:adb450ce5bc3b189c35cbd67ece1f259"
   },
-  "newCandidateCount": 0,
+  "newCandidateCount": 1,
   "notice": "Evidence-only immutable drafts. No analyst approval, automatic AI review, target or probability changes."
 }

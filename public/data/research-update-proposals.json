@@ -664,6 +664,89 @@
         "השוואה מאושרת לתקופה קודמת",
         "ניתוח השפעה על ההנחות במודל"
       ]
+    },
+    {
+      "id": "research-proposal:fbdf40453f9bbd678edcb89cad52f2b4",
+      "companyId": "us-dlo-nasdaq-a",
+      "reviewVersionId": "review:c3acc7236881d8cb0179e8c001e76c74",
+      "sourceUrl": "https://rss.globenewswire.com/news-release/2026/08/13/3344936/0/en/dlocal-reports-second-quarter-2026-financial-results.html",
+      "reportPublishedDate": "2026-08-13",
+      "period": "2026-Q2",
+      "evidence": [
+        {
+          "observationId": "observation:1bfe114a68dd1825abc477258f9b371b",
+          "metricId": "capex",
+          "value": 9.91,
+          "unit": "USD million",
+          "raw": "(9,910)",
+          "periodStart": "2026-04-01",
+          "periodEnd": "2026-06-30",
+          "basis": "Issuer-defined cash capital expenditures (PPE plus intangibles)",
+          "sourceSha256": "4efc62ddf466d78aad5809539bc47b175b569b7e481973bc5256f99efc5ced60",
+          "sourceUrl": "https://rss.globenewswire.com/news-release/2026/08/13/3344936/0/en/dlocal-reports-second-quarter-2026-financial-results.html",
+          "approvalStatus": "needs-reconciliation",
+          "forecastComparisonStatus": "no-comparable-forecast",
+          "forecastComparisonReasons": [],
+          "reviewQuestion": "בדוק הגדרת הוצאות ההשקעה, רכוש קבוע ונכסים בלתי מוחשיים."
+        },
+        {
+          "observationId": "observation:f9429af8e4d5d4659c6267342038d899",
+          "metricId": "grossProfit",
+          "value": 127.2,
+          "unit": "USD million",
+          "raw": "127.2",
+          "periodStart": "2026-04-01",
+          "periodEnd": "2026-06-30",
+          "basis": "IFRS (rounded issuer KPI)",
+          "sourceSha256": "4efc62ddf466d78aad5809539bc47b175b569b7e481973bc5256f99efc5ced60",
+          "sourceUrl": "https://rss.globenewswire.com/news-release/2026/08/13/3344936/0/en/dlocal-reports-second-quarter-2026-financial-results.html",
+          "approvalStatus": "needs-reconciliation",
+          "forecastComparisonStatus": "no-comparable-forecast",
+          "forecastComparisonReasons": [],
+          "reviewQuestion": "בדוק מרווחים, עלויות עיבוד ושינויים בתמהיל, ללא הסקת מסקנות מהנתון הבודד."
+        },
+        {
+          "observationId": "observation:d1aba3b780cdf1adf1bc818bec593c9b",
+          "metricId": "operatingCash",
+          "value": 140.522,
+          "unit": "USD million",
+          "raw": "140,522",
+          "periodStart": "2026-04-01",
+          "periodEnd": "2026-06-30",
+          "basis": "IFRS cash from operations as cited in reconciliation",
+          "sourceSha256": "4efc62ddf466d78aad5809539bc47b175b569b7e481973bc5256f99efc5ced60",
+          "sourceUrl": "https://rss.globenewswire.com/news-release/2026/08/13/3344936/0/en/dlocal-reports-second-quarter-2026-financial-results.html",
+          "approvalStatus": "needs-reconciliation",
+          "forecastComparisonStatus": "no-comparable-forecast",
+          "forecastComparisonReasons": [],
+          "reviewQuestion": "בדוק הון חוזר, תזמון סליקה ותשלומים; אין להסיק מכאן FCF."
+        },
+        {
+          "observationId": "observation:21e5910e6175b0085dfd7947e471f655",
+          "metricId": "revenue",
+          "value": 399.7,
+          "unit": "USD million",
+          "raw": "399.7",
+          "periodStart": "2026-04-01",
+          "periodEnd": "2026-06-30",
+          "basis": "IFRS (rounded issuer KPI)",
+          "sourceSha256": "4efc62ddf466d78aad5809539bc47b175b569b7e481973bc5256f99efc5ced60",
+          "sourceUrl": "https://rss.globenewswire.com/news-release/2026/08/13/3344936/0/en/dlocal-reports-second-quarter-2026-financial-results.html",
+          "approvalStatus": "needs-reconciliation",
+          "forecastComparisonStatus": "no-comparable-forecast",
+          "forecastComparisonReasons": [],
+          "reviewQuestion": "השווה לתקופה קודמת רק אם קיימים נתוני GAAP/IFRS תואמים; בחן מנועי צמיחה."
+        }
+      ],
+      "status": "review-only",
+      "thesisImpact": "לא נקבע — יש לבדוק את הנתונים והמקורות לפני הסקת השפעה על תזת ההשקעה.",
+      "valuationAction": "אין שינוי במחיר יעד, בתחזיות או בהסתברויות Bear/Base/Bull.",
+      "aiAnalysisEnabled": false,
+      "missing": [
+        "אישור מקור וגרסה",
+        "השוואה מאושרת לתקופה קודמת",
+        "ניתוח השפעה על ההנחות במודל"
+      ]
     }
   ],
   "notice": "Deterministic source-based briefing, NOT AI narrative. No approved thesis or valuation mutation."
