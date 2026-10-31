@@ -124,8 +124,13 @@ with sync_playwright() as pw:
         errors=[];page.on('pageerror',lambda error:errors.append(str(error)))
         page.goto(URL);page.get_by_role('heading',name='התדריך היומי.',exact=True).wait_for()
         page.get_by_text('התראות לאנדרואיד • הגדרה חד־פעמית',exact=True).wait_for()
+        page.get_by_role('heading',name='מה השתנה ומה לבדוק?',exact=True).wait_for()
+        assert page.locator('.research-task-center .research-task-list > li').count()<=3
+        page.screenshot(path=f'work/mobile-{width}-quiet-home.png',full_page=False)
         assert page.locator('html').get_attribute('dir')=='rtl'
         assert page.evaluate('document.documentElement.scrollWidth')<=width+1,f'Horizontal overflow at {width}'
+        page.locator('details.home-disclosure > summary').filter(has_text='תמונת המאקרו').click()
+        page.locator('details.home-disclosure > summary').filter(has_text='דוחות קרובים ולוח אירועים').click()
         page.get_by_role('heading',name='תמונת המאקרו',exact=True).wait_for()
         page.get_by_role('button',name='השבוע הבא',exact=True).click()
         page.get_by_role('button',name='השבוע הנוכחי',exact=True).click()
@@ -172,6 +177,15 @@ with sync_playwright() as pw:
             exchange.get_by_role('heading',name=f'מחקר בסיס ל־{label}',exact=True).wait_for()
             latest=exchange.get_by_role('region',name='עדכון המחקר האחרון',exact=True)
             latest.get_by_role('heading',name='עדכון המחקר האחרון שנקלט',exact=True).wait_for()
+            # Evidence and full reports are collapsed in the initial reading view.
+            full_summary=exchange.get_by_text('קריאת המחקר המלא',exact=True)
+            assert not full_summary.evaluate('(el)=>el.parentElement.open')
+            for title in ('אופק השווי והנחות המודל','מעקב התזה ומדדי המודל','נתונים פיננסיים ומצב המקורות'):
+                summary=exchange.locator('details.research-disclosure > summary').filter(has_text=title)
+                if summary.count():
+                    assert not summary.evaluate('(el)=>el.parentElement.open')
+                    summary.click()
+            latest.locator('details.research-disclosure > summary').filter(has_text='נתוני הדוח שנקלט והבדיקות שבוצעו').click()
             if label=='DLO':
                 expect(latest).to_contain_text('נדרש בירור גרסת מקור')
                 expect(latest).to_contain_text('399.7 USD million')
@@ -296,9 +310,20 @@ with sync_playwright() as pw:
                 context_panel=exchange.get_by_role('region',name=f'אופק והנחות השווי של {ticker}',exact=True)
                 expect(context_panel).to_contain_text('אינו שער חי')
                 if label=='SNDK':expect(context_panel).to_contain_text('אין מועד יעד קשיח')
+                exchange.get_by_text('תוכן העניינים המלא',exact=True).click()
                 chapters=exchange.get_by_role('navigation',name=f'פרקי הניתוח של {ticker}')
                 expect(chapters.get_by_role('button')).to_have_count(chapter_count)
                 chapters.get_by_role('button').nth(9).click()
+                if label=='NBIS':
+                    reader=exchange.locator('.research-full-reading .reading-mode').first
+                    reader.get_by_role('button',name='מצב קריאה נקי',exact=True).click()
+                    dialog=page.get_by_role('dialog',name='קריאת מחקר NBIS',exact=True)
+                    dialog.get_by_label('גודל טקסט בקריאה',exact=True).select_option('20')
+                    dialog.get_by_label('מעבר לפרק בקריאה',exact=True).select_option(index=2)
+                    assert page.locator('[id="candidate-nebius-pdf-section-2"]').count()==1
+                    assert page.evaluate('document.documentElement.scrollWidth')<=width+1
+                    dialog.screenshot(path=f'work/mobile-{width}-clean-reader.png')
+                    dialog.get_by_role('button',name='סגירה',exact=True).click()
                 intake=exchange.get_by_role('group',name='קליטת תוכן דוחות רשמיים')
                 if intake.count():
                     intake.locator(':scope > summary').click()

@@ -2,6 +2,8 @@ import {nextEarnings,dateLabel} from './research/earningsCalendar';
 import {MacroPanel,NextEarnings} from './components/MarketContext';
 import {compareNews} from './research/newsPresentation';
 import {ResearchAlertInbox} from './components/ResearchAlertInbox';
+import {ResearchTaskCenter} from './components/ResearchTaskCenter';
+import type {ResearchDestination} from './research/researchTasks';
 import {AIResearchOverview} from './components/AIResearchOverview';
 import {AIAnalysisQueuePanel} from './components/AIAnalysisQueuePanel';
 import {AISettingsPanel} from './components/AISettingsPanel';
@@ -209,6 +211,15 @@ export default function App() {
     const target = allSecurities.find((s) => s.ticker === ticker || s.name === ticker);
     if (target) setSelected(target.id);
     navigate("research");
+  };
+  const openResearchTask = (companyId:string,destination:ResearchDestination) => {
+    if(dirty&&!persistResearch())return;
+    const target=allSecurities.find(s=>officialCompany(s.ticker,s.name)?.id===companyId);
+    if(!target)return;
+    setSelected(target.id);
+    setResearchView(destination==='valuation'?'valuation':destination==='sources'?'sources':'overview');
+    navigate('research');
+    if(destination==='ai')requestAnimationFrame(()=>{const panel=document.querySelector<HTMLElement>('.pulse-ai-draft-panel');const detail=panel?.querySelector<HTMLDetailsElement>('details.research-disclosure');if(detail)detail.open=true;panel?.scrollIntoView({block:'start'});});
   };
   const saveNews = (item: News) => {
     const exists = state.savedNews.some((n) => n.id === item.id);
@@ -442,16 +453,16 @@ export default function App() {
               <button onClick={exportData}>ייצוא המידע המקורי</button>
             </div>
           )}
-          {tab==='home'&&<MacroPanel intel={feed?.version===2?feed.intelligence:undefined}/>}
-          {feed?.version===2&&feed.intelligence&&tab==='home'&&<><DailyPanel intel={feed.intelligence} news={feed.news} date={new URLSearchParams(deepLink.slice(1)).get('briefing')||undefined}/><CalendarPanel intel={feed.intelligence} focus={new URLSearchParams(deepLink.slice(1)).get('results')||undefined}/><NotificationsPanel open={deepLink.includes('notifications=')}/></>}
+          {tab==='home'&&<><ResearchTaskCenter news={feed?.news||[]} onOpen={openResearchTask}/><details className="panel home-disclosure"><summary>תמונת המאקרו</summary><MacroPanel intel={feed?.version===2?feed.intelligence:undefined}/></details></>}
+          {feed?.version===2&&feed.intelligence&&tab==='home'&&<><details className="panel home-disclosure" open={deepLink.includes('briefing=')||undefined}><summary>תדריך הבוקר והערב</summary><DailyPanel intel={feed.intelligence} news={feed.news} date={new URLSearchParams(deepLink.slice(1)).get('briefing')||undefined}/></details><details className="panel home-disclosure" open={deepLink.includes('results=')||deepLink.includes('earnings=')||undefined}><summary>דוחות קרובים ולוח אירועים</summary><CalendarPanel intel={feed.intelligence} focus={new URLSearchParams(deepLink.slice(1)).get('results')||undefined}/></details><NotificationsPanel open={deepLink.includes('notifications=')}/></>}
           {feed?.version === 2 &&
             ["home", "watchlist"].includes(tab) && (
               <>{feed.intelligence?<details className="panel"><summary>מצב איסוף חדשות ומקורות</summary><DiscoveryPanel feed={feed}/><CoveragePanel feed={feed}/></details>:<><DiscoveryPanel feed={feed}/><CoveragePanel feed={feed}/></>}</>
             )}
           {tab === "home" && (
             <>
-              <AIResearchOverview onOpenResearch={() => navigate("research")}/>
-              <div className="overview-grid">
+              <details className="panel home-disclosure"><summary>מצב מנוע המחקר והטיוטות</summary><AIResearchOverview onOpenResearch={() => navigate("research")}/></details>
+              <details className="panel home-disclosure"><summary>סביבת העבודה שלי</summary><div className="overview-grid">
                 <section className="briefing">
                   <div className="briefing-top">
                     <span className="briefing-icon">
@@ -550,11 +561,13 @@ export default function App() {
                   </div>
                 </Section>
               </div>
+              </details>
               {feed?.version === 2 && feed.news.some(n => n.sourceId?.startsWith('sec-')) && (
                 <div className="live-briefing">
-                  <BriefingPanel feed={feed} />
+                  <details className="panel home-disclosure"><summary>תדריך דיווחי SEC</summary><BriefingPanel feed={feed} /></details>
                 </div>
               )}
+              <details className="panel home-disclosure"><summary>אירועים נוספים וחדשות למחקר</summary>
               <div className="section-title">
                 <div>
                   <span className="eyebrow">על סדר היום</span>
@@ -585,6 +598,7 @@ export default function App() {
                   עדכוני מחקר יופיעו כאן אחרי טעינת מקור נתונים.
                 </Empty>
               )}
+              </details><details className="panel home-disclosure"><summary>התיק ורשימת המעקב במבט נוסף</summary>
               <div className="home-bottom">
                 <Section title="דורש תשומת לב" eyebrow="בדיקת מחקר">
                   <div className="attention-row">
@@ -664,6 +678,7 @@ export default function App() {
                   ))}
                 </Section>
               </div>
+              </details>
             </>
           )}
           {tab === "portfolio" && (

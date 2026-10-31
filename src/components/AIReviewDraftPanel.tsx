@@ -1,5 +1,7 @@
+import {ContentBadge} from './ContentBadge';
+import {ReadingMode} from './ReadingMode';
 import {useEffect,useState} from 'react';
-import {BrainCircuit,ShieldAlert,ExternalLink} from 'lucide-react';
+import {BrainCircuit,ExternalLink} from 'lucide-react';
 import {companyModelFor} from '../data/companyModels';
 
 type Citation={evidenceId:string;kind:string;claim:string;uncertainty:string};
@@ -82,12 +84,14 @@ export function AIReviewDraftPanel({companyId}:{companyId:string}){
  return <section className="pulse-ai-draft-panel" aria-label="ניתוח בינה מלאכותית לבדיקת אנליסט" dir="rtl">
   <div className="pulse-research-drafts-heading">
    <div><span className="pulse-ai-kicker">PULSE / AI RESEARCH REVIEW</span><h4><BrainCircuit size={19} aria-hidden="true"/> ניתוח AI</h4></div>
-   <span className="pulse-ai-pill"><ShieldAlert size={15}/> טיוטה בלבד</span>
+   <ContentBadge kind="ai-draft"/>
   </div>
   {data===null&&!error&&<p role="status">בודק זמינות ניתוח AI…</p>}
   {error&&<p role="status">ניתוח AI עדיין לא הופעל או טרם פורסמה טיוטה. הנתונים הקיימים והמחקר המאושר לא השתנו.</p>}
   {data?.length===0&&<p>אין עדיין ניתוח AI שמור לחברה זו. קליטת הדוחות יכולה להמשיך גם ללא חיבור API.</p>}
   {draft&&<>
+   {draft.fullResearch&&<p className="ai-draft-preview">{draft.fullResearch.headline}</p>}
+   <details className="research-disclosure"><summary>קריאת ניתוח AI והמקורות שלו</summary>
    <p className="pulse-ai-meta">מודל: <bdi>{draft.model}</bdi> · תאריך טיוטה: {new Date(draft.firstRecordedAt).toLocaleDateString('he-IL')} · מזהה חבילת מקור: <bdi>{draft.sourcePacketSha256.slice(0,12)}…</bdi></p>
    <div className="pulse-ai-review-warning" role="status">הפלט נוצר במודל אך טרם אומת ואושר. העובדות, הנחות המודל ומחיר היעד המאושרים לא שונו.</div>
    <div className="pulse-ai-model-compare" aria-label="השוואה בין המודל הקיים לבין טיוטת AI">
@@ -111,7 +115,7 @@ export function AIReviewDraftPanel({companyId}:{companyId:string}){
     </div>:<p>אין מודל כמותי קיים בר־השוואה. הטיוטה אינה יוצרת מודל שווי חדש ללא נתונים.</p>}
     <p className="pulse-ai-model-review-note">אישור מחקר ופרסום מודל מחייבים סקירת מקור, PR מוגן ופעולה מאומתת של בעל הרשאה. ממשק ציבורי זה הוא לקריאה בלבד.</p>
    </div>
-   {draft.fullResearch&&<div className="pulse-ai-full-research" data-testid="pulse-full-ai-research">
+   {draft.fullResearch&&<ReadingMode key={draft.id} id={draft.id} title={`קריאת טיוטת AI · ${draft.ticker}`} chapters={Object.entries(sectionLabels).map(([key,label])=>({id:`${draft.id}-${key}`,label}))}><div className="pulse-ai-full-research" data-testid="pulse-full-ai-research">
     <span className="pulse-ai-kicker">RESEARCH REPORT / V2</span>
     <h3>{draft.fullResearch.headline}</h3>
     <p className="pulse-ai-executive">{draft.fullResearch.executiveSummary}</p>
@@ -119,14 +123,14 @@ export function AIReviewDraftPanel({companyId}:{companyId:string}){
     <div className="pulse-ai-full-sections">{Object.entries(sectionLabels).map(([k,label])=>{
       const s=draft.fullResearch!.sections[k];
       return <details key={k} open={k==='financialResults'||k==='thesisComparison'}>
-        <summary>{label}</summary><p>{s.summary}</p>
+        <summary data-reading-anchor tabIndex={-1} id={`${draft.id}-${k}`}>{label}</summary><p>{s.summary}</p>
         <p><strong>פרשנות לבדיקה:</strong> {s.interpretation}</p>
         {!!s.unknowns.length&&<p><small>מגבלות: {s.unknowns.join(' · ')}</small></p>}
         {!!s.evidenceIds.length&&<p><small>ראיות: {s.evidenceIds.join(' · ')}</small></p>}
       </details>;
     })}</div>
     {!!draft.fullResearch.limitations.length&&<p className="pulse-ai-full-limits">מגבלות המחקר: {draft.fullResearch.limitations.join(' · ')}</p>}
-   </div>}
+   </div></ReadingMode>}
    {!draft.fullResearch&&<h5>ממצאים והשלכות לבדיקה</h5>}
    {!draft.fullResearch&&(draft.interpretations.length?draft.interpretations.map((x,i)=><article key={i} className="pulse-ai-insight">
     <p><strong>תצפית:</strong> {x.observation}</p><p><strong>השערה לבדיקה:</strong> {x.hypothesis}</p>
@@ -145,6 +149,6 @@ export function AIReviewDraftPanel({companyId}:{companyId:string}){
     {!!draft.analystQuestions.length&&<p>שאלות פתוחות: {draft.analystQuestions.join(' · ')}</p>}
    </details>
    <p><small><ExternalLink size={13} aria-hidden="true"/> פרסום מחיר יעד או מחקר רשמי דורש אישור נפרד דרך GitHub.</small></p>
-  </>}
+  </details></>}
  </section>;
 }

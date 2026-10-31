@@ -1,3 +1,6 @@
+import {ReadingMode} from './ReadingMode';
+import {ContentBadge} from './ContentBadge';
+import {ModelReviewInbox} from './ModelReviewInbox';
 import {ReportIntake} from './ReportIntake';
 import {CompanyFinancialResults} from './CompanyFinancialResults';
 import {AutomaticFinancialObservations} from './AutomaticFinancialObservations';
@@ -37,17 +40,17 @@ export function ResearchExchange({company,current,onChange,onPrepare,view='overv
   {!published&&view==='overview'&&<div className="research-empty-state"><h3>עוד אין סקירה ציבורית לחברה הזו</h3><p>אפשר להתחיל מהתזה וההערות שלך או להוסיף דוח לניתוח.</p><button onClick={()=>onNavigate?.('personal')}>פתיחת המחקר שלי</button></div>}
   {published&&<div className="research-import-info" aria-label="מחקר בסיס זמין באתר">
    <div hidden={view!=='overview'} id="research-pane-overview" role="tabpanel" aria-labelledby="research-tab-overview">
-   <div className="research-snapshot-head"><h3>מחקר בסיס ל־{company.label}</h3><small>עודכן {published.asOf}</small></div>
-   {target&&<div className="research-target-summary"><div><small>{target.caption||'מחיר יעד משוקלל'} · {target.label}</small><strong dir="ltr">{target.approximate?'≈':''}{modelMoney(target.target,target.currency)}</strong><small>{target.horizonLabel||('עד '+target.horizon.split('-').reverse().join('.'))} · {target.note}</small></div><button className="text-button" onClick={()=>onNavigate?.('valuation')}>למודל השווי ←</button></div>}
-   <ValuationContext companyId={company.id}/>
+   <div className="research-snapshot-head"><h3>מחקר בסיס ל־{company.label}</h3><ContentBadge kind="baseline"/><small>עודכן {published.asOf}</small></div>
    <div className="research-thesis"><h4>התזה בקצרה</h4><p>{published.fields.thesis.includes('פרשנות:')?published.fields.thesis.slice(published.fields.thesis.indexOf('פרשנות:')+7).trim():published.fields.thesis}</p></div>
+   <div className="company-reading-actions" role="group" aria-label="פעולות מחקר לחברה"><button type="button" onClick={()=>{const d=document.getElementById('full-reading-'+company.id) as HTMLDetailsElement|null;if(d){d.open=true;d.querySelector('summary')?.focus();d.scrollIntoView({block:'start'});}}}>קריאת הניתוח</button><button type="button" onClick={()=>onNavigate?.('valuation')}>מודל השווי</button><button type="button" onClick={()=>onNavigate?.('sources')}>מקורות</button></div>
+   <ModelReviewInbox companyId={company.id} onOpen={()=>onNavigate?.('valuation')}/>
+   {target&&<div className="research-target-summary"><div><small>{target.caption||'מחיר יעד משוקלל'} · {target.label}</small><strong dir="ltr">{target.approximate?'≈':''}{modelMoney(target.target,target.currency)}</strong><small>{target.horizonLabel||('עד '+target.horizon.split('-').reverse().join('.'))} · {target.note}</small></div><button className="text-button" onClick={()=>onNavigate?.('valuation')}>למודל השווי ←</button></div>}
+   <details className="research-disclosure"><summary>אופק השווי והנחות המודל</summary><ValuationContext companyId={company.id}/></details>
    <LatestResearchUpdate companyId={company.id} onPrepare={onPrepare}/>
-   <ThesisMonitor companyId={company.id}/>
-   <CompanyFinancialResults companyId={company.id}/>
-   <AutomaticFinancialObservations companyId={company.id}/>
-   <ReportIntake companyId={company.id}/>
+   <details className="research-disclosure"><summary>מעקב התזה ומדדי המודל</summary><ThesisMonitor companyId={company.id}/></details>
+   <details className="research-disclosure"><summary>נתונים פיננסיים ומצב המקורות</summary><CompanyFinancialResults companyId={company.id}/><AutomaticFinancialObservations companyId={company.id}/><ReportIntake companyId={company.id}/></details>
    {model&&!hasFullResearch(company.id)&&<div className="research-next-checks"><h4>מה לבדוק בהמשך</h4><ul>{model.checks.map(c=><li key={c}>{c}</li>)}</ul></div>}
-   <details className="research-full-reading" open={hasFullResearch(company.id)||undefined}><summary>קריאת המחקר המלא</summary>{hasFullResearch(company.id)?<FullCompanyResearch analysis={published}/>:<>{researchFields.map(k=><div key={k}><h4>{labels[k]}</h4><p>{published.fields[k]}</p></div>)}<h4>מקורות שנקראו</h4>{published.sourceUrls.map((url,i)=><p key={url}><a href={url} target="_blank" rel="noopener noreferrer">מקור {i+1}: {new URL(url).hostname}</a></p>)}<h4>מידע חסר ומגבלות</h4>{published.missing.map((m,i)=><p key={i}>{m}</p>)}</>}</details>
+   <details id={'full-reading-'+company.id} className="research-full-reading"><summary>קריאת המחקר המלא</summary>{hasFullResearch(company.id)?<FullCompanyResearch analysis={published}/>:<ReadingMode id={company.id+':'+published.asOf} title={'קריאת מחקר '+company.label} chapters={researchFields.map(k=>({id:company.id+'-field-'+k,label:labels[k]}))}>{researchFields.map(k=><div key={k}><h4 data-reading-anchor tabIndex={-1} id={company.id+'-field-'+k}>{labels[k]}</h4><p>{published.fields[k]}</p></div>)}<h4>מקורות שנקראו</h4>{published.sourceUrls.map((url,i)=><p key={url}><a href={url} target="_blank" rel="noopener noreferrer">מקור {i+1}: {new URL(url).hostname}</a></p>)}<h4>מידע חסר ומגבלות</h4>{published.missing.map((m,i)=><p key={i}>{m}</p>)}</ReadingMode>}</details>
    <details className="research-provenance"><summary>מקורות, עדכניות והיקף הבדיקה</summary><p>תקופת דיווח: {baseline?.period} · {baseline?.scope}</p><p>המחקר הציבורי וההערות האישיות נשמרים בנפרד.</p><ResearchBaselineStatus pack={published}/></details>
    <button onClick={()=>{setRaw(JSON.stringify(published,null,2));setPreview(published);setSelected(researchFields.filter(k=>!!published.fields[k].trim()&&published.fields[k]!==current[k]));setError('');onNavigate?.('sources');}}>השוואת מחקר הבסיס למחקר שלי</button>
    </div>
