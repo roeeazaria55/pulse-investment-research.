@@ -26,7 +26,7 @@ class IncompleteBillingTests(unittest.TestCase):
                     runner.run_paid_review("NBIS", packet, "{}", "gpt-6.1-sol", "fake-key", target, ledger)
                 payload = json.loads(network.call_args.args[0].data)
                 self.assertEqual(payload["max_output_tokens"], RESERVATION_LIMIT)
-                self.assertEqual(RESERVATION_LIMIT, 32000)
+                self.assertEqual(RESERVATION_LIMIT, 50000)
                 self.assertFalse(target.exists())
                 billed = runner.read_ledger(ledger)
                 self.assertEqual(billed["calls"][0]["usd"], "0.08")
@@ -46,11 +46,11 @@ class IncompleteBillingTests(unittest.TestCase):
     def test_expanded_output_still_enforces_monthly_budget(self):
         empty = {"version":1,"calls":[],"holds":[]}
         decision = preflight(empty,"NBIS","a"*64,"gpt-6.1-sol","2026-10-31T00:00:00Z",100000,RESERVATION_LIMIT)
-        self.assertEqual(decision["estimatedMaxUsd"], "0.52")
+        self.assertEqual(decision["estimatedMaxUsd"], "0.70")
         self.assertTrue(decision["allowed"])
         from pulse_ai_cost_guard import reserve
         ledger = empty
-        for i in range(17):
+        for i in range(12):
             ledger, _ = reserve(ledger,"NBIS",f'{i:064x}',"gpt-6.1-sol","2026-10-31T00:00:00Z",100000,RESERVATION_LIMIT)
         self.assertFalse(preflight(ledger,"NBIS","f"*64,"gpt-6.1-sol","2026-10-31T00:00:00Z",100000,RESERVATION_LIMIT)["allowed"])
 

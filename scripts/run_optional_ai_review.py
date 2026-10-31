@@ -22,7 +22,7 @@ from pulse_responses_schema import build_strict_format
 
 ROOT = Path(__file__).resolve().parent.parent
 MAX_INPUT_BYTES = 50000
-MAX_OUTPUT_TOKENS = 32000
+MAX_OUTPUT_TOKENS = 50000
 ALLOWED_MODELS = set(MODEL_RATES)
 ENDPOINT = "https://api.openai.com/v1/responses"
 
@@ -195,7 +195,7 @@ def run_paid_review(ticker, packet, content, model, key, target, ledger_path, *,
                             headers={"Content-Type":"application/json","Authorization":"Bearer "+key},
                             method="POST")
             try:
-                with urlopen(request,timeout=240) as response:
+                with urlopen(request,timeout=600) as response:
                     raw=response.read(350000)
             except HTTPError as e:
                 raise ValueError("OpenAI returned HTTP "+str(e.code)+"; reserved budget remains blocked pending reconciliation") from None
