@@ -1,3 +1,4 @@
+import {ContentBadge} from './ContentBadge';
 import {useEffect,useState} from 'react';
 import {FileClock,History,ShieldCheck} from 'lucide-react';
 
@@ -60,7 +61,7 @@ export function ApprovedResearchHistory({companyId}:{companyId:string}){
   {!!versions.length&&<ul className="pulse-approved-history-list">{[...versions].reverse().map(v=><li key={v.id}>
    <FileClock size={19} aria-hidden="true"/>
    <div>
-    <strong>{v.researchHeadline}</strong>
+    <ContentBadge kind="approved"/><strong>{v.researchHeadline}</strong>
     <small><bdi>{v.id.slice(0,22)}…</bdi> · SHA <bdi>{v.pdfSha256.slice(0,12)}…</bdi></small>
     <small>{v.id===active?'הגרסה הפעילה בארכיון החדש':'גרסה קודמת, זמינה לצפייה'}</small>
    </div>

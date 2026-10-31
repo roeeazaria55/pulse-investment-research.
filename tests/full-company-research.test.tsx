@@ -55,6 +55,7 @@ it('keeps full analysis collapsed until opened and preserves the active valuatio
 it('navigates chapters by focus without changing hash routing',()=>{
  const scroll=vi.fn();HTMLElement.prototype.scrollIntoView=scroll;
  render(<FullCompanyResearch analysis={publishedFor('candidate-nebius')!.analysis}/>);
+ fireEvent.click(screen.getByText('תוכן העניינים המלא'));
  fireEvent.click(screen.getByRole('button',{name:'10. הערכת שווי ל־12 חודשים — מכפיל הכנסות'}));
  expect(document.activeElement).toBe(screen.getByRole('heading',{name:'10. הערכת שווי ל־12 חודשים — מכפיל הכנסות'}));
  expect(location.hash).toBe('');expect(scroll).toHaveBeenCalled();
