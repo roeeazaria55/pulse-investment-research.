@@ -9,6 +9,7 @@ from datetime import date
 from pathlib import Path
 from urllib.parse import urlsplit
 from issuer_table_adapters import adapted_issuer_facts
+from report_context import validate_context
 import json
 import math
 import re
@@ -30,7 +31,7 @@ XBRL = {
     "us-gaap:inventorynet": ("inventory", "מלאי", "US GAAP net inventory — balance sheet instant"),
     "us-gaap:accountsreceivablenetcurrent": ("accountsReceivable", "לקוחות נטו", "US GAAP accounts receivable net current — balance sheet instant"),
 }
-MAX_METRICS = 8
+MAX_METRICS = 16
 
 
 def read(path):
@@ -84,6 +85,7 @@ def status_for(source_rows):
 
 SMCI_BALANCES = {
     "us-gaap:cashandcashequivalentsatcarryingvalue",
+    "us-gaap:debtinstrumentcarryingamount",
     "us-gaap:inventorynet",
     "us-gaap:accountsreceivablenetcurrent",
 }
@@ -321,6 +323,7 @@ def build(registry, intake):
         candidate = None
         if latest:
             candidate = {
+                "sourceExcerpts": validate_context(latest.get("sourceExcerpts", [])),
                 "id": latest["id"], "url": latest["url"], "sha256": latest["sha256"],
                 "title": latest.get("title", "")[:240], "format": latest["format"],
                 "publishedDate": latest.get("publishedDate") if iso_date(latest.get("publishedDate")) else None,

@@ -620,7 +620,12 @@ def source_bound_issuer_research(company, latest):
         or len(findings)>10 or len(questions)>10
         or not all(isinstance(v,str) and 0<len(v)<=600 for v in findings+questions)):
         raise ValueError("Untrusted issuer narrative questions or derived findings")
-    return {"status": r["status"], "report": {
+    from report_context import validate_context
+    evidence = r.get("reportEvidence") or {}
+    excerpts = validate_context(evidence.get("sourceExcerpts", []))
+    if excerpts and (evidence.get("sha256") != digest or evidence.get("url") != url):
+        raise ValueError("Report excerpt and financial source mismatch")
+    return {"status": r["status"], "sourceExcerpts": excerpts, "report": {
         "sourceUrl": url, "digest": digest, "digestKind": r["sourceDigestKind"],
         "period": r.get("reportPeriod"), "publishedDate": r.get("publishedDate"),
         "contentId": r.get("contentId"),
