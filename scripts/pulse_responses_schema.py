@@ -46,9 +46,29 @@ def strict_provider_schema(raw):
         return out
     raise ValueError("Unsupported strict schema node")
 
-def build_strict_format():
+def build_strict_format(packet=None):
     schema=json.loads(BUSINESS_SCHEMA.read_text(encoding="utf-8"))
     # Root is object. The local financial validator retains all numeric,
     # string-length and source-citation constraints from the original contract.
+    provider = strict_provider_schema(schema)
+    if packet is not None:
+        from ai_analyst_review_contract import evidence_catalog
+        catalog = evidence_catalog(packet)
+        if not catalog:
+            raise ValueError("No evidence available for constrained research")
+        identifiers = sorted(catalog)
+        def bind(node):
+            for key, child in node.get("properties", {}).items():
+                if key == "evidenceId":
+                    child["enum"] = identifiers
+                elif key == "evidenceIds":
+                    child["items"]["enum"] = identifiers
+                bind(child)
+            if "items" in node:
+                bind(node["items"])
+        bind(provider)
+        citation = provider["properties"]["evidenceCitations"]["items"]
+        del citation["properties"]["kind"]
+        citation["required"].remove("kind")
     return {"type":"json_schema","name":"pulse_full_research_v2",
-            "strict":True,"schema":strict_provider_schema(schema)}
+            "strict":True,"schema":provider}

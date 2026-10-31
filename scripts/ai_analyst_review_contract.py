@@ -69,6 +69,23 @@ def _validate_input_packet(packet):
     return digest
 
 
+def evidence_catalog(packet):
+    """One validated mapping shared by request constraints and local validation."""
+    _validate_input_packet(packet)
+    candidates={o["observationId"]:"financial-observation" for o in packet.get("financialObservations",[])}
+    for row in (packet.get("latestIssuerResearch") or {}).get("sourceBoundMetrics",[]):
+        evidence_id="issuer-metric:"+packet["companyId"]+":"+row["metricId"]
+        if evidence_id in candidates:
+            raise ValueError("Duplicate issuer evidence ID")
+        candidates[evidence_id]="issuer-report-metric"
+    candidates.update({f["id"]:"archived-forecast" for f in packet.get("archivedForecasts",[])})
+    for name in (packet.get("research") or {}).get("sections",{}):
+        candidates["research-section:"+name]="research-section"
+    for item in (packet.get("valuationModel") or {}).get("assumptions",[]):
+        candidates["valuation-scenario:"+str(item.get("id"))]="valuation-scenario"
+    return candidates
+
+
 def validate_ai_proposal(packet, proposed, *, model_execution_attested=False):
     """Only a trusted API caller may label an actual completed Responses run
     model-generated. An untrusted JSON input cannot attest its own provenance.
@@ -93,17 +110,7 @@ def validate_ai_proposal(packet, proposed, *, model_execution_attested=False):
         raise ValueError("AI provenance not attested or proposal mislabeled")
     if proposed["proposedValuationAction"]!="no-automatic-change":
         raise ValueError("Direct financial model edits are forbidden")
-    candidates={o["observationId"]:"financial-observation" for o in packet.get("financialObservations",[])}
-    for row in (packet.get("latestIssuerResearch") or {}).get("sourceBoundMetrics",[]):
-        evidence_id="issuer-metric:"+packet["companyId"]+":"+row["metricId"]
-        if evidence_id in candidates:
-            raise ValueError("Duplicate issuer evidence ID")
-        candidates[evidence_id]="issuer-report-metric"
-    candidates.update({f["id"]:"archived-forecast" for f in packet.get("archivedForecasts",[])})
-    for name in (packet.get("research") or {}).get("sections",{}):
-        candidates["research-section:"+name]="research-section"
-    for item in (packet.get("valuationModel") or {}).get("assumptions",[]):
-        candidates["valuation-scenario:"+str(item.get("id"))]="valuation-scenario"
+    candidates=evidence_catalog(packet)
     refs=proposed["evidenceCitations"]
     if not isinstance(refs,list) or len(refs)>100:
         raise ValueError("Unbounded citations")
