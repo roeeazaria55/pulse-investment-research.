@@ -56,7 +56,7 @@ class ResearchProposalWorkflowChecks(unittest.TestCase):
    self.assertNotRegex(workflow,r"--approve(?:\s|$)")
    self.assertNotIn("PULSE_SECURITY_READ_TOKEN",workflow)
   ai=(ROOT/".github/workflows/ai-automation.yml").read_text(encoding="utf-8")
-  self.assertLess(ai.index("run: python3 scripts/pulse_release_security.py --environment pulse-ai-paid\n"), ai.index("--phase reserve"))
+  self.assertLess(ai.index("python3 scripts/pulse_release_security.py --environment pulse-ai-paid\n"), ai.index("--phase reserve"))
   check=(ROOT/".github/workflows/check.yml").read_text(encoding="utf-8")
   self.assertIn("ready_for_review",check)
   self.assertIn("--preflight",check)

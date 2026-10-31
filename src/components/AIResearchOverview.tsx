@@ -30,7 +30,7 @@ export function AIResearchOverview({onOpenResearch}:{onOpenResearch:()=>void}){
    </div>
    <span className="pulse-ai-pill"><ShieldCheck size={14}/> בקרת אנליסט</span>
   </div>
-  <p className="pulse-ai-command-description">מעקב דוחות, אימות מקורות והכנת טיוטות השקעה. ניתוח AI בתשלום אינו פעיל עד להגדרת מפתח ואישור יזום.</p>
+  <p className="pulse-ai-command-description">מעקב דוחות, אימות מקורות והכנת טיוטות השקעה. הפעלת ניתוח AI מנוהלת ב־GitHub לפי הרשאות ותקציב; מסך זה אינו מאמת אם האוטומציה פעילה.</p>
   <div className="pulse-ai-kpis">
    <div><span><FileClock size={16}/> טיוטות מקור שמורות</span><strong>{stats?stats.drafts.toLocaleString('he-IL'):'—'}</strong><small>{stats?stats.companies+' חברות עם טיוטות':'ממתין לנתוני המקורות'}</small></div>
    <div><span><ShieldCheck size={16}/> ממתינות לבדיקה</span><strong>{stats?stats.needsReview.toLocaleString('he-IL'):'—'}</strong><small>{stats?stats.blocked+' חסומות עקב מקור/נתון':'אין סטטוס מאומת'}</small></div>

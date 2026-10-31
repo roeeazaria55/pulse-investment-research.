@@ -464,7 +464,11 @@ def build(observations, iren_source, source_inventory=None, coverage=None):
             report = other_issuer_update(row)
         report.setdefault("reportEvidence", row.get("report"))
         if report.get("sourceDigestKind") == "curated-extract-json-sha256-not-original-pdf":
-            report["intakeReportEvidence"] = row.get("report")
+            evidence = row.get("report")
+            # This independently retained document is not the curated numeric source.
+            # Do not attach its excerpts to the immutable curated report identity.
+            report["intakeReportEvidence"] = ({k:v for k,v in evidence.items() if k!="sourceExcerpts"}
+                                               if isinstance(evidence,dict) else evidence)
         report.setdefault("intakeStatus", row["intakeStatus"])
         report["intakeAttemptAt"] = row.get("intakeAttemptAt")
         report["intakeSuccessAt"] = row.get("intakeSuccessAt")

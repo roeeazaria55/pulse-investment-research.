@@ -1,5 +1,9 @@
 {
   "version": 1,
-  "activeMonths": [],
-  "notice": "Explicit YYYY-MM months require a reviewed change. Empty means scheduled paid analysis is disabled. Manual runs still require owner approval."
+  "activeMonths": [
+    "2026-10",
+    "2026-11"
+  ],
+  "notice": "Set automatic-drafts and explicit UTC YYYY-MM activeMonths only through an owner-reviewed main PR; both runtime switches and main-only pulse-ai-drafts credentials are also required.",
+  "scheduledAuthorization": "automatic-drafts"
 }

@@ -91,16 +91,22 @@ jobs:
       checks: read
       pull-requests: read
     environment:
-      name: pulse-ai-paid
+      name: ${{ github.event_name == 'schedule' && 'pulse-ai-drafts' || 'pulse-ai-paid' }}
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: true
-      - name: Verify owner approval for this exact run before any reservation or paid request
+      - name: Verify manual approval or standing draft policy before any paid request
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PAID_AI_ENABLED: ${{ vars.PAID_AI_ENABLED }}
-        run: python3 scripts/pulse_release_security.py --environment pulse-ai-paid
+          PAID_AI_SCHEDULE_ENABLED: ${{ vars.PAID_AI_SCHEDULE_ENABLED }}
+        run: |
+          if test "$GITHUB_EVENT_NAME" = schedule; then
+            python3 scripts/pulse_ai_autonomous_security.py
+          else
+            python3 scripts/pulse_release_security.py --environment pulse-ai-paid
+          fi
       - name: Prepare private runner and checked-out pulse-data worktree
         env:
           RETRY_SOURCE_COMMIT: ${{ inputs.retry_source_commit }}

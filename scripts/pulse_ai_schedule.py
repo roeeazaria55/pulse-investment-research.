@@ -16,6 +16,7 @@ def admission(policy,queue,now):
      or len(set(policy['activeMonths']))!=len(policy['activeMonths'])):
   raise ValueError('Invalid active-month policy')
  month=dt.datetime.fromisoformat(now.replace('Z','+00:00')).astimezone(dt.timezone.utc).strftime('%Y-%m')
+ if policy.get('scheduledAuthorization','disabled')!='automatic-drafts':return {'eligible':False,'reason':'standing-policy-disabled','month':month}
  if month not in policy['activeMonths']:return {'eligible':False,'reason':'inactive-month','month':month}
  if not isinstance(queue,dict) or not isinstance(queue.get('jobs'),list) or not isinstance(queue.get('latestByCompany'),dict):
   raise ValueError('Invalid authoritative queue')
@@ -33,6 +34,8 @@ def main():
  queue=json.loads((state/'public/data/ai-analysis-queue.json').read_text())
  result=admission(json.loads((ROOT/'config/pulse-ai-policy.json').read_text()),queue,dt.datetime.now(dt.timezone.utc).isoformat())
  ledger=state/'public/data/ai-cost-ledger.json'
+ if ledger.exists() and json.loads(ledger.read_text()).get('holds'):
+  result.update(eligible=False,reason='unsettled-reservation')
  result['budget']=budget_notice(json.loads(ledger.read_text()) if ledger.exists() else {'version':1,'calls':[],'holds':[]},result['month'])
  if result['budget']['level']=='blocked':result.update(eligible=False,reason='monthly-budget')
  if os.getenv('GITHUB_OUTPUT'):
