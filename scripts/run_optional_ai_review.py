@@ -22,7 +22,7 @@ from pulse_responses_schema import build_strict_format
 
 ROOT = Path(__file__).resolve().parent.parent
 MAX_INPUT_BYTES = 50000
-MAX_OUTPUT_TOKENS = 6000
+MAX_OUTPUT_TOKENS = 16000
 ALLOWED_MODELS = set(MODEL_RATES)
 ENDPOINT = "https://api.openai.com/v1/responses"
 
@@ -37,11 +37,23 @@ def prepare(ticker):
     return packet, encoded
 
 
+def response_diagnostics(response):
+    """Allowlisted metadata only: never log provider text, prompts or credentials."""
+    details = response.get("incomplete_details")
+    reason = details.get("reason") if isinstance(details, dict) else None
+    return {
+        "status": response.get("status") if response.get("status") in
+            ("completed", "incomplete", "failed", "cancelled") else "unknown",
+        "reason": reason if reason in ("max_output_tokens", "content_filter") else "unknown",
+        "maxOutputTokens": MAX_OUTPUT_TOKENS,
+    }
+
+
 def parse_and_validate(packet, response):
     if not isinstance(response,dict):
         raise ValueError("Malformed OpenAI response")
     if response.get("status") != "completed" or response.get("incomplete_details"):
-        raise ValueError("AI response incomplete/refused; nothing will be published")
+        raise ValueError("AI response incomplete/refused (" + response_diagnostics(response)["reason"] + "); nothing will be published")
     messages=[o for o in response.get("output",[]) if o.get("type")=="message"]
     if any(m.get("status") not in (None,"completed") for m in messages):
         raise ValueError("OpenAI message is incomplete")
@@ -163,7 +175,9 @@ def run_paid_review(ticker, packet, content, model, key, target, ledger_path, *,
                     "review proposal matching the supplied schema. "
                     "Every interpretation and scenario suggestion must cite packet evidence IDs. "
                     "No investments, trades, portfolio updates or valuation changes. "
-                    "Provide a detailed ten-section Hebrew financial review with evidence IDs. "
+                    "Provide a ten-section Hebrew financial review with evidence IDs. "
+                    "Keep each section focused: at most three concise facts and two sentences "
+                    "of interpretation. Avoid repeating evidence or background across sections. "
                     "You may cite financial-observation, issuer-report-metric, archived-forecast, "
                     "research-section or valuation-scenario identifiers present in the packet. "
                     "Each section must cite a listed evidence ID or set interpretation to exactly "
@@ -181,7 +195,7 @@ def run_paid_review(ticker, packet, content, model, key, target, ledger_path, *,
                             headers={"Content-Type":"application/json","Authorization":"Bearer "+key},
                             method="POST")
             try:
-                with urlopen(request,timeout=80) as response:
+                with urlopen(request,timeout=240) as response:
                     raw=response.read(350000)
             except HTTPError as e:
                 raise ValueError("OpenAI returned HTTP "+str(e.code)+"; reserved budget remains blocked pending reconciliation") from None
@@ -193,6 +207,8 @@ def run_paid_review(ticker, packet, content, model, key, target, ledger_path, *,
             # outputs still count against the user's month budget.
             updated,bill=record_call(ledger,ticker,packet["contentSha256"],model,now,usage)
             write_ledger(ledger_path,updated)
+            print(json.dumps({"event":"ai-response-received", **response_diagnostics(api_response),
+                              "chargedUsd":bill["usd"]}), flush=True)
             candidate=parse_and_validate(packet,api_response)
             save_private(candidate,target)
             fingerprint=sha256(json.dumps(candidate,ensure_ascii=False,sort_keys=True,
