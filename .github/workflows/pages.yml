@@ -5,9 +5,9 @@ on:
     paths-ignore: ["public/data/feed.json", "public/data/ingestion-state.json", "public/data/official-sources.json", "public/data/report-intake.json", "public/data/report-review-queue.json", "public/data/auto-financial-observations.json", "public/data/forecast-archive.json", "public/data/forecast-actual-comparisons.json", "public/data/research-update-proposals.json", "public/data/latest-research-updates.json", "public/data/research-update-history.json", "public/data/issuer-coverage.json", "public/data/earnings-research-candidates.json", "public/data/ai-analysis-queue.json"]
   workflow_dispatch:
   schedule:
-    # Existing ~30-minute collection polls. Two Jerusalem briefings are classified
-    # after the 08:00 and 19:00 local boundaries (DST-aware); runs can be delayed.
-    - cron: "17,47 * * * *"
+    # Two daily collections in Israel local time, including DST.
+    - cron: "0 8,19 * * *"
+      timezone: "Asia/Jerusalem"
 permissions: {}
 concurrency:
   group: pulse-production
