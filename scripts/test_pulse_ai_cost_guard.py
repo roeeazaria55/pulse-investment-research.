@@ -61,7 +61,7 @@ class AIExpenseTests(unittest.TestCase):
     def test_active_month_only_and_utc_month_boundaries(self):
         old,hold=reserve(EMPTY,"META",SHA,"gpt-6.1-sol","2026-10-31T23:59:59Z",6000)
         self.assertGreater(used_in_month(old,"2026-10"),Decimal("0"))
-        self.assertEqual(used_in_month(old,"2026-11"),Decimal("0"))
+        self.assertEqual(used_in_month(old,"2026-11"),Decimal("0.05"))
         self.assertTrue(preflight(old,"FTAI","b"*64,"gpt-6.1-sol","2026-11-01T00:00:00Z",6000)["allowed"])
 
 if __name__=="__main__":unittest.main()

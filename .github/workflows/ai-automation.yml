@@ -145,12 +145,13 @@ jobs:
             python3 scripts/pulse_ai_schedule.py --state-dir "$RUNNER_TEMP/pulse-ai-data" > "$RUNNER_TEMP/pulse-ai-private/admission.json"
             python3 -c 'import json,os; r=json.load(open(os.environ["RUNNER_TEMP"]+"/pulse-ai-private/admission.json")); assert r["eligible"], r["reason"]'
           fi
-          python3 scripts/pulse_ai_actions.py --phase reserve --retry-of "$RETRY_RECEIPT" \
+          python3 scripts/pulse_ai_actions.py --phase reserve --allow-rate-retry --retry-of "$RETRY_RECEIPT" \
             --state-dir "$RUNNER_TEMP/pulse-ai-data" \
             --private-dir "$RUNNER_TEMP/pulse-ai-private" \
             --model gpt-6.1-sol > "$RUNNER_TEMP/pulse-ai-private/reservation-status.json"
           python3 -c 'import json,os; r=json.load(open(os.environ["RUNNER_TEMP"]+"/pulse-ai-private/reservation-status.json")); f=open(os.environ["GITHUB_OUTPUT"],"a"); print("ready="+str(bool(r.get("ready"))).lower(),file=f); print("changed="+str(bool(r.get("changed"))).lower(),file=f); print("ticker="+str(r.get("ticker","")),file=f); f.close()'
       - name: COMMIT AND PUSH reservation before allowing ANY API request
+        id: persist
         if: steps.reserve.outputs.changed == 'true'
         working-directory: "${{ runner.temp }}/pulse-ai-data"
         run: |
@@ -184,7 +185,7 @@ jobs:
             --private-output "$RUNNER_TEMP/pulse-ai-private/review.json" \
             --cost-ledger "$RUNNER_TEMP/pulse-ai-private/ledger.json"
       - name: Commit receipt and UNAPPROVED AI draft; failed calls retain hold
-        if: always() && steps.reserve.outputs.ready == 'true'
+        if: always() && steps.persist.outcome == 'success' && steps.reserve.outputs.ready == 'true'
         env:
           PAID_AI_ENABLED: "${{ vars.PAID_AI_ENABLED }}"
           PULSE_PAID_AI_APPROVED: 'YES'
@@ -203,5 +204,5 @@ jobs:
         if: always()
         run: |
           echo 'The OpenAI secret was not printed or uploaded as an artifact.' >> "$GITHUB_STEP_SUMMARY"
-          echo 'An unsettled reservation blocks repeat analysis pending billing reconciliation.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'An unsettled reservation counts against the budget and blocks duplicate analysis of its report pending billing reconciliation.' >> "$GITHUB_STEP_SUMMARY"
           echo 'No draft can approve a model, overwrite a PDF or alter a price target.' >> "$GITHUB_STEP_SUMMARY"

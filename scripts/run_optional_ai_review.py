@@ -9,6 +9,8 @@ import json
 import os
 import datetime as dt
 import fcntl
+import time
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 from hashlib import sha256
 from urllib.request import Request, urlopen
@@ -152,9 +154,88 @@ def write_ledger(path, ledger):
         if dest.exists():dest.unlink()
 
 
+RATE_LIMIT = "rate_limit_exceeded"
+QUOTA = "insufficient_quota"
+UNKNOWN_429 = "unknown_429"
+MAX_RETRY_WAIT = 60
+ERROR_REASONS = {
+    RATE_LIMIT: "OpenAI request rate limit reached",
+    QUOTA: "OpenAI quota or billing is insufficient",
+    UNKNOWN_429: "OpenAI HTTP 429 could not be classified",
+}
+
+def classify_429(error):
+    try:
+        payload = json.loads(error.read(16384))
+        details = payload.get("error")
+        codes = {details.get("code"), details.get("type")}
+    except (ValueError, AttributeError, TypeError, OSError):
+        return UNKNOWN_429
+    if QUOTA in codes:
+        return QUOTA
+    return RATE_LIMIT if RATE_LIMIT in codes else UNKNOWN_429
+
+def retry_delay(headers, retry_number):
+    # One retry today. Keep the exponential policy explicit if the bound changes.
+    backoff = 2 ** retry_number
+    value = headers.get("Retry-After") if headers is not None else None
+    if not value:
+        return backoff
+    try:
+        seconds = int(value)
+        return max(backoff, seconds) if seconds >= 0 else backoff
+    except ValueError:
+        try:
+            when = parsedate_to_datetime(value)
+            return max(backoff, (when - dt.datetime.now(dt.timezone.utc)).total_seconds())
+        except (ValueError, TypeError, OverflowError):
+            return backoff
+
+def write_attempt_marker(path, value):
+    fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+    with os.fdopen(fd, "w") as stream:
+        stream.write(value)
+        stream.flush()
+        os.fsync(stream.fileno())
+
+def dispatch_review(payload, key, ledger_path, hold, retry_hold):
+    # A Git push claims the remote reservation and this exclusive marker claims
+    # one dispatch locally. The client request ID is for tracing, not provider dedupe.
+    slots = [hold] + ([retry_hold] if retry_hold else [])
+    if retry_hold:
+        # Claim this transaction before entering the finally block. A duplicate
+        # invocation must never mark another invocation's retry slot unused.
+        write_attempt_marker(ledger_path.with_name(hold["id"]+".transaction"), "claimed")
+    retry_started = False
+    try:
+        for index, slot in enumerate(slots):
+            request = Request(ENDPOINT, data=json.dumps(payload).encode("utf-8"),
+                              headers={"Content-Type":"application/json", "Authorization":"Bearer "+key,
+                                       "X-Client-Request-Id":slot["id"]}, method="POST")
+            write_attempt_marker(ledger_path.with_name(slot["id"]+".sent"), "dispatch-started")
+            retry_started = index > 0
+            try:
+                with urlopen(request, timeout=360) as response:
+                    return json.loads(response.read(350000)), slot
+            except HTTPError as error:
+                if error.code != 429:
+                    raise ValueError(f"OpenAI returned HTTP {error.code}; billing reconciliation required") from None
+                reason = classify_429(error)
+                write_attempt_marker(ledger_path.with_name(slot["id"]+".error"), reason)
+                delay = retry_delay(error.headers, index+1)
+                if reason == RATE_LIMIT and index+1 < len(slots) and delay <= MAX_RETRY_WAIT:
+                    time.sleep(delay)
+                    continue
+                raise ValueError(ERROR_REASONS[reason]+"; billing reconciliation required") from None
+    finally:
+        if retry_hold and not retry_started:
+            marker = ledger_path.with_name(retry_hold["id"]+".sent")
+            if not marker.exists():
+                write_attempt_marker(ledger_path.with_name(retry_hold["id"]+".unused"), "not-dispatched")
+
+
 def run_paid_review(ticker, packet, content, model, key, target, ledger_path, *, reservation_precommitted=False, retry_of=None):
-    """One reservation, one API attempt. Uncertain/failed requests retain a hold
-    until a person reconciles the provider bill; no automatic retry."""
+    """Dispatch only prepaid slots, preserving exposure for uncertain requests."""
     strict_format=build_strict_format(packet)
     now=dt.datetime.now(dt.timezone.utc).isoformat()
     lock_path=ledger_path.with_name(ledger_path.name+".lock")
@@ -167,7 +248,7 @@ def run_paid_review(ticker, packet, content, model, key, target, ledger_path, *,
                 from pulse_ai_cost_guard import attempt_key
                 key_id=attempt_key(ticker,packet["contentSha256"],model,retry_of)
                 holds=[h for h in ledger.get("holds",[]) if h["id"]==key_id]
-                if len(holds)!=1:
+                if len(holds)!=1 or "reconciliation" in holds[0]:
                     raise ValueError("Remote-persisted reservation missing: refuse paid request")
                 hold=holds[0]
             else:
@@ -207,21 +288,18 @@ def run_paid_review(ticker, packet, content, model, key, target, ledger_path, *,
                 "input":"Produce a cautious Hebrew review-only proposal for this exact packet:\\n"+content,
                 "text":{"format":strict_format}
             }
-            request=Request(ENDPOINT,data=json.dumps(payload).encode("utf-8"),
-                            headers={"Content-Type":"application/json","Authorization":"Bearer "+key},
-                            method="POST")
-            try:
-                with urlopen(request,timeout=600) as response:
-                    raw=response.read(350000)
-            except HTTPError as e:
-                raise ValueError("OpenAI returned HTTP "+str(e.code)+"; reserved budget remains blocked pending reconciliation") from None
-            api_response=json.loads(raw)
+            retry_hold = next((h for h in ledger.get("holds",[]) if
+                               reservation_precommitted and hold.get("jobId")
+                               and h.get("jobId")==hold["jobId"] and h.get("rateRetry")
+                               and h["packetSha256"]==hold["packetSha256"] and h["model"]==model
+                               and "reconciliation" not in h and not retry_of), None)
+            api_response, billed_slot=dispatch_review(payload,key,ledger_path,hold,retry_hold)
             usage=api_response.get("usage")
             if not isinstance(usage,dict):
                 raise ValueError("Usage missing: reserved budget held until manual billing reconciliation")
             # Billing is recorded BEFORE any analytical validity checks, so invalid
             # outputs still count against the user's month budget.
-            updated,bill=record_call(ledger,ticker,packet["contentSha256"],model,now,usage,retry_of=retry_of)
+            updated,bill=record_call(ledger,ticker,packet["contentSha256"],model,now,usage,retry_of=retry_of,rate_retry=billed_slot.get("rateRetry",False))
             write_ledger(ledger_path,updated)
             print(json.dumps({"event":"ai-response-received", **response_diagnostics(api_response),
                               "chargedUsd":bill["usd"]}), flush=True)

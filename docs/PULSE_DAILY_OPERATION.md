@@ -22,8 +22,9 @@ window. Code-push/manual collection triggers remain available.
    The initial backlog may contain historical reports, not only new filings.
 4. Each scheduled AI run processes at most ONE eligible source-supported job.
    The new credential environment allows main only; protected main, owner-merged
-   CI, active-month policy and both activation switches must pass. Unknown
-   billing holds stop scheduled spending.
+   CI, active-month policy and both activation switches must pass. An unresolved
+   hold blocks another paid analysis of the same report and counts against the
+   budget, including after a month rollover.
 5. The runner commits a cost reservation before calling OpenAI. The maximum
    output ceiling is 50,000 tokens, not mandatory usage. Request estimate must
    be <=$1 and recorded+reserved spending plus the quote <=$9. The $10 planning
@@ -34,6 +35,24 @@ window. Code-push/manual collection triggers remain available.
 7. A later successful Pages publication makes saved drafts visible in PULSE.
    The AI workflow does not itself deploy the website. In normal timing, an AI
    draft may become visible only after the next 08:00/19:00 site publication.
+
+## Recovery after an API failure
+
+- A confirmed `rate_limit_exceeded` can use one separately reserved retry.
+  The runner waits at least two seconds and honors a longer valid
+  `Retry-After` up to 60 seconds. A longer wait, no available retry budget,
+  or a second failure ends the run. `insufficient_quota` and unclassified
+  429s receive no automatic retry. Each dispatched slot has its own client
+  request ID and can only be dispatched once by the runner.
+- A request without a usage receipt remains reserved. The runner releases a
+  retry slot only when its private dispatch journal proves it was never sent.
+  An interrupted run is marked failed on the next admitted run, and its holds
+  stay in the budget. A new task for a different issuer can still run.
+- For an uncertain hold, match the request ID and project/time to authoritative
+  billing evidence. A missing receipt, HTTP 429, or a temporarily unavailable
+  billing view cannot authorize release. Keep the report out of paid replay
+  until the hold has been reconciled in a reviewed ledger change. The existing
+  owner-approved retry for a settled invalid response remains separate.
 
 ## Where to read
 

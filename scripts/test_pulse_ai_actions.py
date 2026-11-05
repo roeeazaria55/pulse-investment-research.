@@ -103,8 +103,10 @@ class RemoteSpendTransactions(unittest.TestCase):
    changed=json.loads((state/actions.STATE_QUEUE).read_text())
    actions.atomic_write(private/"ledger.json",json.loads((state/actions.STATE_LEDGER).read_text()))
    with patch.object(actions,"load_context",return_value=(self.registry,changed,{})):
-    with self.assertRaisesRegex(ValueError,"No recorded API usage"):
-     actions.settle(state,private,"2026-10-29T11:00:00Z")
-   self.assertEqual(json.loads((state/actions.STATE_QUEUE).read_text())["jobs"][0]["status"],"processing")
+    result=actions.settle(state,private,"2026-10-29T11:00:00Z")
+   self.assertFalse(result["settled"])
+   self.assertEqual(json.loads((state/actions.STATE_QUEUE).read_text())["jobs"][0]["status"],"failed")
+   self.assertEqual(actions.read_json(state/actions.STATE_LEDGER)["holds"][0]["reconciliation"],
+                    "billing-reconciliation-required")
 
 if __name__=="__main__":unittest.main()
