@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-04T22:20:58.451535+00:00",
+  "updatedAt": "2026-11-05T07:16:56.743+00:00",
   "jobs": [
     {
       "id": "ai-job:62f53bd83c6cf0ae796f56d884adf521",
@@ -12,9 +12,9 @@
       "candidatePayloadSha256": "0e09fc5dc078bfa0473f860e00df7ec5fc70aea7824dbbcd7b64d04bd653b6d1",
       "reportPeriod": "2026-04-01/2026-06-30",
       "createdAt": "2026-10-30T19:01:20.347342+00:00",
-      "updatedAt": "2026-11-01T13:41:49.240819+00:00",
-      "status": "processing",
-      "statusReason": "precharged-reservation-awaits-api",
+      "updatedAt": "2026-11-05T07:16:56.743+00:00",
+      "status": "failed",
+      "statusReason": "billing-reconciliation-required",
       "attempts": 1,
       "analysisExecuted": false,
       "publicationStatus": "not-approved",
@@ -35,8 +35,13 @@
         {
           "status": "processing",
           "at": "2026-11-01T13:41:49.240819+00:00"
+        },
+        {
+          "status": "failed",
+          "at": "2026-11-05T07:16:56.743+00:00"
         }
-      ]
+      ],
+      "reconciliationHoldId": "04b4660a8c0728b15210b24fcf35fa0bfb5f30610142ad8e72b3bcb8a72e485c"
     },
     {
       "id": "ai-job:cd1b538f306e27f5290112395a7f5f6a",
