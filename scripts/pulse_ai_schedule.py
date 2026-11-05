@@ -21,7 +21,9 @@ def admission(policy,queue,now):
  if not isinstance(queue,dict) or not isinstance(queue.get('jobs'),list) or not isinstance(queue.get('latestByCompany'),dict):
   raise ValueError('Invalid authoritative queue')
  ready=any(j.get('status')=='queued' and queue['latestByCompany'].get(j.get('companyId'))==j.get('id') for j in queue['jobs'])
- return {'eligible':ready,'reason':'queued-work' if ready else 'no-queued-work','month':month}
+ recovery=any(j.get('status')=='processing' for j in queue['jobs'])
+ return {'eligible':ready or recovery,'recovery':recovery,
+         'reason':'queued-work' if ready else 'interrupted-work' if recovery else 'no-queued-work','month':month}
 
 def budget_notice(ledger,month):
  total=used_in_month(validate_ledger(ledger),month)
@@ -34,10 +36,8 @@ def main():
  queue=json.loads((state/'public/data/ai-analysis-queue.json').read_text())
  result=admission(json.loads((ROOT/'config/pulse-ai-policy.json').read_text()),queue,dt.datetime.now(dt.timezone.utc).isoformat())
  ledger=state/'public/data/ai-cost-ledger.json'
- if ledger.exists() and json.loads(ledger.read_text()).get('holds'):
-  result.update(eligible=False,reason='unsettled-reservation')
  result['budget']=budget_notice(json.loads(ledger.read_text()) if ledger.exists() else {'version':1,'calls':[],'holds':[]},result['month'])
- if result['budget']['level']=='blocked':result.update(eligible=False,reason='monthly-budget')
+ if result['budget']['level']=='blocked' and not result.get('recovery'):result.update(eligible=False,reason='monthly-budget')
  if os.getenv('GITHUB_OUTPUT'):
   with open(os.environ['GITHUB_OUTPUT'],'a') as f:f.write('eligible='+str(result['eligible']).lower()+'\n')
  if os.getenv('GITHUB_STEP_SUMMARY'):

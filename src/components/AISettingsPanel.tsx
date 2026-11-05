@@ -20,7 +20,7 @@ export function summarizeCosts(value:unknown,now=new Date()){
   if(!c||!/^([a-f0-9]{64})$/.test(c.id)||ids.has(c.id)||!Number.isFinite(Date.parse(c.calledAt)))
    throw Error('Cost receipt unverified');
   ids.add(c.id);
-  if(c.calledAt.slice(0,7)===month){
+  if(new Date(c.calledAt).toISOString().slice(0,7)===month){
    const n=positive(c.usd);if(n===null)throw Error('Bad receipt amount');spent+=n;
   }
  }
@@ -28,11 +28,9 @@ export function summarizeCosts(value:unknown,now=new Date()){
   if(!h||!/^([a-f0-9]{64})$/.test(h.id)||ids.has(h.id)||!Number.isFinite(Date.parse(h.heldAt)))
    throw Error('Cost reservation unverified');
   ids.add(h.id);
-  if(h.heldAt.slice(0,7)===month){
-   const n=positive(h.maxUsd);if(n===null)throw Error('Bad hold amount');reserved+=n;
-  }
+  const n=positive(h.maxUsd);if(n===null)throw Error('Bad hold amount');reserved+=n;
  }
- return {spent,reserved,remaining:Math.max(0,9-spent-reserved),month};
+ return {spent,reserved,remaining:Math.max(0,9-spent-reserved),month,openHolds:v.holds.length};
 }
 export function AISettingsPanel({theme,onThemeChange}:{theme:'dark'|'light';onThemeChange:(v:'dark'|'light')=>void}){
  const [usage,setUsage]=useState<ReturnType<typeof summarizeCosts>|null>(null);
@@ -70,8 +68,9 @@ export function AISettingsPanel({theme,onThemeChange}:{theme:'dark'|'light';onTh
     <div><span>שימוש שנרשם</span><strong><bdi>${usage.spent.toFixed(2)}</bdi></strong></div>
     <div><span>תקציב משוריין</span><strong><bdi>${usage.reserved.toFixed(2)}</bdi></strong></div>
     <div><span>נותר להפעלות חדשות עד $9</span><strong><bdi>${usage.remaining.toFixed(2)}</bdi></strong></div>
+    {usage.openHolds>0&&<p role="status"><AlertTriangle size={15}/> {usage.openHolds} הזמנות פתוחות כלולות בסכום המשוריין. הזמנות שלא הוסדרו דורשות בירור חיוב לפני ניסיון נוסף.</p>}
     {usage.spent+usage.reserved>=5&&<p role="alert"><AlertTriangle size={15}/>
-      {usage.spent+usage.reserved>=9?'הגעת לסף $9: הפעלות חדשות נחסמות עד לחודש הבא.':usage.spent+usage.reserved>=8?'התראת תקציב: שימוש ותקציב משוריין הגיעו ל־$8.':'התראת תקציב: שימוש ותקציב משוריין הגיעו ל־$5.'}
+      {usage.spent+usage.reserved>=9?'הגעת לסף $9. הפעלות חדשות ימתינו עד שיתפנה תקציב.':usage.spent+usage.reserved>=8?'התראת תקציב: שימוש ותקציב משוריין הגיעו ל־$8.':'התראת תקציב: שימוש ותקציב משוריין הגיעו ל־$5.'}
     </p>}
     <small>תקופה: <bdi>{usage.month}</bdi> UTC · הנתונים הם אומדן מקומי, לא חשבונית מאומתת</small>
    </div>}

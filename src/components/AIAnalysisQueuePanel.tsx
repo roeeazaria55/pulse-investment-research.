@@ -25,6 +25,12 @@ const descriptions:Record<string,string>={
  'validated':'אומת מקור',
  'detected':'זוהה דוח'
 };
+const failureDescriptions:Record<string,string>={
+ 'billing-reconciliation-required':'נדרש בירור חיוב לפני ניסיון נוסף',
+ 'insufficient_quota':'מכסת OpenAI או החיוב אינם מאפשרים ניתוח. נדרש בירור חיוב',
+ 'rate_limit_exceeded':'מגבלת קצב הבקשות של OpenAI. נדרש בירור חיוב',
+ 'unknown_429':'OpenAI החזיר שגיאה 429. נדרש בירור חיוב'
+};
 function allowed(url:string,id:string){
  try{const p=new URL(url);return p.protocol==='https:'&&!p.username&&!p.password&&!p.port&&hosts[id]?.includes(p.hostname);}
  catch{return false;}
@@ -70,14 +76,14 @@ export function AIAnalysisQueuePanel({companyId,compact=false}:{companyId?:strin
   <div className="pulse-ai-queue-head">
    <div><span className="pulse-ai-kicker">EARNINGS / EVENT QUEUE</span>
     <h4><FileSearch size={19} aria-hidden="true"/> דוחות שממתינים לניתוח</h4></div>
-   <span className="pulse-ai-pill"><LockKeyhole size={14}/> ללא הפעלת AI אוטומטית</span>
+   <span className="pulse-ai-pill"><LockKeyhole size={14}/> טיוטות כפופות לאישור בעלים</span>
   </div>
   {store===null&&!error&&<p role="status">טוען תור ניתוחים…</p>}
   {error&&<p role="status">נתוני תור הניתוחים טרם פורסמו. קליטת הדוחות הקיימת לא נפגעה.</p>}
   {store&&<p className="pulse-ai-queue-summary">משימות נוכחיות: <bdi>{rows.length}</bdi> · לטיפול: <bdi>{pending.length}</bdi>. נתוני התור אינם ניתוח השקעה.</p>}
   {!!rows.length&&<div className="pulse-ai-queue-items">{rows.slice(0,compact?4:12).map(j=><div className="pulse-ai-queue-item" key={j.id}>
    <div><strong><bdi>{j.ticker}</bdi></strong><span><bdi>{j.reportPeriod||'תקופה בבדיקה'}</bdi></span></div>
-   <p>{descriptions[j.status]||'סטטוס לא מוכר'}</p>
+   <p>{(j.status==='failed' && failureDescriptions[j.statusReason]) || descriptions[j.status] || 'סטטוס לא מוכר'}</p>
    <a href={j.sourceUrl} target="_blank" rel="noopener noreferrer" aria-label={'מקור רשמי עבור '+j.ticker}>
     מקור רשמי <Clock3 size={13}/></a>
   </div>)}</div>}

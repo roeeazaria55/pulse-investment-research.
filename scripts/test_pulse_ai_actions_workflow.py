@@ -24,6 +24,18 @@ class AIActionsContractTests(unittest.TestCase):
   self.assertNotIn("OPENAI_API_KEY",pages)
   self.assertNotIn("pulse_ai_actions.py",pages)
   self.assertNotIn("run_optional_ai_review.py",pages)
+ def test_paid_step_explicitly_requires_successful_git_push_and_private_ledger(self):
+  paid=(ROOT/".github/workflows/ai-automation.yml").read_text(encoding="utf-8")
+  persistence,dispatch=paid.split("      - name: Execute bounded, source-bound OpenAI review",1)
+  self.assertIn("id: persist",persistence)
+  self.assertIn("git push origin HEAD:pulse-data",persistence)
+  self.assertIn("id: materialize",persistence)
+  dispatch=dispatch.split("      - name: Commit receipt",1)[0]
+  self.assertIn("steps.persist.outcome == 'success'",dispatch)
+  self.assertIn("steps.materialize.outcome == 'success'",dispatch)
+  self.assertNotIn("OPENAI_API_KEY",persistence)
+  self.assertNotIn("upload-artifact",paid)
+
  def test_pulse_data_keeps_queue_and_preserves_previous_ai_drafts(self):
   pages=(ROOT/".github/workflows/pages.yml").read_text(encoding="utf-8")
   self.assertIn("scripts/pulse_ai_analysis_queue.py",pages)
