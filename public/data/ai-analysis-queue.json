@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-05T13:44:49.665385+00:00",
+  "updatedAt": "2026-11-05T14:09:25.324253+00:00",
   "jobs": [
     {
       "id": "ai-job:62f53bd83c6cf0ae796f56d884adf521",
@@ -844,6 +844,38 @@
       ]
     },
     {
+      "id": "ai-job:6821e63e5cedc132fea2890134507649",
+      "candidateId": "earnings-candidate:cf55d42365151e5d1068acabc70aa202",
+      "companyId": "us-meta-nasdaq-a",
+      "ticker": "META",
+      "sourceUrl": "https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Third-Quarter-2026-Results/default.aspx",
+      "sourceSha256": "a808210c638a9aabbab479948b3ad311f81b5a78c2236a77907086b7f14a883a",
+      "candidatePayloadSha256": "6a0e415c0a610332f693523b72f0d48b8a2e7a722a53e93992d4f024c00d059f",
+      "reportPeriod": "Q3 2026",
+      "createdAt": "2026-11-05T14:09:25.283063+00:00",
+      "updatedAt": "2026-11-05T14:09:25.324253+00:00",
+      "status": "queued",
+      "statusReason": "verified-source-candidate-awaits-ai",
+      "attempts": 0,
+      "analysisExecuted": false,
+      "publicationStatus": "not-approved",
+      "approvedModelChange": false,
+      "history": [
+        {
+          "status": "detected",
+          "at": "2026-11-05T14:09:25.283063+00:00"
+        },
+        {
+          "status": "validated",
+          "at": "2026-11-05T14:09:25.324253+00:00"
+        },
+        {
+          "status": "queued",
+          "at": "2026-11-05T14:09:25.324253+00:00"
+        }
+      ]
+    },
+    {
       "id": "ai-job:37fcc396b5bd7481122c49fe21c0cdc1",
       "candidateId": "earnings-candidate:adb450ce5bc3b189c35cbd67ece1f259",
       "companyId": "us-smci-nasdaq-common",
@@ -890,7 +922,7 @@
   ],
   "latestByCompany": {
     "candidate-nebius": "ai-job:0f75a98aef41fd6590cc49f686e4c124",
-    "us-meta-nasdaq-a": "ai-job:79ab851796f915027aca1c9417ca3297",
+    "us-meta-nasdaq-a": "ai-job:6821e63e5cedc132fea2890134507649",
     "us-dlo-nasdaq-a": "ai-job:ef36d42703397a20c5b4e1eec972bd95",
     "us-lmnd-nyse-common": "ai-job:ea372eeb86a21f17979946d01b85abfa",
     "candidate-sandisk": "ai-job:598af031ac6b97568035ac36118e4ebd",
