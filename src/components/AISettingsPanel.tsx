@@ -30,7 +30,7 @@ export function summarizeCosts(value:unknown,now=new Date()){
   ids.add(h.id);
   const n=positive(h.maxUsd);if(n===null)throw Error('Bad hold amount');reserved+=n;
  }
- return {spent,reserved,remaining:Math.max(0,9-spent-reserved),month};
+ return {spent,reserved,remaining:Math.max(0,9-spent-reserved),month,openHolds:v.holds.length};
 }
 export function AISettingsPanel({theme,onThemeChange}:{theme:'dark'|'light';onThemeChange:(v:'dark'|'light')=>void}){
  const [usage,setUsage]=useState<ReturnType<typeof summarizeCosts>|null>(null);
@@ -68,6 +68,7 @@ export function AISettingsPanel({theme,onThemeChange}:{theme:'dark'|'light';onTh
     <div><span>שימוש שנרשם</span><strong><bdi>${usage.spent.toFixed(2)}</bdi></strong></div>
     <div><span>תקציב משוריין</span><strong><bdi>${usage.reserved.toFixed(2)}</bdi></strong></div>
     <div><span>נותר להפעלות חדשות עד $9</span><strong><bdi>${usage.remaining.toFixed(2)}</bdi></strong></div>
+    {usage.openHolds>0&&<p role="status"><AlertTriangle size={15}/> {usage.openHolds} הזמנות פתוחות כלולות בסכום המשוריין. הזמנות שלא הוסדרו דורשות בירור חיוב לפני ניסיון נוסף.</p>}
     {usage.spent+usage.reserved>=5&&<p role="alert"><AlertTriangle size={15}/>
       {usage.spent+usage.reserved>=9?'הגעת לסף $9. הפעלות חדשות ימתינו עד שיתפנה תקציב.':usage.spent+usage.reserved>=8?'התראת תקציב: שימוש ותקציב משוריין הגיעו ל־$8.':'התראת תקציב: שימוש ותקציב משוריין הגיעו ל־$5.'}
     </p>}

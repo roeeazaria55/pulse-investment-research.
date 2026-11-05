@@ -17,7 +17,7 @@ from pathlib import Path
 from ai_research_packets import build_all
 from earnings_research_candidates import digest
 from pulse_ai_analysis_queue import ROOT,advance,validate,job_id,utc_at
-from pulse_ai_cost_guard import MODEL_RATES,preflight,reserve,packet_key,validate_ledger
+from pulse_ai_cost_guard import MODEL_RATES,preflight,reserve,attempt_key,attempt_generation,validate_ledger
 from pulse_ai_research_drafts import append_public,build_public_draft,canonical
 from run_optional_ai_review import ERROR_REASONS,MAX_OUTPUT_TOKENS,MAX_INPUT_BYTES,prepare
 
@@ -46,9 +46,11 @@ def private_write(path,obj):
     with os.fdopen(fd,"w",encoding="utf-8") as stream:
         json.dump(obj,stream,ensure_ascii=False,indent=2,allow_nan=False)
 
-def load_context(state):
+def load_context(state,*,include_candidates=True):
     registry=read_json(ROOT/"public/data/official-registry.json")
     queue=validate(read_json(state/STATE_QUEUE),registry)
+    if not include_candidates:
+        return registry,queue,{}
     candidates=read_json(ROOT/PACKET_CANDIDATES)
     by_id={c["id"]:c for c in candidates["candidates"]}
     return registry,queue,by_id
@@ -79,6 +81,43 @@ def recover_interrupted(queue,ledger,now):
             job["statusReason"]="billing-reconciliation-required"
             changed=True
     return changed
+
+
+def record_verified_no_charge(state,hold_id,evidence_ref,now):
+    """Prepare an operator-reviewed ledger change; this does not verify billing.
+
+    The reference must identify independently reviewed, attempt-specific evidence
+    of zero charge. Never include billing payloads or credentials in pulse-data.
+    """
+    _,queue,_=load_context(state,include_candidates=False)
+    ledger=validate_ledger(read_json(state/STATE_LEDGER))
+    hold=next((h for h in ledger.get("holds",[]) if h["id"]==hold_id),None)
+    if hold is None:
+        raise ValueError("Open reservation not found")
+    job=next((j for j in queue["jobs"] if j["ticker"]==hold["ticker"] and (
+        j["id"]==hold.get("jobId") or
+        ("jobId" not in hold and j.get("reconciliationHoldId")==hold_id)
+    )),None)
+    if job is None or job["status"] not in {"failed","pending-review"}:
+        raise ValueError("Reservation must belong to a reconciliable job")
+    closed={**hold,"jobId":job["id"],"evidenceRef":evidence_ref}
+    ledger["holds"].remove(hold)
+    ledger.setdefault("noCharge",[]).append(closed)
+    validate_ledger(ledger)
+    requeued=False
+    if (job["status"]=="failed" and job["attempts"]<5 and not job["analysisExecuted"]
+        and queue["latestByCompany"].get(job["companyId"])==job["id"]
+        and not any(h["ticker"]==job["ticker"] for h in ledger["holds"])
+        and not any(r.get("jobId")==job["id"] or (
+            r["ticker"]==hold["ticker"] and r["packetSha256"]==hold["packetSha256"]
+        ) for r in ledger["calls"])):
+        advance(queue,job["id"],"queued",now,actor="trusted-runner")
+        job["statusReason"]="verified-no-charge-reconciled"
+        requeued=True
+    atomic_write(state/STATE_LEDGER,ledger)
+    if requeued:
+        atomic_write(state/STATE_QUEUE,queue)
+    return {"recordedNoCharge":True,"requeued":requeued}
 
 
 def choose(state,model,retry_of=None):
@@ -132,8 +171,9 @@ def choose(state,model,retry_of=None):
             if retry_of:
                 raise
             continue
-        key=packet_key(j["ticker"],packet["contentSha256"],model)
-        if not retry_of and any(r["id"]==key or (
+        generation=attempt_generation(ledger,j["ticker"],packet["contentSha256"],model,retry_of)
+        key=attempt_key(j["ticker"],packet["contentSha256"],model,retry_of,generation=generation)
+        if any(r["id"]==key or (not retry_of and
             r.get("rateRetry") and r["packetSha256"]==packet["contentSha256"]
             and r["ticker"]==j["ticker"] and r["model"]==model
         ) for r in ledger["calls"]):
@@ -198,7 +238,7 @@ def settle(state,private,now):
     now=utc_at(now)
     reservation=read_json(private/"reservation.json")
     model=reservation["model"]
-    registry,queue,_=load_context(state)
+    registry,queue,_=load_context(state,include_candidates=False)
     job=next((j for j in queue["jobs"] if j["id"]==reservation["jobId"]),None)
     if job is None or job["status"]!="processing" or job["ticker"]!=reservation["ticker"]:
         raise ValueError("Pre-paid queue reservation not current")
@@ -214,7 +254,8 @@ def settle(state,private,now):
     )]
     slot_ids={h["id"] for h in slots}
     receipts=private_ledger["calls"][len(before["calls"]):]
-    if private_ledger["calls"][:len(before["calls"])]!=before["calls"] or len(receipts)>1:
+    if (private_ledger["calls"][:len(before["calls"])]!=before["calls"] or len(receipts)>1
+        or private_ledger.get("noCharge",[])!=before.get("noCharge",[])):
         raise ValueError("Cost ledger changed during billed analysis")
     billed_ids={r["id"] for r in receipts}
     if not billed_ids<=slot_ids or private_ledger.get("holds",[])!=[
@@ -277,12 +318,14 @@ def settle(state,private,now):
 
 def main():
     p=argparse.ArgumentParser()
-    p.add_argument("--phase",choices=["inspect","reserve","settle"],required=True)
+    p.add_argument("--phase",choices=["inspect","reserve","settle","record-reviewed-no-charge"],required=True)
     p.add_argument("--state-dir",required=True,help="Checked-out pulse-data Git worktree")
     p.add_argument("--private-dir",required=True,help="Private runner directory outside repository")
     p.add_argument("--model",default="gpt-6.1-sol")
     p.add_argument("--retry-of", default=None)
     p.add_argument("--allow-rate-retry", action="store_true")
+    p.add_argument("--hold-id")
+    p.add_argument("--evidence-ref")
     args=p.parse_args()
     state=Path(args.state_dir).resolve()
     private=Path(args.private_dir).resolve()
@@ -291,10 +334,14 @@ def main():
     if not state.is_dir() or not private.is_dir():raise ValueError("Missing state or private directory")
     now=dt.datetime.now(dt.timezone.utc).isoformat()
     if args.phase=="inspect":
-        registry,queue,_=load_context(state)
+        registry,queue,_=load_context(state,include_candidates=False)
         result={"status":"preflight-only","queued":sum(j["status"]=="queued" for j in queue["jobs"]),
                 "blocked":sum(j["status"]=="blocked" for j in queue["jobs"]),
                 "paidAiExecuted":False}
+    elif args.phase=="record-reviewed-no-charge":
+        if not args.hold_id or not args.evidence_ref:
+            p.error("An exact hold ID and independently reviewed evidence reference are required")
+        result=record_verified_no_charge(state,args.hold_id,args.evidence_ref,now)
     else:
         if os.getenv("PULSE_PAID_AI_APPROVED")!="YES" or os.getenv("PAID_AI_ENABLED")!="YES":
             raise ValueError("Both explicit owner-activation gates are required for spending workflow")

@@ -164,13 +164,14 @@ jobs:
           git commit -m 'Reserve PULSE AI analysis cost [skip ci]'
           git push origin HEAD:pulse-data
       - name: Materialize precommitted ledger in private runtime
-        if: steps.reserve.outputs.ready == 'true'
+        id: materialize
+        if: steps.persist.outcome == 'success' && steps.reserve.outputs.ready == 'true'
         run: |
           cp "$RUNNER_TEMP/pulse-ai-data/public/data/ai-cost-ledger.json" \
             "$RUNNER_TEMP/pulse-ai-private/ledger.json"
           chmod 600 "$RUNNER_TEMP/pulse-ai-private/ledger.json"
       - name: Execute bounded, source-bound OpenAI review (OFF until owner enables)
-        if: steps.reserve.outputs.ready == 'true'
+        if: steps.materialize.outcome == 'success' && steps.persist.outcome == 'success' && steps.reserve.outputs.ready == 'true'
         env:
           OPENAI_API_KEY: "${{ secrets.OPENAI_API_KEY }}"
           PULSE_PAID_AI_APPROVED: 'YES'
@@ -191,15 +192,8 @@ jobs:
           PULSE_PAID_AI_APPROVED: 'YES'
         run: |
           set -euo pipefail
-          python3 scripts/pulse_ai_actions.py --phase settle \
-            --state-dir "$RUNNER_TEMP/pulse-ai-data" \
-            --private-dir "$RUNNER_TEMP/pulse-ai-private" \
-            > "$RUNNER_TEMP/pulse-ai-private/settlement.json"
-          cd "$RUNNER_TEMP/pulse-ai-data"
-          git add -- public/data/ai-analysis-queue.json public/data/ai-cost-ledger.json
-          if test -f public/data/ai-research-drafts.json; then git add -- public/data/ai-research-drafts.json; fi
-          git commit -m 'Record PULSE AI billing and pending analyst draft [skip ci]'
-          git push origin HEAD:pulse-data
+          bash scripts/pulse_ai_publish_settlement.sh \
+            "$RUNNER_TEMP/pulse-ai-data" "$RUNNER_TEMP/pulse-ai-private"
       - name: Explain state without publishing approved research
         if: always()
         run: |

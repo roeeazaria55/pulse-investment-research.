@@ -245,8 +245,9 @@ def run_paid_review(ticker, packet, content, model, key, target, ledger_path, *,
             fcntl.flock(lock.fileno(),fcntl.LOCK_EX)
             ledger=read_ledger(ledger_path)
             if reservation_precommitted:
-                from pulse_ai_cost_guard import attempt_key
-                key_id=attempt_key(ticker,packet["contentSha256"],model,retry_of)
+                from pulse_ai_cost_guard import attempt_key,attempt_generation
+                generation=attempt_generation(ledger,ticker,packet["contentSha256"],model,retry_of)
+                key_id=attempt_key(ticker,packet["contentSha256"],model,retry_of,generation=generation)
                 holds=[h for h in ledger.get("holds",[]) if h["id"]==key_id]
                 if len(holds)!=1 or "reconciliation" in holds[0]:
                     raise ValueError("Remote-persisted reservation missing: refuse paid request")

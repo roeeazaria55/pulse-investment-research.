@@ -48,8 +48,14 @@ def packet_key(ticker: str, packet_sha: str, model: str) -> str:
         raise ValueError("Invalid packet identity")
     return hashlib.sha256((ticker+"|"+packet_sha+"|"+model).encode()).hexdigest()
 
-def attempt_key(ticker, packet_sha, model, retry_of=None, *, rate_retry=False):
+def attempt_key(ticker, packet_sha, model, retry_of=None, *, rate_retry=False, generation=0):
     original = packet_key(ticker, packet_sha, model)
+    if type(generation) is not int or not 0 <= generation <= 5:
+        raise ValueError("Invalid reconciled attempt generation")
+    if generation:
+        if retry_of:
+            raise ValueError("Reconciled generation cannot use owner receipt retry")
+        original = hashlib.sha256((original + f"|reconciled-{generation}").encode()).hexdigest()
     if rate_retry:
         if retry_of is not None:
             raise ValueError("Rate retry is separate from owner retry")
@@ -67,15 +73,26 @@ def validate_retry_parent(ledger, ticker, packet_sha, model, retry_of):
         raise ValueError("Retry requires a settled original receipt")
 
 
+def attempt_generation(ledger, ticker, packet_sha, model, retry_of=None):
+    if retry_of is not None:
+        return 0
+    return sum(not row.get("rateRetry") and not row.get("retryOf") and
+               (row["ticker"],row["packetSha256"],row["model"])==(ticker,packet_sha,model)
+               for row in ledger.get("noCharge",[]))
+
+
 def validate_ledger(ledger):
     if not isinstance(ledger,dict) or ledger.get("version") != 1 or not isinstance(ledger.get("calls"),list):
         raise ValueError("Cost ledger missing or malformed")
     if "holds" in ledger and not isinstance(ledger["holds"],list):
         raise ValueError("Invalid reservations")
+    closed=ledger.get("noCharge",[])
+    if not isinstance(closed,list):
+        raise ValueError("Invalid reconciliation history")
     seen=set()
-    for hold in ledger.get("holds",[]):
-        if (not isinstance(hold,dict) or (set(hold)-{"retryOf","rateRetry","jobId","reconciliation"})!={"id","ticker","model","packetSha256","heldAt","maxUsd"}
-                or hold["id"]!=attempt_key(hold["ticker"],hold["packetSha256"],hold["model"],hold.get("retryOf"),rate_retry=hold.get("rateRetry",False))
+    for hold in [*ledger.get("holds",[]),*closed]:
+        if (not isinstance(hold,dict) or (set(hold)-{"retryOf","rateRetry","jobId","reconciliation","generation","evidenceRef"})!={"id","ticker","model","packetSha256","heldAt","maxUsd"}
+                or hold["id"]!=attempt_key(hold["ticker"],hold["packetSha256"],hold["model"],hold.get("retryOf"),rate_retry=hold.get("rateRetry",False),generation=hold.get("generation",0))
                 or not Decimal(str(hold["maxUsd"])).is_finite() or Decimal(str(hold["maxUsd"]))<=0):
             raise ValueError("Invalid reserved call")
         if "jobId" in hold and not re.fullmatch(r"ai-job:[a-f0-9]{32}",str(hold["jobId"])):
@@ -85,17 +102,22 @@ def validate_ledger(ledger):
         month_key(hold["heldAt"])
         if hold["id"] in seen:raise ValueError("Duplicate call reservation")
         seen.add(hold["id"])
+    if any(not re.fullmatch(r"[A-Za-z0-9_.:-]{1,120}",str(h.get("evidenceRef","")))
+           or "jobId" not in h for h in closed):
+        raise ValueError("Closed reservation lacks a reviewed evidence reference")
+    if any("evidenceRef" in h for h in ledger.get("holds",[])):
+        raise ValueError("An open hold cannot carry a closure reference")
     for row in ledger["calls"]:
-        if not isinstance(row,dict) or (set(row)-{"retryOf","rateRetry","jobId"})!={"id","ticker","model","packetSha256","calledAt","inputTokens","outputTokens","cachedTokens","usd"}:
+        if not isinstance(row,dict) or (set(row)-{"retryOf","rateRetry","jobId","generation"})!={"id","ticker","model","packetSha256","calledAt","inputTokens","outputTokens","cachedTokens","usd"}:
             raise ValueError("Ledger row malformed")
-        key=attempt_key(row["ticker"], row["packetSha256"], row["model"],row.get("retryOf"),rate_retry=row.get("rateRetry",False))
+        key=attempt_key(row["ticker"], row["packetSha256"], row["model"],row.get("retryOf"),rate_retry=row.get("rateRetry",False),generation=row.get("generation",0))
         if row["id"]!=key or row["id"] in seen or month_key(row["calledAt"]) < "2026-01":
             raise ValueError("Ledger identity collision")
         seen.add(row["id"])
         raw=quoted_cost(row["model"],row["inputTokens"],row["outputTokens"],row["cachedTokens"])
         if Decimal(str(row["usd"]))!=cents(raw):
             raise ValueError("Ledger cost does not match recorded tokens")
-    for item in [*ledger["calls"], *ledger.get("holds", [])]:
+    for item in [*ledger["calls"], *ledger.get("holds", []),*closed]:
         if "retryOf" in item:
             if not item["retryOf"]: raise ValueError("Empty retry identity")
             validate_retry_parent(ledger,item["ticker"],item["packetSha256"],item["model"],item["retryOf"])
@@ -110,7 +132,8 @@ def preflight(ledger, ticker: str, packet_sha: str, model: str, now: str,
               input_token_ceiling: int, output_token_ceiling: int=MAX_OUTPUT_TOKENS, *, retry_of=None, rate_retry=False):
     validate_ledger(ledger)
     validate_retry_parent(ledger,ticker,packet_sha,model,retry_of)
-    key=attempt_key(ticker,packet_sha,model,retry_of,rate_retry=rate_retry)
+    generation=attempt_generation(ledger,ticker,packet_sha,model,retry_of)
+    key=attempt_key(ticker,packet_sha,model,retry_of,rate_retry=rate_retry,generation=generation)
     if any(r["id"]==key for r in ledger["calls"]) or any(h["id"]==key for h in ledger.get("holds",[])):
         return {"allowed":False,"reason":"already-processed-or-reserved","estimatedMaxUsd":None}
     month=month_key(now)
@@ -121,7 +144,7 @@ def preflight(ledger, ticker: str, packet_sha: str, model: str, now: str,
     if spent>=START_BLOCK_USD or spent+estimate>START_BLOCK_USD:
         return {"allowed":False,"reason":"monthly-reserve","estimatedMaxUsd":str(estimate)}
     return {"allowed":True,"reason":"approved-budget-window","id":key,"month":month,
-            "spentUsd":str(spent),"estimatedMaxUsd":str(estimate),
+            "generation":generation,"spentUsd":str(spent),"estimatedMaxUsd":str(estimate),
             "warning":str(max((x for x in WARN_USD if spent>=x), default=Decimal("0")))}
 
 def reserve(ledger, ticker, packet_sha, model, now, input_ceiling, output_ceiling=MAX_OUTPUT_TOKENS, *, retry_of=None, job_id=None, rate_retry=False):
@@ -133,14 +156,16 @@ def reserve(ledger, ticker, packet_sha, model, now, input_ceiling, output_ceilin
     if retry_of is not None: hold["retryOf"]=retry_of
     if job_id is not None: hold["jobId"]=job_id
     if rate_retry: hold["rateRetry"]=True
-    return {"version":1,"calls":ledger["calls"],"holds":[*ledger.get("holds",[]),hold]},hold
+    if decision["generation"]: hold["generation"]=decision["generation"]
+    return {**ledger,"holds":[*ledger.get("holds",[]),hold]},hold
 
 def record_call(ledger, ticker, packet_sha, model, now, usage, *, retry_of=None, rate_retry=False):
     # Record successful usage in a durable ledger; failed API calls also need
     # reconciliation against the provider before replaying the same work.
     validate_ledger(ledger)
     validate_retry_parent(ledger,ticker,packet_sha,model,retry_of)
-    key=attempt_key(ticker,packet_sha,model,retry_of,rate_retry=rate_retry)
+    generation=attempt_generation(ledger,ticker,packet_sha,model,retry_of)
+    key=attempt_key(ticker,packet_sha,model,retry_of,rate_retry=rate_retry,generation=generation)
     if any(r["id"]==key for r in ledger["calls"]):
         raise ValueError("Duplicate billable call identity")
     holds=ledger.get("holds",[])
@@ -153,7 +178,7 @@ def record_call(ledger, ticker, packet_sha, model, now, usage, *, retry_of=None,
     row={"id":key,"ticker":ticker,"model":model,"packetSha256":packet_sha,
          "calledAt":now,"inputTokens":input_tokens,"outputTokens":output_tokens,
          "cachedTokens":cached_tokens,"usd":str(amount)}
-    for field in ("retryOf","jobId","rateRetry"):
+    for field in ("retryOf","jobId","rateRetry","generation"):
         if field in hold: row[field]=hold[field]
-    return {"version":1,"calls":[*ledger["calls"],row],
+    return {**ledger,"calls":[*ledger["calls"],row],
             "holds":[h for h in holds if h["id"]!=key]},row

@@ -54,6 +54,32 @@ window. Code-push/manual collection triggers remain available.
   until the hold has been reconciled in a reviewed ledger change. The existing
   owner-approved retry for a settled invalid response remains separate.
 
+### Reviewed zero-charge closure
+
+After independently confirming zero charge for an exact attempt, an operator
+can prepare a state-only commit in a fresh pulse-data worktree:
+
+```sh
+python3 scripts/pulse_ai_actions.py --phase record-reviewed-no-charge \
+  --state-dir <pulse-data-worktree> --private-dir <private-directory> \
+  --hold-id <attempt-id> --evidence-ref <opaque-audit-reference>
+```
+
+The command records an attestation, not a billing lookup. Only use a reference
+to retained provider evidence reviewed by the owner. Do not put billing data
+or secrets in the public branch. Review the queue and ledger diff and commit
+them together, using a normal fast-forward push. If the branch advanced,
+restart from the new head. A current failed job with no billed receipt and
+no other issuer holds can return to the queue, using a fresh request ID.
+Any recorded charge remains in the ledger and requires separate review
+before another attempt. Never invoke this command for ambiguous or unavailable
+provider data.
+
+If collection advances pulse-data during settlement, the workflow retries
+publishing from the updated branch without re-running the API. If settlement
+cannot be published, the durable holds remain and a later admitted run marks
+the orphaned job failed, including when no other job is queued.
+
 ## Where to read
 
 Research -> choose the company -> Overview/סקירה -> latest research update ->
