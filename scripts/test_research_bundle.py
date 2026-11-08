@@ -63,5 +63,46 @@ class ResearchBundleTests(unittest.TestCase):
             path.unlink()
 
 
+    def test_rejects_unsafe_ticker_destinations(self):
+        for ticker in ("../outside", "ABC/DEF", "ABC\\DEF", " T0", "T0 ", ""):
+            with self.subTest(ticker=ticker):
+                path = self.make_bundle(lambda entries, blobs: entries[0].update(ticker=ticker))
+                try:
+                    with self.assertRaises(ValueError):
+                        validate_bundle(path)
+                finally:
+                    path.unlink()
+
+    def test_rejects_colliding_page_destinations(self):
+        def collide(entries, blobs):
+            entries[0]["ticker"] = "A B"
+            entries[1]["ticker"] = "A_B"
+
+        path = self.make_bundle(collide)
+        try:
+            with self.assertRaisesRegex(ValueError, "Duplicate extracted page destination"):
+                validate_bundle(path)
+        finally:
+            path.unlink()
+
+    def test_rejects_reused_pdf_and_extracted_source_paths(self):
+        def duplicate_pdf(entries, blobs):
+            entries[1]["filename"] = entries[0]["filename"]
+            entries[1]["sha256"] = entries[0]["sha256"]
+            entries[1]["bytes"] = entries[0]["bytes"]
+
+        def duplicate_text(entries, blobs):
+            entries[1]["extractedTextFilename"] = entries[0]["extractedTextFilename"]
+
+        for change, error in ((duplicate_pdf, "Duplicate PDF destination"),
+                              (duplicate_text, "Duplicate extracted text source")):
+            path = self.make_bundle(change)
+            try:
+                with self.assertRaisesRegex(ValueError, error):
+                    validate_bundle(path)
+            finally:
+                path.unlink()
+
+
 if __name__ == "__main__":
     unittest.main()
